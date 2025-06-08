@@ -55,6 +55,8 @@
 
   <!-- Main Game Screen -->
   <div id="game" class="hidden">
+    <!-- User-provided image shown before the final scene -->
+    <img id="finalImage" src="2890ad8f-4e6d-4b36-a1ad-0604030d0302.jpeg" alt="Özel Görsel" class="hidden" style="max-width:80%;margin:20px auto;display:block;" />
     <h1 id="title">Bu bir oyun değil...</h1>
     <p id="story">Bu, sana yazılmış bir hikâye.</p>
     <div id="buttons"></div>
@@ -69,6 +71,7 @@
     const forgiveBtn=document.getElementById('forgiveBtn');
     const denyBtn=document.getElementById('denyBtn');
     const continueBtn=document.getElementById('continueBtn');
+    const finalImage = document.getElementById('finalImage');
 
     // Apology flow
     let forgiveScale=1;
@@ -85,7 +88,15 @@
       {title:"Seni eve bırakırken...",story:"Kapının önünde durduk. Kalbim seninle aynı ritimde atıyor.",choices:["Sessizce dudağını öpüyorum."]},
       {title:"Final",story:"Tüm yollar seni gösterdi. Çünkü bu hikâyenin tek cevabı sensin.",choices:[]}  
     ];
+    
     function renderScene(){
+      // Show or hide the custom image on the Final scene
+      if(step === scenes.length - 1) {
+        finalImage.classList.remove('hidden');
+      } else {
+        finalImage.classList.add('hidden');
+      }
+
       const titleEl=document.getElementById('title');
       const storyEl=document.getElementById('story');
       const btnDiv=document.getElementById('buttons');
@@ -94,12 +105,13 @@
       btnDiv.innerHTML='';
       scenes[step].choices.forEach(txt=>{const b=document.createElement('button');b.innerText=txt;b.className='btn';b.onclick=nextScene;btnDiv.appendChild(b);});
     }
+
     function nextScene(){step++;if(step<scenes.length)renderScene();}
     function initFirstScene(){game.classList.remove('hidden');renderScene();}
 
     // Heart animation
     const heartContainer=document.getElementById('hearts');
-    for(let i=0;i<30;i++){const h=document.createElement('div');h.className='heart';h.style.left=Math.random()*100+'vw';h.style.animationDelay=Math.random()*5+'s';heartContainer.appendChild(h);}
+    for(let i=0;i<30;i++){const h=document.createElement('div');h.className='heart';h.style.left=Math.random()*100+'vw';h.style.animationDelay=Math.random()*5+'s';heartContainer.appendChild(h);}    
 
     // No Love button
     const noBtn=document.getElementById('noLoveBtn');
