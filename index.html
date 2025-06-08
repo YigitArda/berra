@@ -2,90 +2,120 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Berra'ya</title>
   <style>
     *{box-sizing:border-box}
-    body{margin:0;padding:0;background:linear-gradient(to bottom,#ffdde1,#ee9ca7);font-family:'Georgia',serif;color:#fff;text-align:center;display:flex;flex-direction:column;justify-content:center;height:100vh;overflow:hidden}
+    body{margin:0;padding:0;background:linear-gradient(to bottom,#ffdde1,#ee9ca7);font-family:'Georgia',serif;color:#fff;text-align:center;display:flex;flex-direction:column;justify-content:center;height:100vh;overflow:hidden;position:relative}
     h1,p{margin:20px}
-    .btn{background:#fff;color:#ee9ca7;border:none;padding:15px 25px;font-size:16px;margin:10px;border-radius:10px;cursor:pointer;transition:.3s}
+    .btn{background:#fff;color:#ee9ca7;border:none;padding:12px 20px;font-size:14px;margin:8px;border-radius:10px;cursor:pointer;transition:.3s}
     .btn:hover{background:#ffdde1;color:#fff}
     #forgiveBtn{background:#3cb371;color:#fff}#forgiveBtn:hover{background:#2e8b57}
     #denyBtn{background:#ff4d4d;color:#fff}#denyBtn:hover{background:#d93636}
     .hidden{display:none}
-    #noLoveBtn{position:absolute;top:85%;left:50%;transform:translate(-50%,-50%);background:#ff6666;color:#fff;border:none;padding:12px 20px;border-radius:10px;cursor:pointer;transition:.2s;z-index:10}#noLoveBtn:hover{background:#ff3333}
-    #hearts{position:fixed;width:100%;height:100%;top:0;left:0;z-index:-1;overflow:hidden;pointer-events:none}
-    .heart{position:absolute;width:20px;height:20px;background:red;transform:rotate(45deg);animation:float 8s infinite;opacity:.6}
-    .heart::before,.heart::after{content:"";position:absolute;width:20px;height:20px;background:red;border-radius:50%}
-    .heart::before{top:-10px;left:0}.heart::after{left:-10px;top:0}
+    #noLoveBtn{position:absolute;top:85%;left:50%;transform:translate(-50%,-50%);background:#ff6666;color:#fff;border:none;padding:10px 18px;font-size:14px;border-radius:10px;cursor:pointer;transition:.2s;z-index:10}#noLoveBtn:hover{background:#ff3333}
+    #hearts, #butterflies, #chicks{position:fixed;width:100%;height:100%;top:0;left:0;z-index:-1;overflow:hidden;pointer-events:none}
+    .heart{position:absolute;width:16px;height:16px;background:red;transform:rotate(45deg);animation:float 8s infinite;opacity:.6}
+    .heart::before,.heart::after{content:"";position:absolute;width:16px;height:16px;background:red;border-radius:50%}
+    .heart::before{top:-8px;left:0}.heart::after{left:-8px;top:0}
     @keyframes float{0%{transform:translateY(100vh) rotate(45deg);opacity:0}50%{opacity:1}100%{transform:translateY(-10vh) rotate(45deg);opacity:0}}
+    .butterfly{position:absolute;font-size:14px;pointer-events:none;animation:fadeMove 2s forwards}
+    @keyframes fadeMove{to {opacity:0;transform:translateY(-30px) scale(1.5)}}
+    .chick{position:absolute;font-size:18px;bottom:8px;animation:chickMove 8s linear infinite;}
+    @keyframes chickMove{from {left:-15%;}to {left:115%;}}
+    /* Responsive tweaks */
+    @media (max-width: 480px) {
+      h1 {font-size:1.2em;}
+      p {font-size:0.9em;}
+      .btn {padding:10px 16px;font-size:12px;}
+      .butterfly {font-size:12px;}
+      .chick {font-size:16px;}
+    }
   </style>
 </head>
 <body>
+  <div id="hearts"></div>
+  <div id="butterflies"></div>
+  <div id="chicks"></div>
 
-<div id="hearts"></div>
+  <!-- Apology Screen -->
+  <div id="apology">
+    <h1>Seni üzdüğüm ve kızdırdığım için özür dilerim.</h1>
+    <p>Beni affeder misin?</p>
+    <button id="forgiveBtn" class="btn">Olur, affediyorum</button>
+    <button id="denyBtn" class="btn">Hayır, affetmiyorum</button>
+  </div>
 
-<!-- Apology Screen -->
-<div id="apology">
-  <h1>Seni üzdüğüm ve kızdırdığım için özür dilerim.</h1>
-  <p>Beni affeder misin?</p>
-  <button id="forgiveBtn" class="btn">Olur, affediyorum</button>
-  <button id="denyBtn" class="btn">Hayır, affetmiyorum</button>
-</div>
+  <!-- Success Screen -->
+  <div id="success" class="hidden">
+    <h1>Beni affedeceğini biliyordum!</h1>
+    <p>Seni çok seviyorum ❤️</p>
+    <button id="continueBtn" class="btn">Hikayeye devam et</button>
+  </div>
 
-<!-- Success Screen -->
-<div id="success" class="hidden">
-  <h1>Beni affedeceğini biliyordum!</h1>
-  <p>Seni çok seviyorum ❤️</p>
-  <button id="continueBtn" class="btn">Hikayeye devam et</button>
-</div>
+  <!-- Main Game Screen -->
+  <div id="game" class="hidden">
+    <h1 id="title">Bu bir oyun değil...</h1>
+    <p id="story">Bu, sana yazılmış bir hikâye.</p>
+    <div id="buttons"></div>
+    <button id="noLoveBtn">Seni sevmiyorum</button>
+  </div>
 
-<!-- Main Game Screen -->
-<div id="game" class="hidden">
-  <h1 id="title">Bu bir oyun değil...</h1>
-  <p id="story">Bu, sana yazılmış bir hikâye.</p>
-  <div id="buttons"><button class="btn" onclick="initFirstScene()">Devam et</button></div>
-  <button id="noLoveBtn">Seni sevmiyorum</button>
-</div>
+  <script>
+    // Core elements
+    const apology=document.getElementById('apology');
+    const success=document.getElementById('success');
+    const game=document.getElementById('game');
+    const forgiveBtn=document.getElementById('forgiveBtn');
+    const denyBtn=document.getElementById('denyBtn');
+    const continueBtn=document.getElementById('continueBtn');
 
-<script>
-const apology=document.getElementById('apology');
-const success=document.getElementById('success');
-const game=document.getElementById('game');
-const forgiveBtn=document.getElementById('forgiveBtn');
-const denyBtn=document.getElementById('denyBtn');
-const continueBtn=document.getElementById('continueBtn');
+    // Apology flow
+    let forgiveScale=1;
+    forgiveBtn.addEventListener('click',()=>{apology.classList.add('hidden');success.classList.remove('hidden');});
+    denyBtn.addEventListener('click',()=>{forgiveScale+=0.3;forgiveBtn.style.transform=`scale(${forgiveScale})`;});
+    continueBtn.addEventListener('click',()=>{success.classList.add('hidden');game.classList.remove('hidden');initFirstScene();});
 
-let forgiveScale=1;
-forgiveBtn.addEventListener('click',()=>{apology.classList.add('hidden');success.classList.remove('hidden');});
-denyBtn.addEventListener('click',()=>{forgiveScale+=0.3;forgiveBtn.style.transform=`scale(${forgiveScale})`;});
-continueBtn.addEventListener('click',()=>{success.classList.add('hidden');game.classList.remove('hidden');});
+    // Scenes
+    let step=0;
+    const scenes=[
+      {title:"Bir sabah uyanıyorsun...",story:"Telefonunda benden bir mesaj var: ‘Günaydın, ben geldim hazırlan.’",choices:["Nereye gideceğimizi sormuyorum bile, seninleyim.","Aklıma gelmişti, bu sabahı seninle yaşayacağım."]},
+      {title:"Birlikte yürürken...",story:"Yağmur başlıyor. Islanıyoruz. Gülümseyorsun.",choices:["Ceketimi sana verdim.","Yağmurda seninle dans ettim."]},
+      {title:"Yıldızların altında...",story:"Ellerin ellerimde. Gözlerine bakıyorum. Bir şey söylemeliyim...",choices:["Sonsuza kadar benimle olur musun?","Senin adınla başlıyor artık her duam."]},
+      {title:"Seni eve bırakırken...",story:"Kapının önünde durduk. Kalbim seninle aynı ritimde atıyor.",choices:["Sessizce dudağını öpüyorum."]},
+      {title:"Final",story:"Tüm yollar seni gösterdi. Çünkü bu hikâyenin tek cevabı sensin.",choices:[]}  
+    ];
+    function renderScene(){
+      const titleEl=document.getElementById('title');
+      const storyEl=document.getElementById('story');
+      const btnDiv=document.getElementById('buttons');
+      titleEl.innerText=scenes[step].title;
+      storyEl.innerText=scenes[step].story;
+      btnDiv.innerHTML='';
+      scenes[step].choices.forEach(txt=>{const b=document.createElement('button');b.innerText=txt;b.className='btn';b.onclick=nextScene;btnDiv.appendChild(b);});
+    }
+    function nextScene(){step++;if(step<scenes.length)renderScene();}
+    function initFirstScene(){game.classList.remove('hidden');renderScene();}
 
-let step=0;
-const scenes=[
- {title:"Bir sabah uyanıyorsun...",story:"Telefonunda benden bir mesaj var: ‘Günaydın, düşümdeydin.’",choices:["Benliğimi saran sensin.","Uyandım ama içim senle uyudu."]},
- {title:"Birlikte yürürken...",story:"Yağmur başlıyor. Islanıyoruz. Gülümsüyorsun.",choices:["Ceketimi sana verdim.","Yağmurda seninle dans ettim."]},
- {title:"Yıldızların altında...",story:"Ellerin ellerimde. Gözlerine bakıyorum. Bir şey söylemeliyim...",choices:["Sonsuza kadar benimle olur musun?","Senin adınla başlıyor artık her duam."]},
- {title:"Final",story:"Tüm yollar seni gösterdi. Çünkü bu hikâyenin tek cevabı sensin.",choices:["Seni çok seviyorum ❤️"]}
-];
-function renderScene(){
- document.getElementById('title').innerText=scenes[step].title;
- document.getElementById('story').innerText=scenes[step].story;
- const btnDiv=document.getElementById('buttons');
- btnDiv.innerHTML='';
- scenes[step].choices.forEach(txt=>{const b=document.createElement('button');b.innerText=txt;b.className='btn';b.onclick=nextScene;btnDiv.appendChild(b);});
- if(step===scenes.length-1){document.getElementById('buttons').style.display='none';}
-}
-function nextScene(){step++;if(step<scenes.length){renderScene();}}
-function initFirstScene(){renderScene();}
+    // Heart animation
+    const heartContainer=document.getElementById('hearts');
+    for(let i=0;i<30;i++){const h=document.createElement('div');h.className='heart';h.style.left=Math.random()*100+'vw';h.style.animationDelay=Math.random()*5+'s';heartContainer.appendChild(h);}
 
-const heartContainer=document.getElementById('hearts');
-for(let i=0;i<30;i++){const h=document.createElement('div');h.className='heart';h.style.left=Math.random()*100+'vw';h.style.animationDelay=Math.random()*5+'s';heartContainer.appendChild(h);}  
+    // No Love button
+    const noBtn=document.getElementById('noLoveBtn');
+    function moveButton(){const vw=window.innerWidth-noBtn.offsetWidth;const vh=window.innerHeight-noBtn.offsetHeight;noBtn.style.left=Math.random()*vw+'px';noBtn.style.top=Math.random()*vh+'px';}
+    noBtn.addEventListener('mouseenter',moveButton);
+    noBtn.addEventListener('touchstart',moveButton);
 
-const noBtn=document.getElementById('noLoveBtn');
-function moveButton(){const vw=window.innerWidth-noBtn.offsetWidth;const vh=window.innerHeight-noBtn.offsetHeight;noBtn.style.left=Math.random()*vw+'px';noBtn.style.top=Math.random()*vh+'px';}
-noBtn.addEventListener('mouseenter',moveButton);
-noBtn.addEventListener('touchstart',moveButton);
-</script>
+    // Butterflies on cursor move
+    const butterfliesContainer=document.getElementById('butterflies');
+    const colors=['#FFB6C1','#FFA07A','#FFD700','#ADFF2F','#87CEFA'];
+    let lastTime=0;
+    window.addEventListener('mousemove',e=>{const now=Date.now();if(now-lastTime<200)return;lastTime=now;const bf=document.createElement('div');bf.className='butterfly';bf.innerText='🦋';const color=colors[Math.floor(Math.random()*colors.length)];bf.style.color=color;bf.style.left=e.clientX+'px';bf.style.top=e.clientY+'px';butterfliesContainer.appendChild(bf);setTimeout(()=>bf.remove(),2000);});
 
+    // Chicks animation at bottom
+    const chicksContainer=document.getElementById('chicks');
+    for(let i=0;i<5;i++){const c=document.createElement('div');c.className='chick';c.innerText='🐥';c.style.bottom='10px';c.style.left=(-20 - (i*20))+'px';c.style.animationDelay=(i*2)+'s';chicksContainer.appendChild(c);}  
+  </script>
 </body>
 </html>
