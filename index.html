@@ -1,133 +1,139 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Berra'ya</title>
-  <style>
-    *{box-sizing:border-box}
-    body{margin:0;padding:0;background:linear-gradient(to bottom,#ffdde1,#ee9ca7);font-family:'Georgia',serif;color:#fff;text-align:center;display:flex;flex-direction:column;justify-content:center;height:100vh;overflow:hidden;position:relative}
-    h1,p{margin:20px}
-    .btn{background:#fff;color:#ee9ca7;border:none;padding:12px 20px;font-size:14px;margin:8px;border-radius:10px;cursor:pointer;transition:.3s}
-    .btn:hover{background:#ffdde1;color:#fff}
-    #forgiveBtn{background:#3cb371;color:#fff}#forgiveBtn:hover{background:#2e8b57}
-    #denyBtn{background:#ff4d4d;color:#fff}#denyBtn:hover{background:#d93636}
-    .hidden{display:none}
-    #noLoveBtn{position:absolute;top:85%;left:50%;transform:translate(-50%,-50%);background:#ff6666;color:#fff;border:none;padding:10px 18px;font-size:14px;border-radius:10px;cursor:pointer;transition:.2s;z-index:10}#noLoveBtn:hover{background:#ff3333}
-    #hearts, #butterflies, #chicks{position:fixed;width:100%;height:100%;top:0;left:0;z-index:-1;overflow:hidden;pointer-events:none}
-    .heart{position:absolute;width:16px;height:16px;background:red;transform:rotate(45deg);animation:float 8s infinite;opacity:.6}
-    .heart::before,.heart::after{content:"";position:absolute;width:16px;height:16px;background:red;border-radius:50%}
-    .heart::before{top:-8px;left:0}.heart::after{left:-8px;top:0}
-    @keyframes float{0%{transform:translateY(100vh) rotate(45deg);opacity:0}50%{opacity:1}100%{transform:translateY(-10vh) rotate(45deg);opacity:0}}
-    .butterfly{position:absolute;font-size:14px;pointer-events:none;animation:fadeMove 2s forwards}
-    @keyframes fadeMove{to {opacity:0;transform:translateY(-30px) scale(1.5)}}
-    .chick{position:absolute;font-size:18px;bottom:8px;animation:chickMove 8s linear infinite;}
-    @keyframes chickMove{from {left:-15%;}to {left:115%;}}
-    /* Responsive tweaks */
-    @media (max-width: 480px) {
-      h1 {font-size:1.2em;}
-      p {font-size:0.9em;}
-      .btn {padding:10px 16px;font-size:12px;}
-      .butterfly {font-size:12px;}
-      .chick {font-size:16px;}
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sana Özrüm</title>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#ff9a9e;
+  --bg2:#fad0c4;
+  --text:#2d2d2d;
+  --accent:#ff4757;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:linear-gradient(135deg,var(--bg1),var(--bg2));
+  color:var(--text);
+  display:flex;flex-direction:column;min-height:100vh;
+}
+header{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:2rem;
+}
+h1{font-size:clamp(2.2rem,6vw,4rem);margin-bottom:1rem;}
+p.lead{font-size:clamp(1.1rem,3vw,1.6rem);max-width:50ch;margin-bottom:2rem;}
+.heart{width:90px;height:80px;position:relative;animation:beat 1.4s infinite;}
+.heart::before,.heart::after{content:"";position:absolute;width:90px;height:140px;background:#ff6b81;border-radius:50px 50px 0 0;}
+.heart::before{transform:rotate(-45deg);transform-origin:0 100%;}
+.heart::after{left:90px;transform:rotate(45deg);transform-origin:100% 100%;}
+@keyframes beat{0%,20%,40%,60%,80%,100%{transform:scale(1);}10%,30%,50%,70%,90%{transform:scale(1.1);}}
+section{padding:4rem 1.5rem;}
+section h2{text-align:center;font-size:2rem;margin-bottom:1.5rem;}
+/* Promises */
+.promises{max-width:800px;margin:auto;list-style:none;padding-left:0;}
+.promises li{margin-bottom:1rem;font-size:1.1rem;line-height:1.4;display:flex;align-items:center;gap:.6rem;}
+.promises input[type="checkbox"]{width:20px;height:20px;cursor:pointer;accent-color:var(--accent);}
+/* Progress bar */
+.progress-wrapper{max-width:600px;margin:2rem auto;}
+.progress-label{text-align:center;margin-bottom:.5rem;font-weight:600;}
+.progress{width:100%;height:18px;background:rgba(255,255,255,.4);border-radius:9px;overflow:hidden;}
+.progress-inner{height:100%;background:var(--accent);width:0%;transition:width .3s ease;}
+/* Letter */
+.letter{font-family:'Great Vibes',cursive;font-size:2.2rem;max-width:650px;margin:2rem auto;background:rgba(255,255,255,.25);backdrop-filter:blur(4px);padding:2rem 1.5rem;border-radius:18px;line-height:1.3;text-align:center;cursor:pointer;}
+footer{margin-top:auto;text-align:center;padding:2rem 1rem;background:rgba(255,255,255,.4);backdrop-filter:blur(6px);}
+.countdown{font-size:clamp(1.4rem,4vw,2.2rem);font-weight:600;text-align:center;margin-top:1rem;}
+</style>
 </head>
 <body>
-  <div id="hearts"></div>
-  <div id="butterflies"></div>
-  <div id="chicks"></div>
+<header>
+  <div class="heart"></div>
+  <h1>Özür Dilerim, <span id="name">Berra</span></h1>
+  <p class="lead">Seni kırdığımın farkındayım ve bunu telafi etmek için buradayım. Kelimeler yetmez ama yine de deneyeceğim.</p>
+</header>
 
-  <!-- Apology Screen -->
-  <div id="apology">
-    <h1>Seni üzdüğüm ve kızdırdığım için özür dilerim.</h1>
-    <p>Beni affeder misin?</p>
-    <button id="forgiveBtn" class="btn">Olur, affediyorum</button>
-    <button id="denyBtn" class="btn">Hayır, affetmiyorum</button>
+<section>
+  <h2>Sana Söz</h2>
+  <ul id="promises" class="promises">
+    <li><label><input type="checkbox">Seni dinlemeden asla karar vermeyeceğim.</label></li>
+    <li><label><input type="checkbox">Her hafta sana özel zaman planlayacağım.</label></li>
+    <li><label><input type="checkbox">Hatalarımı sahiplenip 48 saat içinde telafi edeceğim.</label></li>
+    <li><label><input type="checkbox">Her gün seni güldürecek bir şey yapacağım.</label></li>
+    <li><label><input type="checkbox">Geleceğimizi birlikte tasarlamak için fikirlerine öncelik vereceğim.</label></li>
+  </ul>
+
+  <div class="progress-wrapper">
+    <div id="progressLabel" class="progress-label">Tamamlanma: 0%</div>
+    <div class="progress"><div id="progressInner" class="progress-inner"></div></div>
   </div>
+</section>
 
-  <!-- Success Screen -->
-  <div id="success" class="hidden">
-    <h1>Beni affedeceğini biliyordum!</h1>
-    <p>Seni çok seviyorum ❤️</p>
-    <button id="continueBtn" class="btn">Hikayeye devam et</button>
+<section>
+  <h2>Bir Sonraki Buluşmamıza Kalan</h2>
+  <div id="countdown" class="countdown">--</div>
+</section>
+
+<footer>
+  <div id="letter" class="letter" title="Tıkla, konfeti yağsın!">
+    <p>Berra,</p>
+    <p>Gülüşün sabah ışığımı yakar, sesin akşam huzurumu yumuşatır. Varlığın, her nefesime anlam katıyor. Seni seviyorum.</p>
   </div>
+</footer>
 
-  <!-- Main Game Screen -->
-  <div id="game" class="hidden">
-    <!-- User-provided image shown before the final scene -->
-    <img id="finalImage" src="2890ad8f-4e6d-4b36-a1ad-0604030d0302.jpeg" alt="Özel Görsel" class="hidden" style="max-width:80%;margin:20px auto;display:block;" />
-    <h1 id="title">Bu bir oyun değil...</h1>
-    <p id="story">Bu, sana yazılmış bir hikâye.</p>
-    <div id="buttons"></div>
-    <button id="noLoveBtn">Seni sevmiyorum</button>
-  </div>
+<!-- Canvas-confetti CDN -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-  <script>
-    // Core elements
-    const apology=document.getElementById('apology');
-    const success=document.getElementById('success');
-    const game=document.getElementById('game');
-    const forgiveBtn=document.getElementById('forgiveBtn');
-    const denyBtn=document.getElementById('denyBtn');
-    const continueBtn=document.getElementById('continueBtn');
-    const finalImage = document.getElementById('finalImage');
+<script>
+// Countdown
+(function(){
+  const el=document.getElementById('countdown');
+  const target=new Date('2025-09-01T20:00:00+02:00').getTime();
+  function pad(n){return n.toString().padStart(2,'0');}
+  function run(){
+    const diff=target-Date.now();
+    if(diff<=0){el.textContent='Buluşma zamanı!';clearInterval(t);return;}
+    const d=Math.floor(diff/864e5),h=Math.floor(diff%864e5/36e5),m=Math.floor(diff%36e5/6e4),s=Math.floor(diff%6e4/1e3);
+    el.textContent=`${d} gün ${pad(h)} saat ${pad(m)} dakika ${pad(s)} saniye kaldı`;
+  }
+  const t=setInterval(run,1e3);run();
+})();
 
-    // Apology flow
-    let forgiveScale=1;
-    forgiveBtn.addEventListener('click',()=>{apology.classList.add('hidden');success.classList.remove('hidden');});
-    denyBtn.addEventListener('click',()=>{forgiveScale+=0.3;forgiveBtn.style.transform=`scale(${forgiveScale})`;});
-    continueBtn.addEventListener('click',()=>{success.classList.add('hidden');game.classList.remove('hidden');initFirstScene();});
+// Confetti on letter click
+const letter=document.getElementById('letter');
+letter.addEventListener('click',()=>{
+  confetti({particleCount:140,spread:90,origin:{y:0.6}});
+});
 
-    // Scenes
-    let step=0;
-    const scenes=[
-      {title:"Bir sabah uyanıyorsun...",story:"Telefonunda benden bir mesaj var: ‘Günaydın, ben geldim hazırlan.’",choices:["Nereye gideceğimizi sormuyorum bile, seninleyim.","Aklıma gelmişti, bu sabahı seninle yaşayacağım."]},
-      {title:"Birlikte yürürken...",story:"Yağmur başlıyor. Islanıyoruz. Gülümseyorsun.",choices:["Ceketimi sana verdim.","Yağmurda seninle dans ettim."]},
-      {title:"Yıldızların altında...",story:"Ellerin ellerimde. Gözlerine bakıyorum. Bir şey söylemeliyim...",choices:["Sonsuza kadar benimle olur musun?","Senin adınla başlıyor artık her duam."]},
-      {title:"Seni eve bırakırken...",story:"Kapının önünde durduk. Kalbim seninle aynı ritimde atıyor.",choices:["Sessizce dudağını öpüyorum."]},
-      {title:"Final",story:"Tüm yollar seni gösterdi. Çünkü bu hikâyenin tek cevabı sensin.",choices:[]}  
-    ];
-    
-    function renderScene(){
-      // Show or hide the custom image on the Final scene
-      if(step === scenes.length - 1) {
-        finalImage.classList.remove('hidden');
-      } else {
-        finalImage.classList.add('hidden');
-      }
+// Promise progress bar logic
+(function(){
+  const STORAGE_KEY='promiseChecks';
+  const boxes=[...document.querySelectorAll('#promises input[type="checkbox"]')];
+  const bar=document.getElementById('progressInner');
+  const label=document.getElementById('progressLabel');
 
-      const titleEl=document.getElementById('title');
-      const storyEl=document.getElementById('story');
-      const btnDiv=document.getElementById('buttons');
-      titleEl.innerText=scenes[step].title;
-      storyEl.innerText=scenes[step].story;
-      btnDiv.innerHTML='';
-      scenes[step].choices.forEach(txt=>{const b=document.createElement('button');b.innerText=txt;b.className='btn';b.onclick=nextScene;btnDiv.appendChild(b);});
-    }
+  // Load saved state
+  const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+  boxes.forEach((b,i)=>{b.checked=!!saved[i];});
 
-    function nextScene(){step++;if(step<scenes.length)renderScene();}
-    function initFirstScene(){game.classList.remove('hidden');renderScene();}
+  function update(){
+    const total=boxes.length;
+    const done=boxes.filter(b=>b.checked).length;
+    const percent=Math.round(done/total*100);
+    bar.style.width=percent+'%';
+    label.textContent=`Tamamlanma: ${percent}%`;
+  }
 
-    // Heart animation
-    const heartContainer=document.getElementById('hearts');
-    for(let i=0;i<30;i++){const h=document.createElement('div');h.className='heart';h.style.left=Math.random()*100+'vw';h.style.animationDelay=Math.random()*5+'s';heartContainer.appendChild(h);}    
+  boxes.forEach((b,i)=>b.addEventListener('change',()=>{
+    const state=boxes.map(box=>box.checked);
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+    update();
+  }));
 
-    // No Love button
-    const noBtn=document.getElementById('noLoveBtn');
-    function moveButton(){const vw=window.innerWidth-noBtn.offsetWidth;const vh=window.innerHeight-noBtn.offsetHeight;noBtn.style.left=Math.random()*vw+'px';noBtn.style.top=Math.random()*vh+'px';}
-    noBtn.addEventListener('mouseenter',moveButton);
-    noBtn.addEventListener('touchstart',moveButton);
+  update();
+})();
+</script>
 
-    // Butterflies on cursor move
-    const butterfliesContainer=document.getElementById('butterflies');
-    const colors=['#FFB6C1','#FFA07A','#FFD700','#ADFF2F','#87CEFA'];
-    let lastTime=0;
-    window.addEventListener('mousemove',e=>{const now=Date.now();if(now-lastTime<200)return;lastTime=now;const bf=document.createElement('div');bf.className='butterfly';bf.innerText='🦋';const color=colors[Math.floor(Math.random()*colors.length)];bf.style.color=color;bf.style.left=e.clientX+'px';bf.style.top=e.clientY+'px';butterfliesContainer.appendChild(bf);setTimeout(()=>bf.remove(),2000);});
-
-    // Chicks animation at bottom
-    const chicksContainer=document.getElementById('chicks');
-    for(let i=0;i<5;i++){const c=document.createElement('div');c.className='chick';c.innerText='🐥';c.style.bottom='10px';c.style.left=(-20 - (i*20))+'px';c.style.animationDelay=(i*2)+'s';chicksContainer.appendChild(c);}  
-  </script>
 </body>
 </html>
