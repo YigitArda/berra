@@ -45,6 +45,9 @@ section h2{text-align:center;font-size:2rem;margin-bottom:1.5rem;}
 .letter{font-family:'Great Vibes',cursive;font-size:2.2rem;max-width:650px;margin:2rem auto;background:rgba(255,255,255,.25);backdrop-filter:blur(4px);padding:2rem 1.5rem;border-radius:18px;line-height:1.3;text-align:center;cursor:pointer;}
 footer{margin-top:auto;text-align:center;padding:2rem 1rem;background:rgba(255,255,255,.4);backdrop-filter:blur(6px);}
 .countdown{font-size:clamp(1.4rem,4vw,2.2rem);font-weight:600;text-align:center;margin-top:1rem;}
+/* Affetmiyorum button */
+.no-btn{position:fixed;bottom:1.5rem;right:1.5rem;padding:.6rem 1.2rem;font-size:1rem;border:none;border-radius:10px;background:var(--text);color:#fff;cursor:pointer;transition:transform .15s ease;}
+.no-btn:active{transform:scale(.95);}
 </style>
 </head>
 <body>
@@ -81,6 +84,9 @@ footer{margin-top:auto;text-align:center;padding:2rem 1rem;background:rgba(255,2
     <p>Gülüşün sabah ışığımı yakar, sesin akşam huzurumu yumuşatır. Varlığın, her nefesime anlam katıyor. Seni seviyorum.</p>
   </div>
 </footer>
+
+<!-- Affetmiyorum Button -->
+<button id="noBtn" class="no-btn">Affetmiyorum</button>
 
 <!-- Canvas-confetti CDN -->
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -132,6 +138,22 @@ letter.addEventListener('click',()=>{
   }));
 
   update();
+})();
+
+// 'Affetmiyorum' button teleport logic
+(function(){
+  const btn=document.getElementById('noBtn');
+  function teleport(){
+    const maxX=window.innerWidth-btn.offsetWidth;
+    const maxY=window.innerHeight-btn.offsetHeight;
+    const x=Math.random()*maxX;
+    const y=Math.random()*maxY;
+    btn.style.left=x+'px';
+    btn.style.top=y+'px';
+    btn.style.bottom='auto';
+    btn.style.right='auto';
+  }
+  btn.addEventListener('click',teleport);
 })();
 </script>
 
