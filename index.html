@@ -1,47 +1,274 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bakımdayız</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      height: 100vh;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: Arial, sans-serif;
-      color: #fff;
-      text-align: center;
-      flex-direction: column;
-    }
-    h1 {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-      animation: fadeInDown 1.2s ease forwards;
-    }
-    p {
-      font-size: 1.2rem;
-      animation: fadeInUp 1.2s ease forwards;
-    }
-    @keyframes fadeInDown {
-      from { opacity: 0; transform: translateY(-30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Berra Simülatör</title>
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #chat-container {
+            width: 100%;
+            max-width: 450px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 80vh; /* Ekranın %80'i kadar yükseklik */
+        }
+
+        #chat-header {
+            background: #FF69B4; /* Berra için pembe bir ton :) */
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        #mood-indicator {
+            font-size: 0.8em;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        #chat-box {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #e5ddd5;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            line-height: 1.4;
+            font-size: 0.95em;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message.bot {
+            background: #fff;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message.user {
+            background: #dcf8c6;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.system {
+            background: #ffcccc;
+            color: #cc0000;
+            align-self: center;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 10px;
+        }
+
+        #input-area {
+            display: flex;
+            padding: 15px;
+            background: #f0f0f0;
+            border-top: 1px solid #ddd;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 25px;
+            outline: none;
+            font-size: 1em;
+        }
+
+        #send-btn {
+            background: #FF69B4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-left: 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        #send-btn:hover {
+            background: #ff4da6;
+        }
+
+        #send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
 </head>
 <body>
-  <h1>Bakımdayız</h1>
-  <p>Sitemiz şu anda güncelleniyor.<br/>Kısa bir süre sonra tekrar buradayız.</p>
+
+    <div id="chat-container">
+        <div id="chat-header">
+            Berra Simülatör
+            <div id="mood-indicator">Modu yükleniyor...</div>
+        </div>
+        
+        <div id="chat-box">
+            </div>
+
+        <div id="input-area">
+            <input type="text" id="user-input" placeholder="Bir mesaj yaz..." autocomplete="off">
+            <button id="send-btn">Gönder</button>
+        </div>
+    </div>
+
+    <script>
+        // --- PYTHON KODUNUN JAVASCRIPT HALİ ---
+
+        // Değişkenler ve Listeler
+        const moods = ["KISKANÇ", "TATLI", "ALAYCI", "SOĞUK", "İLGİLİ"];
+        const sinema_kelimeleri = ["film", "aktör", "dizi", "sinema", "televizyon", "izle", "netflix"];
+        const yemek_kelimeleri = ["döner", "pişir", "hamburger", "acık", "açım", "yemek"];
+        const futbol_kelimeleri = ["maç", "futbol", "top", "taraftar", "saha", "stadyum", "gol"];
+
+        const sinemacevap = ["Hangi filme gidelim?", "Ben en son Kurtlar Vadisi izledim."];
+        const yemekcevap = ["Ben yemek yapamam hiç yaa", "Ben yemek yapmayı öğrenmek çook isterim"];
+        const futbolcevap = ["Futbol ne ya ilkel spor", "Futboldan ve futbolu seven erkekten hiç hoşlanmam"];
+
+        // Başlangıç durumları
+        let mood = moods[Math.floor(Math.random() * moods.length)];
+        let sabir = 100;
+        let isGameOver = false;
+
+        // Arayüz elementleri
+        const chatBox = document.getElementById('chat-box');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const moodIndicator = document.getElementById('mood-indicator');
+
+        // Başlangıç mesajı
+        moodIndicator.textContent = `Bugünkü Berra'nın modu: ${mood}`;
+        addMessage("Berra Simülatör Açıldı!!! Çıkmak için 'çıkış' yazabilirsin.", 'bot');
+
+        // Mesaj gönderme fonksiyonu (Enter tuşu veya butona tıklama)
+        function sendMessage() {
+            if (isGameOver) return;
+
+            const text = userInput.value.trim();
+            if (text === "") return;
+
+            // Kullanıcı mesajını ekrana ekle
+            addMessage(text, 'user');
+            userInput.value = "";
+
+            // --- BERRA'NIN MANTIĞI (Python'dan çeviri) ---
+            const userLower = text.toLowerCase();
+
+            if (userLower === "çıkış") {
+                addMessage("Doğru seçim dostum... Çıkış yapılıyor.", 'system');
+                endGame();
+                return;
+            }
+
+            let response = "";
+
+            // Özel tetikleyiciler
+            if (userLower.includes("gel")) {
+                response = "Gelirim ama sen dediğin için değil";
+                sabir -= 5;
+            } else if (userLower.includes("boydan")) {
+                response = "Siktir git amk delisi";
+                sabir -= 70;
+            } else if (userLower.includes("foto")) {
+                response = "Yok olmaz anam kızar";
+                sabir -= 10;
+            } 
+            // Konu listeleri kontrolü
+            else if (sinema_kelimeleri.some(k => userLower.includes(k))) {
+                response = sinemacevap[Math.floor(Math.random() * sinemacevap.length)];
+            } else if (yemek_kelimeleri.some(k => userLower.includes(k))) {
+                response = yemekcevap[Math.floor(Math.random() * yemekcevap.length)];
+            } else if (futbol_kelimeleri.some(k => userLower.includes(k))) {
+                response = futbolcevap[Math.floor(Math.random() * futbolcevap.length)];
+            } 
+            // Moduna göre cevaplar
+            else {
+                if (mood === "ALAYCI") {
+                    response = "Ne bakıyon yarrak koyumda yaylan";
+                } else if (mood === "KISKANÇ") {
+                    response = "Sen beni mi kıskandırmaya çalışıyorsun?? :) ";
+                } else if (mood === "TATLI") {
+                    response = "Çok konuşma pipini yerim senin, gel buraya";
+                } else if (mood === "İLGİLİ") {
+                    response = "Ya yiğit beni bugün neden sevmiyorsun :((( ";
+                } else if (mood === "SOĞUK") {
+                     // Orijinal kodda SOĞUK için else içinde bir response yoktu, boş dönüyordu.
+                     // Buraya bir varsayılan ekledim ki boş mesaj gitmesin.
+                     response = "Hmm..."; 
+                }
+            }
+
+            // Cevabı biraz gecikmeli gönder (daha doğal dursun diye)
+            setTimeout(() => {
+                if (response !== "") {
+                    addMessage(response, 'bot');
+                }
+
+                // Sabır kontrolü
+                if (sabir <= 0) {
+                    addMessage("BERRANIN SABRI TÜKENDİ!", 'system');
+                    addMessage(`Berranın güncel sabrı: ${sabir}`, 'system');
+                    addMessage("Berra Ebenizi SİKECEK!!!", 'system');
+                    endGame();
+                }
+            }, 500);
+        }
+
+        // Yardımcı Fonksiyonlar
+        function addMessage(text, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender}`;
+            msgDiv.textContent = text;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight; // Otomatik aşağı kaydır
+        }
+
+        function endGame() {
+            isGameOver = true;
+            userInput.disabled = true;
+            sendBtn.disabled = true;
+            userInput.placeholder = "Sohbet sona erdi.";
+        }
+
+        // Event Listeners
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+    </script>
 </body>
 </html>
