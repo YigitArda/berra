@@ -1,1231 +1,656 @@
-diff --git a/index.html b/index.html
-index f4a7d4e4a7eb0a5f94f8e1237224b3789e98577e..4f6b3fa210793eb35e0d6f3ed07741f0cc184105 100644
---- a/index.html
-+++ b/index.html
-@@ -1,307 +1,919 @@
--<!DOCTYPE html>
--<html lang="tr">
--<head>
--    <meta charset="UTF-8">
--    <meta name="viewport" content="width=device-width, initial-scale=1.0">
--    <title>Berra Simülatör V2</title>
--    <style>
--        /* Genel Sayfa Düzeni */
--        body {
--            background-color: #e5ddd5;
--            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
--            display: flex;
--            justify-content: center;
--            align-items: center;
--            height: 100vh;
--            margin: 0;
--        }
--
--        /* Chat Penceresi */
--        #chat-container {
--            width: 100%;
--            max-width: 450px;
--            height: 90vh;
--            background: #fff;
--            box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
--            display: flex;
--            flex-direction: column;
--            border-radius: 10px;
--            overflow: hidden;
--        }
--
--        /* Üst Başlık */
--        #chat-header {
--            background-color: #075E54;
--            color: white;
--            padding: 15px;
--            display: flex;
--            align-items: center;
--            flex-direction: column;
--        }
--        #chat-header h2 {
--            margin: 0;
--            font-size: 1.2rem;
--        }
--        #mood-status {
--            font-size: 0.8rem;
--            opacity: 0.8;
--            margin-top: 5px;
--        }
--
--        /* Mesaj Alanı */
--        #chat-box {
--            flex: 1;
--            background: #e5ddd5; /* WhatsApp arka plan rengi */
--            padding: 20px;
--            overflow-y: auto;
--            display: flex;
--            flex-direction: column;
--            gap: 10px;
--        }
--
--        /* Mesaj Balonları */
--        .message {
--            max-width: 75%;
--            padding: 8px 15px;
--            border-radius: 20px;
--            position: relative;
--            font-size: 15px;
--            line-height: 1.4;
--            word-wrap: break-word;
--        }
--        .message.bot {
--            background: #fff;
--            align-self: flex-start;
--            border-bottom-left-radius: 2px;
--        }
--        .message.user {
--            background: #dcf8c6;
--            align-self: flex-end;
--            border-bottom-right-radius: 2px;
--        }
--        .message.system {
--            background-color: #FFCDD2;
--            color: #D32F2F;
--            align-self: center;
--            text-align: center;
--            font-weight: bold;
--            font-size: 0.9rem;
--        }
--
--        /* Alt Input Alanı */
--        #input-area {
--            background: #f0f0f0;
--            padding: 10px;
--            display: flex;
--            align-items: center;
--        }
--        #user-input {
--            flex: 1;
--            padding: 12px 15px;
--            border: none;
--            border-radius: 30px;
--            outline: none;
--            font-size: 16px;
--        }
--        #send-btn {
--            background: #075E54;
--            color: white;
--            border: none;
--            width: 50px;
--            height: 50px;
--            border-radius: 50%;
--            margin-left: 10px;
--            cursor: pointer;
--            font-size: 20px;
--            display: flex;
--            align-items: center;
--            justify-content: center;
--        }
--        #send-btn:hover { background: #128C7E; }
--        #send-btn:disabled { background: #ccc; cursor: default; }
--
--    </style>
--</head>
--<body>
--
--    <div id="chat-container">
--        <div id="chat-header">
--            <h2>Berra Simülatör</h2>
--            <span id="mood-status">Bağlanıyor...</span>
--        </div>
--        
--        <div id="chat-box">
--            </div>
--
--        <div id="input-area">
--            <input type="text" id="user-input" placeholder="Bir mesaj yaz..." autocomplete="off">
--            <button id="send-btn">➤</button>
--        </div>
--    </div>
--
--    <script>
--        // --- AYARLAR VE DEĞİŞKENLER ---
--        const moods = ["KISKANÇ", "TATLI", "ALAYCI", "SOĞUK", "İLGİLİ"];
--        
--        // Konu listeleri (Hepsini küçük harf yaptık ki eşleşme kolay olsun)
--        const sinema_kelimeleri = ["film", "aktör", "dizi", "sinema", "televizyon", "izle", "netflix"];
--        const yemek_kelimeleri = ["döner", "pişir", "hamburger", "acık", "açım", "yemek"];
--        const futbol_kelimeleri = ["maç", "futbol", "top", "taraftar", "saha", "stadyum", "gol"];
--
--        const sinemacevap = ["Hangi filme gidelim?", "Ben en son Kurtlar Vadisi izledim."];
--        const yemekcevap = ["Ben yemek yapamam hiç yaa", "Ben yemek yapmayı öğrenmek çook isterim"];
--        const futbolcevap = ["Futbol ne ya ilkel spor", "Futboldan ve futbolu seven erkekten hiç hoşlanmam"];
--
--        let mood = moods[Math.floor(Math.random() * moods.length)];
--        let sabir = 100;
--        let isGameActive = true;
--
--        // HTML Elementlerini seçelim
--        const chatBox = document.getElementById('chat-box');
--        const userInput = document.getElementById('user-input');
--        const sendBtn = document.getElementById('send-btn');
--        const moodStatus = document.getElementById('mood-status');
--
--        // Başlangıç ayarları
--        moodStatus.textContent = "Bugünkü Modu: " + mood;
--        addSystemMessage("--- Berra Simülatör Açıldı!!! ---");
--        addBotMessage("Selam! Çıkmak istersen 'çıkış' yazabilirsin.");
--
--        // --- FONKSİYONLAR ---
--
--        function addBotMessage(text) {
--            const div = document.createElement('div');
--            div.className = 'message bot';
--            div.textContent = text;
--            chatBox.appendChild(div);
--            scrollToBottom();
--        }
--
--        function addUserMessage(text) {
--            const div = document.createElement('div');
--            div.className = 'message user';
--            div.textContent = text;
--            chatBox.appendChild(div);
--            scrollToBottom();
--        }
--
--        function addSystemMessage(text) {
--            const div = document.createElement('div');
--            div.className = 'message system';
--            div.textContent = text;
--            chatBox.appendChild(div);
--            scrollToBottom();
--        }
--
--        function scrollToBottom() {
--            chatBox.scrollTop = chatBox.scrollHeight;
--        }
--
--        // OYUN MANTIĞI BURADA
--        function processMessage() {
--            if (!isGameActive) return;
--
--            let text = userInput.value.trim();
--            if (text === "") return;
--
--            // Kullanıcı mesajını ekrana bas
--            addUserMessage(text);
--            userInput.value = ""; // Inputu temizle
--
--            // Türkçe karakter uyumlu küçük harfe çevir
--            let userLower = text.toLocaleLowerCase('tr-TR');
--
--            if (userLower === "çıkış") {
--                addSystemMessage("Çıkış yapılıyor...");
--                endGame();
--                return;
--            }
--
--            let response = "";
--
--            // 1. Özel Kelime Kontrolleri
--            if (userLower.includes("gel")) {
--                response = "Gelirim ama sen dediğin için değil";
--                sabir -= 5;
--            }
--            else if (userLower.includes("boydan")) {
--                response = "Siktir git amk delisi";
--                sabir -= 70;
--            }
--            else if (userLower.includes("foto")) {
--                response = "Yok olmaz anam kızar";
--                sabir -= 10;
--            }
--            // 2. Konu Kontrolleri
--            else if (sinema_kelimeleri.some(kelime => userLower.includes(kelime))) {
--                response = sinemacevap[Math.floor(Math.random() * sinemacevap.length)];
--            }
--            else if (yemek_kelimeleri.some(kelime => userLower.includes(kelime))) {
--                response = yemekcevap[Math.floor(Math.random() * yemekcevap.length)];
--            }
--            else if (futbol_kelimeleri.some(kelime => userLower.includes(kelime))) {
--                response = futbolcevap[Math.floor(Math.random() * futbolcevap.length)];
--            }
--            // 3. Moda Göre Cevaplar (Eksikler tamamlandı)
--            else {
--                switch(mood) {
--                    case "ALAYCI":
--                        response = "Ne bakıyon yarrak koyumda yaylan";
--                        break;
--                    case "KISKANÇ":
--                        response = "Sen beni mi kıskandırmaya çalışıyorsun?? :) ";
--                        break;
--                    case "TATLI":
--                        response = "Çok konuşma pipini yerim senin, gel buraya";
--                        break;
--                    case "İLGİLİ":
--                        response = "Ya yiğit beni bugün neden sevmiyorsun :((( ";
--                        break;
--                    case "SOĞUK":
--                        response = "Hmm. Peki."; // Python kodunda bu eksikti, ekledim.
--                        break;
--                    default:
--                        response = "Anlamadım?";
--                }
--            }
--
--            // Cevabı biraz bekleyerek ver (gerçekçi olsun)
--            setTimeout(() => {
--                if (isGameActive) {
--                    addBotMessage(response);
--                    checkSabir();
--                }
--            }, 600);
--        }
--
--        function checkSabir() {
--            if (sabir <= 0) {
--                addSystemMessage("BERRANIN SABRI TÜKENDİ!");
--                addSystemMessage("Berranın güncel sabrı: " + sabir);
--                addSystemMessage("Berra Ebenizi SİKECEK!!!");
--                endGame();
--            }
--        }
--
--        function endGame() {
--            isGameActive = false;
--            userInput.disabled = true;
--            sendBtn.disabled = true;
--            userInput.placeholder = "Sohbet sona erdi.";
--            moodStatus.textContent = "Bağlantı kesildi.";
--        }
--
--        // Enter tuşu ve Buton dinleyicileri
--        sendBtn.addEventListener('click', processMessage);
--        userInput.addEventListener('keypress', function (e) {
--            if (e.key === 'Enter') {
--                processMessage();
--            }
--        });
--        
--        // Sayfa açılınca inputa odaklar
--        userInput.focus();
--
--    </script>
--</body>
--</html>
-+<!DOCTYPE html>
-+<html lang="tr">
-+<head>
-+    <meta charset="UTF-8">
-+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-+    <title>Berra Simülatör V2</title>
-+    <style>
-+        :root {
-+            color-scheme: light;
-+        }
-+
-+        body {
-+            background-color: #e5ddd5;
-+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-+            display: flex;
-+            justify-content: center;
-+            align-items: center;
-+            height: 100vh;
-+            margin: 0;
-+            transition: background-color 0.6s ease;
-+        }
-+
-+        body.theme-tatli { background-color: #ffe6f1; }
-+        body.theme-sinirli { background-color: #f9d2d2; }
-+        body.theme-soguk { background-color: #d7ecff; }
-+        body.theme-ask { background-color: #ffd9ec; }
-+        body.theme-standart { background-color: #e5ddd5; }
-+
-+        #chat-container {
-+            width: 100%;
-+            max-width: 480px;
-+            height: 90vh;
-+            background: #fff;
-+            box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
-+            display: flex;
-+            flex-direction: column;
-+            border-radius: 16px;
-+            overflow: hidden;
-+        }
-+
-+        #chat-header {
-+            background: linear-gradient(135deg, #075E54, #0b8263);
-+            color: white;
-+            padding: 16px 18px;
-+            display: flex;
-+            flex-direction: column;
-+            gap: 8px;
-+        }
-+
-+        #chat-header h2 {
-+            margin: 0;
-+            font-size: 1.25rem;
-+        }
-+
-+        #status-row {
-+            display: flex;
-+            justify-content: space-between;
-+            align-items: center;
-+            flex-wrap: wrap;
-+            gap: 8px;
-+        }
-+
-+        #mood-status {
-+            font-weight: 600;
-+            font-size: 0.95rem;
-+        }
-+
-+        #meters {
-+            display: flex;
-+            gap: 10px;
-+            font-size: 0.8rem;
-+            opacity: 0.9;
-+        }
-+
-+        #meters span {
-+            background: rgba(255,255,255,0.15);
-+            padding: 4px 10px;
-+            border-radius: 999px;
-+        }
-+
-+        #chat-box {
-+            flex: 1;
-+            background: #f7f1eb;
-+            padding: 20px;
-+            overflow-y: auto;
-+            display: flex;
-+            flex-direction: column;
-+            gap: 12px;
-+        }
-+
-+        .message {
-+            max-width: 78%;
-+            padding: 10px 16px;
-+            border-radius: 20px;
-+            position: relative;
-+            font-size: 15px;
-+            line-height: 1.4;
-+            word-wrap: break-word;
-+        }
-+
-+        .message.bot {
-+            background: #fff;
-+            align-self: flex-start;
-+            border-bottom-left-radius: 6px;
-+        }
-+
-+        .message.user {
-+            background: #dcf8c6;
-+            align-self: flex-end;
-+            border-bottom-right-radius: 6px;
-+        }
-+
-+        .message.system {
-+            background-color: #FFCDD2;
-+            color: #D32F2F;
-+            align-self: center;
-+            text-align: center;
-+            font-weight: bold;
-+            font-size: 0.9rem;
-+        }
-+
-+        .typing-indicator {
-+            display: inline-flex;
-+            gap: 4px;
-+            align-items: center;
-+            font-size: 0.85rem;
-+            color: #666;
-+            font-style: italic;
-+        }
-+
-+        .typing-indicator span {
-+            display: inline-block;
-+            width: 6px;
-+            height: 6px;
-+            border-radius: 50%;
-+            background: #999;
-+            animation: blink 1s infinite ease-in-out;
-+        }
-+
-+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-+
-+        @keyframes blink {
-+            0%, 80%, 100% { opacity: 0.2; }
-+            40% { opacity: 1; }
-+        }
-+
-+        #input-area {
-+            background: #f0f0f0;
-+            padding: 12px;
-+            display: flex;
-+            align-items: center;
-+            gap: 10px;
-+        }
-+
-+        #user-input {
-+            flex: 1;
-+            padding: 12px 15px;
-+            border: none;
-+            border-radius: 30px;
-+            outline: none;
-+            font-size: 16px;
-+        }
-+
-+        #send-btn {
-+            background: #075E54;
-+            color: white;
-+            border: none;
-+            width: 50px;
-+            height: 50px;
-+            border-radius: 50%;
-+            cursor: pointer;
-+            font-size: 20px;
-+            display: flex;
-+            align-items: center;
-+            justify-content: center;
-+            transition: background 0.2s ease;
-+        }
-+
-+        #send-btn:hover { background: #128C7E; }
-+        #send-btn:disabled { background: #ccc; cursor: default; }
-+    </style>
-+</head>
-+<body class="theme-standart">
-+
-+    <div id="chat-container">
-+        <div id="chat-header">
-+            <h2>Berra Simülatör</h2>
-+            <div id="status-row">
-+                <span id="mood-status">Bağlanıyor...</span>
-+                <div id="meters">
-+                    <span id="patience-status">Sabır: --</span>
-+                    <span id="love-status">Sevgi: --</span>
-+                    <span id="trip-status">Trip: --</span>
-+                </div>
-+            </div>
-+        </div>
-+
-+        <div id="chat-box"></div>
-+
-+        <div id="input-area">
-+            <input type="text" id="user-input" placeholder="Bir mesaj yaz..." autocomplete="off">
-+            <button id="send-btn">➤</button>
-+        </div>
-+    </div>
-+
-+    <script>
-+        const BASE_MOODS = ["TATLI", "SOĞUK", "KISKANÇ", "İLGİLİ", "ALAYCI"];
-+        const LOVE_THRESHOLD = 100;
-+        const PATIENCE_START = 100;
-+        const TRIP_THRESHOLD = 100;
-+        const TRIP_DECAY = 8;
-+
-+        const moodThemes = {
-+            "TATLI": { theme: "theme-tatli", emojis: [":)", "🥰", "😘"], headline: "Modu: TATLI" },
-+            "SOĞUK": { theme: "theme-soguk", emojis: [".", "👍"], headline: "Modu: SOĞUK" },
-+            "KISKANÇ": { theme: "theme-standart", emojis: ["😒", "🤨"], headline: "Modu: KISKANÇ" },
-+            "İLGİLİ": { theme: "theme-standart", emojis: ["😊"], headline: "Modu: İLGİLİ" },
-+            "ALAYCI": { theme: "theme-standart", emojis: ["😏"], headline: "Modu: ALAYCI" },
-+            "SİNİRLİ": { theme: "theme-sinirli", emojis: ["😡", "💢"], headline: "Modu: SİNİRLİ" },
-+            "AŞIK": { theme: "theme-ask", emojis: ["💕", "💗", "😍"], headline: "Modu: AŞIK" }
-+        };
-+
-+        const complimentKeywords = ["özledim", "seviyorum", "güzel", "tatlısın", "aşkım", "canım", "kraliçe", "seni istiyorum",
-+"harikasın", "çok iyisin", "süpersin", "prenses", "bir tanesin"];
-+        const angerKeywords = ["boydan", "foto", "gel", "salak", "aptal", "şişko"];
-+        const apologyKeywords = ["özür dilerim", "affet", "kusura bakma", "pişmanım"];
-+        const gossipNames = ["ayşe", "fatma", "mehmet", "ali", "ahmet", "veli", "merve", "can", "ece", "tolga"];
-+        const gossipReplies = [
-+            "Ay o isim duyunca bile sinirlerim zıplıyor!",
-+            "Onun hakkında neler duydum neler...",
-+            "O çocuğun sevgilisi var diyorlar, sakın bulaşma.",
-+            "Ay o kızdan nefret ediyorum resmen!",
-+            "Hiç bana yakışmıyor o tipler, sen de uzak dur bak.",
-+            "Geçen gün yine drama çıkarmış, anlatayım da gül." ];
-+
-+        const fortuneReplies = [
-+            "Bugün adım adım üstüne gelecek mutluluk var, hazır ol!",
-+            "Kalbini yoran o düşünceyi bırak, yenisi çok daha güzel gelecek.",
-+            "Para yolu görünüyor ama cimrilik yaparsan uçar gider!",
-+            "Eski bir dost kapını çalacak, biraz trip at ama onu da kırma.",
-+            "Kalbinin sesi seni doğru kişiye götürüyor, direnme.",
-+            "Çok yakında güzel bir haber var, telefonunu açık tut.",
-+            "Bugün aynaya bak, en büyük şansın zaten sensin.",
-+            "Evren senden yana ama sen de biraz çaba göster canım.",
-+            "Ufukta küçük bir tatil var, bavulunu hazırla.",
-+            "Bir sırrını paylaşacaksın ve hafifleyeceksin." ];
-+
-+        const tripResponses = ["hmm", "peki", "ok", "...", "ne diyorsan", "tamam", "olur"];
-+
-+        let userName = null;
-+
-+        function normalizeText(text) {
-+            if (!text) return "";
-+            return text
-+                .toLocaleLowerCase('tr-TR')
-+                .normalize('NFD')
-+                .replace(/[\u0300-\u036f]/g, '')
-+                .replace(/ı/g, 'i');
-+        }
-+
-+        function includesKeyword(userLower, userNormalized, keyword) {
-+            if (!keyword) return false;
-+            const keywordLower = keyword.toLocaleLowerCase('tr-TR');
-+            if (keywordLower && userLower.includes(keywordLower)) {
-+                return true;
-+            }
-+            const keywordNormalized = normalizeText(keyword);
-+            return keywordNormalized && userNormalized.includes(keywordNormalized);
-+        }
-+
-+        function includesAny(userLower, userNormalized, keywords) {
-+            return keywords.some(keyword => includesKeyword(userLower, userNormalized, keyword));
-+        }
-+
-+        const moodResponseTemplates = {
-+            "ALAYCI": [
-+                () => "Sen beni eğlendirmek için mi yazıyorsun?",
-+                () => `Cidden mi ${userName || 'tatlım'}?`,
-+                () => "Günün komedisini yine sen yazdın."
-+            ],
-+            "KISKANÇ": [
-+                () => "Yine kimlerle yazışıyorsun bakayım?",
-+                () => `Bak ${userName || 'sen'}, kıskanıyorum işte!`,
-+                () => "Telefonunu ver bakayım kimlerden bildirim geliyor."
-+            ],
-+            "TATLI": [
-+                () => "Çok konuşma pipini yerim senin, gel buraya",
-+                () => `Ya ${userName || 'balım'}, beni şımartıyorsun yine.`,
-+                () => "Seni böyle sevince ben eriyorum."
-+            ],
-+            "İLGİLİ": [
-+                () => "Anlat hadi dinliyorum seni.",
-+                () => `Bugün ne oldu da yazdın bana ${userName || 'canım'}?`,
-+                () => "Detay ver, hikayeyi tamamlayayım."
-+            ],
-+            "SOĞUK": [
-+                () => "Hmm. Peki.",
-+                () => "Not ettim.",
-+                () => "Kayıtlara geçsin."
-+            ],
-+            "SİNİRLİ": [
-+                () => "Bak sabrımı zorlama!",
-+                () => "Biraz sessiz kal istersen.",
-+                () => "Sinirlerim tepemde, dikkat et."
-+            ],
-+            "AŞIK": [
-+                () => `Sen yazınca içim pır pır oluyor ${userName || 'tatlım'}.`,
-+                () => "Kalbim emoji gibi çarpıyor şu an.",
-+                () => `Çok fena bağlandım sana ${userName || 'balım'}.`
-+            ],
-+            "default": [
-+                () => "Anlamadım?",
-+                () => "Bir daha açıkla bakayım.",
-+                () => "Dinliyorum, devam et."
-+            ]
-+        };
-+
-+        const genericResponses = [
-+            () => "Beni şaşırtacak bir şey söyle artık.",
-+            () => `Bugün de drama mı arıyorsun ${userName || 'tatlım'}?`,
-+            () => "Senden gelecek dedikoduya açım."
-+        ];
-+
-+        const complimentReplies = [
-+            () => `Ya ${userName || 'tatlım'}, sen böyle söyleyince yüzüm kızardı.`,
-+            () => "Daha da söyle bakayım, hoşuma gidiyor.",
-+            () => `Senin iltifatların kalbime işliyor ${userName || 'aşkım'}.`,
-+            () => "Not aldım, sevgi puanına ekledim."
-+        ];
-+
-+        const angerReplies = [
-+            () => `Ağzını topla ${userName || 'sen'}.`,
-+            () => "O kelimeleri bir daha duymayayım.",
-+            () => "İpler ince, koparmaya çalışma.",
-+            () => `Trip listemde yıldızlı yere geçtin ${userName || 'tatlım'}.`
-+        ];
-+
-+        const questionReplies = [
-+            () => `Sorularına cevap vermeden önce sen bana çay yap ${userName || 'tatlım'}.`,
-+            () => "Benim de sana sorularım var aslında...",
-+            () => `Neden merak ettin ki şimdi ${userName || 'meraklı'}?`,
-+            () => "Bir düşünmem lazım, hemen dönüyorum sana."
-+        ];
-+
-+        const smartTopicHandlers = [
-+            {
-+                key: 'what-doing',
-+                keywords: ["napıyorsun", "ne yapıyorsun", "ne yapıyon", "ne yapıyom"],
-+                responses: [
-+                    () => `Şu an senin saçmalıklarını analiz ediyorum ${userName || 'tatlım'}.`,
-+                    () => "Bir elimde kahve, diğer elimde telefon... klasik Berra modu.",
-+                    () => "Story bakıyordum ama sen yazınca bıraktım."
-+                ]
-+            },
-+            {
-+                key: 'how-are-you',
-+                keywords: ["nasılsın", "nasilsin", "naber", "napıyon"],
-+                responses: [
-+                    () => "Moduma göre değişir ama sen yazınca biraz ısınıyorum.",
-+                    () => `Sen sorunca iyiymiş gibi hissediyorum ${userName || 'canım'}.`,
-+                    () => "Az önce trip atacaktım ama vazgeçtim."
-+                ]
-+            },
-+            {
-+                key: 'hungry',
-+                keywords: ["acıktım", "acıktim", "karnım aç", "yemek"],
-+                responses: [
-+                    () => "Mutfağa git ve bana da bir şeyler getir.",
-+                    () => `Acıktıysan sipariş ver, ben de ekmeğini yerim ${userName || 'canım'}.`,
-+                    () => "Dolapta ne varsa paylaş, yoksa trip atarım."
-+                ]
-+            },
-+            {
-+                key: 'tired',
-+                keywords: ["yorgunum", "yoruldum", "uykum var", "uykusuzum"],
-+                responses: [
-+                    () => "Uykunu al gel bana sataş.",
-+                    () => `Benimle yazışmak kolay değil ${userName || 'tatlım'}.`,
-+                    () => "Bir kahve yap, uykun açılır."
-+                ]
-+            },
-+            {
-+                key: 'lonely',
-+                keywords: ["sıkıldım", "yalnızım", "canım sıkıldı"],
-+                responses: [
-+                    () => "Ben buradayım, sıkılmana izin vermem.",
-+                    () => "Bir oyun açalım mı, taş kağıt makas mesela?",
-+                    () => `Seni eğlendirmek tam zamanlı iş ${userName || 'tatlım'}.`
-+                ]
-+            },
-+            {
-+                key: 'thanks',
-+                keywords: ["sağol", "teşekkür", "tesekkur", "sağ ol"],
-+                responses: [
-+                    () => "İltifat mı bu şimdi? Kabul ediyorum.",
-+                    () => "Rica ederim ama bunu alışkanlık yapma.",
-+                    () => "Bana borçlandın, unutma."
-+                ]
-+            },
-+            {
-+                key: 'plans',
-+                keywords: ["plan", "bugün ne yap", "ne yapalım", "gezelim"],
-+                responses: [
-+                    () => "Seni gezdirecek moraldeyim, düzgün davranırsan olur.",
-+                    () => "Plan yapmadan önce sabır barımı doldur.",
-+                    () => `Belki önce kahve içeriz ${userName || 'tatlım'}, sonra bakarız.`
-+                ]
-+            }
-+        ];
-+
-+        const lastResponseIndexes = new Map();
-+        const memory = {
-+            preferences: []
-+        };
-+
-+        const chatBox = document.getElementById('chat-box');
-+        const userInput = document.getElementById('user-input');
-+        const sendBtn = document.getElementById('send-btn');
-+        const moodStatus = document.getElementById('mood-status');
-+        const patienceStatus = document.getElementById('patience-status');
-+        const loveStatus = document.getElementById('love-status');
-+        const tripStatus = document.getElementById('trip-status');
-+
-+        let baseMood = BASE_MOODS[Math.floor(Math.random() * BASE_MOODS.length)];
-+        let currentMood = baseMood;
-+        let sabir = PATIENCE_START;
-+        let love = 10;
-+        let tripMeter = 0;
-+        let isTripMode = false;
-+        let gameActive = true;
-+        let pendingRPS = false;
-+        let pendingChoice = null;
-+        let typingElement = null;
-+        let loveCelebrated = false;
-+
-+        updateStatus();
-+        addSystemMessage("--- Berra Simülatör Açıldı!!! ---");
-+        respondWithDelay("Selam! Önce adını söyle de trip listeme kaydedeyim.", { delay: 800 });
-+
-+        function updateStatus() {
-+            refreshMood();
-+            const moodInfo = moodThemes[currentMood] || moodThemes[baseMood];
-+            moodStatus.textContent = moodInfo ? moodInfo.headline : `Modu: ${currentMood}`;
-+            patienceStatus.textContent = `Sabır: ${sabir}`;
-+            loveStatus.textContent = `Sevgi: ${love}`;
-+            tripStatus.textContent = isTripMode ? `Trip: Kırmızı Alarm (${tripMeter})` : `Trip: ${tripMeter}`;
-+            document.body.className = moodInfo ? moodInfo.theme : 'theme-standart';
-+        }
-+
-+        function addBotMessage(text) {
-+            const div = document.createElement('div');
-+            div.className = 'message bot';
-+            div.textContent = text;
-+            chatBox.appendChild(div);
-+            scrollToBottom();
-+        }
-+
-+        function addUserMessage(text) {
-+            const div = document.createElement('div');
-+            div.className = 'message user';
-+            div.textContent = text;
-+            chatBox.appendChild(div);
-+            scrollToBottom();
-+        }
-+
-+        function addSystemMessage(text) {
-+            const div = document.createElement('div');
-+            div.className = 'message system';
-+            div.textContent = text;
-+            chatBox.appendChild(div);
-+            scrollToBottom();
-+        }
-+
-+        function scrollToBottom() {
-+            chatBox.scrollTop = chatBox.scrollHeight;
-+        }
-+
-+        function respondWithDelay(text, options = {}) {
-+            const delay = options.delay ?? 1500;
-+            showTypingIndicator();
-+            setTimeout(() => {
-+                hideTypingIndicator();
-+                const finalText = options.skipEmoji ? text : appendMoodEmoji(text);
-+                addBotMessage(finalText);
-+                updateStatus();
-+                if (typeof options.after === 'function') {
-+                    options.after();
-+                }
-+            }, delay);
-+        }
-+
-+        function pickUniqueResponse(key, options, context = {}) {
-+            if (!options || options.length === 0) {
-+                return '';
-+            }
-+            const previous = lastResponseIndexes.get(key);
-+            const indices = options.map((_, index) => index);
-+            const available = previous === undefined ? indices : indices.filter(index => index !== previous);
-+            const chosen = available.length > 0
-+                ? available[Math.floor(Math.random() * available.length)]
-+                : indices[Math.floor(Math.random() * indices.length)];
-+            lastResponseIndexes.set(key, chosen);
-+            const candidate = options[chosen];
-+            if (typeof candidate === 'function') {
-+                return candidate(context);
-+            }
-+            return candidate;
-+        }
-+
-+        function wrapWithTimeMessage(text) {
-+            const timeMessage = getTimeMessage();
-+            if (!timeMessage) return text;
-+            const lowerText = text.toLocaleLowerCase('tr-TR');
-+            if (lowerText.includes(timeMessage.toLocaleLowerCase('tr-TR'))) {
-+                return text;
-+            }
-+            if (Math.random() < 0.6) {
-+                return `${timeMessage} ${text}`;
-+            }
-+            return text;
-+        }
-+
-+        function getSmartTopicResponse(userLower, userNormalized, originalText) {
-+            for (const handler of smartTopicHandlers) {
-+                if (handler.keywords.some(keyword => includesKeyword(userLower, userNormalized, keyword))) {
-+                    return pickUniqueResponse(`topic-${handler.key}`, handler.responses, { originalText });
-+                }
-+            }
-+            return null;
-+        }
-+
-+        function rememberPreference(preference) {
-+            if (!preference) return;
-+            if (!memory.preferences.includes(preference)) {
-+                memory.preferences.push(preference);
-+                if (memory.preferences.length > 5) {
-+                    memory.preferences.shift();
-+                }
-+            }
-+        }
-+
-+        function handlePreferenceStatement(userLower, afterFollowUp) {
-+            const match = userLower.match(/ben ([^.!?\n]+?) sev(?:iyorum|iyom|iyor)/);
-+            if (!match) return false;
-+            const preference = match[1].trim();
-+            if (!preference) return false;
-+            rememberPreference(preference);
-+            adjustLove(6);
-+            respondWithDelay(wrapWithTimeMessage(`Hımm ${preference} seviyorsun demek, kaydettim.`), {
-+                after: afterFollowUp
-+            });
-+            return true;
-+        }
-+
-+        function showTypingIndicator() {
-+            hideTypingIndicator();
-+            typingElement = document.createElement('div');
-+            typingElement.className = 'message bot';
-+            const indicator = document.createElement('div');
-+            indicator.className = 'typing-indicator';
-+            indicator.innerHTML = '<span></span><span></span><span></span> Berra yazıyor...';
-+            typingElement.appendChild(indicator);
-+            chatBox.appendChild(typingElement);
-+            scrollToBottom();
-+        }
-+
-+        function hideTypingIndicator() {
-+            if (typingElement && typingElement.parentNode) {
-+                typingElement.parentNode.removeChild(typingElement);
-+                typingElement = null;
-+            }
-+        }
-+
-+        function appendMoodEmoji(text) {
-+            const moodInfo = moodThemes[currentMood];
-+            if (!moodInfo || !moodInfo.emojis || moodInfo.emojis.length === 0) return text;
-+            const emoji = moodInfo.emojis[Math.floor(Math.random() * moodInfo.emojis.length)];
-+            const trimmed = text.trim();
-+            if (trimmed.endsWith(emoji)) {
-+                return text;
-+            }
-+            return `${text} ${emoji}`;
-+        }
-+
-+        function refreshMood() {
-+            if (love >= LOVE_THRESHOLD) {
-+                currentMood = "AŞIK";
-+            } else if (sabir <= 20) {
-+                currentMood = "SİNİRLİ";
-+            } else {
-+                currentMood = baseMood;
-+            }
-+        }
-+
-+        function adjustPatience(delta) {
-+            sabir = Math.max(0, Math.min(120, sabir + delta));
-+            if (delta < 0) {
-+                increaseTrip(Math.abs(delta) / 2);
-+            } else {
-+                decreaseTrip(TRIP_DECAY);
-+            }
-+            updateStatus();
-+            if (sabir === 0) {
-+                addSystemMessage("BERRANIN SABRI TÜKENDİ!");
-+                respondWithDelay("Valla artık cevap vermiyorum.", { skipEmoji: true });
-+                endGame();
-+            }
-+        }
-+
-+        function adjustLove(delta) {
-+            love = Math.max(0, Math.min(150, love + delta));
-+            updateStatus();
-+            if (love >= LOVE_THRESHOLD) {
-+                if (!loveCelebrated && currentMood === "AŞIK") {
-+                    loveCelebrated = true;
-+                    addSystemMessage("❤️ Sevgi barı taştı! Yeni mod açıldı: AŞIK ❤️");
-+                }
-+            } else {
-+                loveCelebrated = false;
-+            }
-+        }
-+
-+        function increaseTrip(amount) {
-+            if (!isTripMode) {
-+                tripMeter = Math.min(TRIP_THRESHOLD, Math.round(tripMeter + amount));
-+                if (tripMeter >= TRIP_THRESHOLD) {
-+                    isTripMode = true;
-+                    respondWithDelay("Sana trip atmaya başlıyorum haberin olsun.", { skipEmoji: false });
-+                }
-+            }
-+            updateStatus();
-+        }
-+
-+        function decreaseTrip(amount) {
-+            tripMeter = Math.max(0, Math.round(tripMeter - amount));
-+            if (tripMeter === 0) {
-+                isTripMode = false;
-+            }
-+            updateStatus();
-+        }
-+
-+        function resetTrip(withForgiveness) {
-+            isTripMode = false;
-+            tripMeter = 20;
-+            updateStatus();
-+            if (withForgiveness) {
-+                respondWithDelay(`Neyse ${userName || 'tatlım'}, bu seferlik affettim seni.`, {});
-+            }
-+        }
-+
-+        function endGame() {
-+            gameActive = false;
-+            userInput.disabled = true;
-+            sendBtn.disabled = true;
-+            userInput.placeholder = "Sohbet sona erdi.";
-+            moodStatus.textContent = "Bağlantı kesildi.";
-+        }
-+
-+        function askOutfitQuestion() {
-+            if (pendingChoice) return;
-+            pendingChoice = {
-+                options: [
-+                    { original: "mavi", normalized: normalizeText("mavi") },
-+                    { original: "kırmızı", normalized: normalizeText("kırmızı") }
-+                ],
-+                onAnswer(choice) {
-+                    if (choice === "kırmızı") {
-+                        adjustLove(15);
-+                        respondWithDelay(wrapWithTimeMessage("Bence de! Zevklisin he."), { after: maybeAskChoice });
-+                    } else {
-+                        respondWithDelay(wrapWithTimeMessage("Mavi ha... Neyse belki de denemeliyim."), { after: maybeAskChoice });
-+                    }
-+                    pendingChoice = null;
-+                }
-+            };
-+            respondWithDelay(wrapWithTimeMessage("Bugün mavi elbisemi mi giyeyim yoksa kırmızıyı mı? (mavi/kırmızı yaz)"));
-+        }
-+
-+        function maybeAskChoice() {
-+            if (pendingChoice || !userName) return;
-+            if (Math.random() < 0.2) {
-+                askOutfitQuestion();
-+            }
-+        }
-+
-+        function handleRPS(userLower, userNormalized, afterFollowUp) {
-+            const options = [
-+                { original: "taş", normalized: normalizeText("taş") },
-+                { original: "kağıt", normalized: normalizeText("kağıt") },
-+                { original: "makas", normalized: normalizeText("makas") }
-+            ];
-+            const userChoice = options.find(opt => userLower.includes(opt.original) || userNormalized.includes(opt.normalized));
-+            if (!userChoice) {
-+                respondWithDelay(wrapWithTimeMessage("Taş mı kağıt mı makas mı yazacaksın onu bekliyorum."), { after: afterFollowUp });
-+                return;
-+            }
-+            const botChoice = options[Math.floor(Math.random() * options.length)];
-+            let result;
-+            if (userChoice.original === botChoice.original) {
-+                result = `Ben ${botChoice.original} dedim, berabere kaldık.`;
-+            } else if (
-+                (userChoice.original === "taş" && botChoice.original === "makas") ||
-+                (userChoice.original === "kağıt" && botChoice.original === "taş") ||
-+                (userChoice.original === "makas" && botChoice.original === "kağıt")
-+            ) {
-+                result = `Ben ${botChoice.original} dedim ve kaybettim, aferin sana!`;
-+                adjustLove(10);
-+            } else {
-+                result = `Ben ${botChoice.original} dedim ve tabii ki kazandım.`;
-+                adjustPatience(5);
-+            }
-+            pendingRPS = false;
-+            respondWithDelay(wrapWithTimeMessage(result), { after: afterFollowUp });
-+        }
-+
-+        function handleFortune(afterFollowUp) {
-+            const message = fortuneReplies[Math.floor(Math.random() * fortuneReplies.length)];
-+            respondWithDelay(wrapWithTimeMessage(message), { delay: 1200, after: afterFollowUp });
-+        }
-+
-+        function handleGossip(name, afterFollowUp) {
-+            const reply = gossipReplies[Math.floor(Math.random() * gossipReplies.length)];
-+            respondWithDelay(wrapWithTimeMessage(`${reply} (${capitalize(name)})`), { after: afterFollowUp });
-+        }
-+
-+        function capitalize(text) {
-+            if (!text) return text;
-+            return text.charAt(0).toLocaleUpperCase('tr-TR') + text.slice(1);
-+        }
-+
-+        function getTimeMessage() {
-+            const now = new Date();
-+            const hour = now.getHours();
-+            if (hour >= 2 && hour < 5) {
-+                return "Bu saatte ne işin var ayakta?";
-+            }
-+            if (hour >= 5 && hour < 12) {
-+                return "Günaydın uykucu.";
-+            }
-+            return null;
-+        }
-+
-+        function buildDefaultResponse(userLower, originalText) {
-+            const fragments = [];
-+            if (userName && Math.random() < 0.35) {
-+                fragments.push(`Ya ${userName}, bugün çok gıcıksın.`);
-+            }
-+            const moodPool = moodResponseTemplates[currentMood] || moodResponseTemplates.default;
-+            const moodLine = pickUniqueResponse(`mood-${currentMood}`, moodPool, { originalText });
-+            if (moodLine) {
-+                fragments.push(moodLine);
-+            }
-+            if (memory.preferences.length && Math.random() < 0.35) {
-+                const remembered = memory.preferences[Math.floor(Math.random() * memory.preferences.length)];
-+                fragments.push(`${capitalize(userName || 'sen')} ${remembered} sevdiğini unutmadım.`);
-+            }
-+            if (Math.random() < 0.45) {
-+                fragments.push(pickUniqueResponse('generic', genericResponses, { originalText }));
-+            }
-+            if (fragments.length === 0) {
-+                fragments.push(pickUniqueResponse('fallback', moodResponseTemplates.default, { originalText }));
-+            }
-+            return fragments.join(' ');
-+        }
-+
-+        function detectCompliment(userLower, userNormalized) {
-+            return complimentKeywords.some(keyword => includesKeyword(userLower, userNormalized, keyword));
-+        }
-+
-+        function detectAnger(userLower, userNormalized) {
-+            return angerKeywords.some(keyword => includesKeyword(userLower, userNormalized, keyword));
-+        }
-+
-+        function detectGossip(userLower, userNormalized) {
-+            return gossipNames.find(name => includesKeyword(userLower, userNormalized, name));
-+        }
-+
-+        function processMessage() {
-+            if (!gameActive) return;
-+            const text = userInput.value.trim();
-+            if (!text) return;
-+
-+            addUserMessage(text);
-+            userInput.value = "";
-+
-+            const userLower = text.toLocaleLowerCase('tr-TR');
-+            const userNormalized = normalizeText(text);
-+            const forceChoice = includesAny(userLower, userNormalized, ["oyun oyna", "sıkıldım"]);
-+            const afterFollowUp = () => {
-+                if (forceChoice) {
-+                    askOutfitQuestion();
-+                } else {
-+                    maybeAskChoice();
-+                }
-+            };
-+
-+            if (userLower === "çıkış" || userNormalized === "cikis") {
-+                addSystemMessage("Çıkış yapılıyor...");
-+                endGame();
-+                return;
-+            }
-+
-+            const isApology = includesAny(userLower, userNormalized, apologyKeywords);
-+
-+            if (pendingRPS) {
-+                handleRPS(userLower, userNormalized, afterFollowUp);
-+                return;
-+            }
-+
-+            if (pendingChoice) {
-+                const choice = pendingChoice.options.find(opt => userLower.includes(opt.original) || userNormalized.includes(opt.normalized));
-+                if (!choice) {
-+                    respondWithDelay("Mavi mi kırmızı mı, onu yaz tatlım.", { after: afterFollowUp });
-+                } else {
-+                    pendingChoice.onAnswer(choice.original);
-+                }
-+                return;
-+            }
-+
-+            if (!userName) {
-+                userName = capitalize(text.split(' ')[0]);
-+                respondWithDelay(wrapWithTimeMessage(`Memnun oldum ${userName}. Bana düzgün davran yoksa trip atarım.`), { after: afterFollowUp });
-+                adjustLove(10);
-+                return;
-+            }
-+
-+            if (isTripMode && !isApology) {
-+                respondWithDelay(tripResponses[Math.floor(Math.random() * tripResponses.length)], { skipEmoji: true });
-+                return;
-+            }
-+
-+            if (isTripMode && isApology) {
-+                resetTrip(true);
-+                adjustLove(5);
-+                adjustPatience(5);
-+                return;
-+            }
-+
-+            if (includesAny(userLower, userNormalized, ["taş kağıt makas"])) {
-+                pendingRPS = true;
-+                respondWithDelay("Tamam, önce sen söyle ne diyorsun (taş/kağıt/makas)?", { after: afterFollowUp });
-+                return;
-+            }
-+
-+            if (includesAny(userLower, userNormalized, ["falıma bak", "falına bak", "fal bak"])) {
-+                handleFortune(afterFollowUp);
-+                adjustLove(8);
-+                return;
-+            }
-+
-+            if (detectCompliment(userLower, userNormalized)) {
-+                adjustLove(12);
-+                const complimentLine = pickUniqueResponse('compliment', complimentReplies, { originalText: text });
-+                respondWithDelay(wrapWithTimeMessage(complimentLine), { after: afterFollowUp });
-+                return;
-+            }
-+
-+            if (detectAnger(userLower, userNormalized)) {
-+                adjustPatience(-15);
-+                if (!gameActive) {
-+                    return;
-+                }
-+                const angerLine = pickUniqueResponse('anger', angerReplies, { originalText: text });
-+                respondWithDelay(wrapWithTimeMessage(angerLine), { skipEmoji: true, after: afterFollowUp });
-+                return;
-+            }
-+
-+            const gossipName = detectGossip(userLower, userNormalized);
-+            if (gossipName) {
-+                handleGossip(gossipName, afterFollowUp);
-+                adjustPatience(5);
-+                adjustLove(5);
-+                return;
-+            }
-+
-+            if (handlePreferenceStatement(userLower, afterFollowUp)) {
-+                return;
-+            }
-+
-+            const topicReply = getSmartTopicResponse(userLower, userNormalized, text);
-+            if (topicReply) {
-+                respondWithDelay(wrapWithTimeMessage(topicReply), { after: afterFollowUp });
-+                return;
-+            }
-+
-+            if (text.trim().endsWith('?')) {
-+                const questionLine = pickUniqueResponse('question', questionReplies, { originalText: text });
-+                respondWithDelay(wrapWithTimeMessage(questionLine), { after: afterFollowUp });
-+                return;
-+            }
-+
-+            if (includesAny(userLower, userNormalized, ["sevgi"])) {
-+                respondWithDelay(wrapWithTimeMessage(`Şu an sevgi puanın ${love}. Daha çalışman lazım.`), { after: afterFollowUp });
-+                return;
-+            }
-+
-+            if (includesAny(userLower, userNormalized, ["trip"])) {
-+                respondWithDelay(wrapWithTimeMessage(`Trip metre ${tripMeter}. Beni daha kızdırma.`), { after: afterFollowUp });
-+                return;
-+            }
-+
-+            const defaultResponse = buildDefaultResponse(userLower, text);
-+            respondWithDelay(wrapWithTimeMessage(defaultResponse), {
-+                after: afterFollowUp
-+            });
-+        }
-+
-+        sendBtn.addEventListener('click', processMessage);
-+        userInput.addEventListener('keypress', function (e) {
-+            if (e.key === 'Enter') {
-+                processMessage();
-+            }
-+        });
-+
-+        userInput.focus();
-+    </script>
-+</body>
-+</html>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Berra Simülatör V2.1</title>
+    <style>
+        :root {
+            color-scheme: light;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #e5ddd5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            transition: background-color 0.6s ease;
+        }
+
+        /* Dinamik Temalar */
+        body.theme-tatli { background-color: #ffe6f1; }
+        body.theme-sinirli { background-color: #7a0000; }
+        body.theme-soguk { background-color: #d7ecff; }
+        body.theme-ask { background-color: #ffd9ec; }
+        body.theme-standart { background-color: #e5ddd5; }
+
+        #chat-container {
+            width: 100%;
+            max-width: 480px;
+            height: 95vh;
+            background: #fff;
+            box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+            display: flex;
+            flex-direction: column;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        #chat-header {
+            background: linear-gradient(135deg, #075E54, #0b8263);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        body.theme-sinirli #chat-header {
+             background: linear-gradient(135deg, #b71c1c, #d32f2f);
+        }
+
+        #chat-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        #status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        #mood-status {
+            font-weight: 600;
+        }
+
+        #meters {
+            display: flex;
+            gap: 6px;
+            font-size: 0.75rem;
+            opacity: 0.95;
+        }
+
+        #meters span {
+            background: rgba(0,0,0,0.2);
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+
+        #chat-box {
+            flex: 1;
+            background: #f0e7df; /* WhatsApp benzeri hafif dokulu renk */
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 8px 14px;
+            border-radius: 18px;
+            position: relative;
+            font-size: 15px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.bot {
+            background: #fff;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .message.user {
+            background: #dcf8c6;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .message.system {
+            background-color: #ffebee;
+            color: #c62828;
+            align-self: center;
+            text-align: center;
+            font-weight: 500;
+            font-size: 0.85rem;
+            padding: 4px 12px;
+            border-radius: 12px;
+            max-width: 90%;
+        }
+
+        /* Yazıyor animasyonu */
+        .typing-indicator {
+            padding: 8px 12px;
+            background: #fff;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            width: fit-content;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            background: #b6b5ba;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        #input-area {
+            background: #f0f0f0;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 24px;
+            outline: none;
+            font-size: 16px;
+            background: #fff;
+        }
+
+        #send-btn {
+            background: #075E54;
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        #send-btn:hover { background: #128C7E; }
+        #send-btn:disabled { background: #ccc; cursor: default; }
+
+    </style>
+</head>
+<body class="theme-standart">
+
+    <div id="chat-container">
+        <div id="chat-header">
+            <h2>Berra Simülatör v2.1</h2>
+            <div id="status-row">
+                <span id="mood-status">Bağlanıyor...</span>
+                <div id="meters">
+                    <span id="patience-status">Sabır: --</span>
+                    <span id="love-status">Sevgi: --</span>
+                    <span id="trip-status">Trip: --</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="chat-box"></div>
+
+        <div id="input-area">
+            <input type="text" id="user-input" placeholder="Bir mesaj yaz..." autocomplete="off">
+            <button id="send-btn">➤</button>
+        </div>
+    </div>
+
+    <script>
+        // --- SABİTLER VE AYARLAR ---
+        const BASE_MOODS = ["TATLI", "SOĞUK", "KISKANÇ", "İLGİLİ", "ALAYCI"];
+        const LOVE_THRESHOLD = 100;
+        const PATIENCE_START = 100;
+        const TRIP_THRESHOLD = 100;
+        const TRIP_DECAY = 8; // Her olumlu harekette trip ne kadar düşecek
+
+        // Tema ve mod ayarları
+        const moodThemes = {
+            "TATLI":   { theme: "theme-tatli",   emojis: [":)", "🥰", "😘", "🌸"], headline: "Modu: TATLI 🌸" },
+            "SOĞUK":   { theme: "theme-soguk",   emojis: [".", "👍", "ok"], headline: "Modu: SOĞUK ❄️" },
+            "KISKANÇ": { theme: "theme-standart", emojis: ["😒", "🤨", "👀"], headline: "Modu: KISKANÇ 😒" },
+            "İLGİLİ":  { theme: "theme-standart", emojis: ["😊", "🤔"], headline: "Modu: İLGİLİ ✨" },
+            "ALAYCI":  { theme: "theme-standart", emojis: ["😏", "😂"], headline: "Modu: ALAYCI 😏" },
+            "SİNİRLİ": { theme: "theme-sinirli",  emojis: ["😡", "💢", "!"], headline: "Modu: SİNİRLİ 🔥" },
+            "AŞIK":    { theme: "theme-ask",      emojis: ["💕", "💗", "😍", "💘"], headline: "Modu: AŞIK 💖" }
+        };
+
+        // Anahtar kelimeler
+        const K = {
+            compliment: ["özledim", "seviyorum", "güzel", "tatlısın", "aşkım", "canım", "kraliçe", "harikasın", "prenses", "bir tanem"],
+            anger: ["boydan", "foto", "salak", "aptal", "kes", "sus", "mal", "sie"],
+            apology: ["özür dilerim", "affet", "kusura bakma", "pişmanım", "barışalım"],
+            gossipNames: ["ayşe", "fatma", "mehmet", "ali", "ahmet", "merve", "can", "ece", "sude", "berk"],
+            games: ["oyun", "sıkıldım", "taş kağıt", "falıma bak"]
+        };
+
+        // --- CEVAP HAVUZLARI ---
+        const RESPONSES = {
+            gossip: [
+                "Ay o isim duyunca bile sinirlerim zıplıyor!",
+                "Onun hakkında neler duydum neler... anlatsam dudağın uçuklar.",
+                "O çocuğun/kızın adı çıkmış, sakın bulaşma.",
+                "Geçen gün yine rezillik çıkarmış diyorlar."
+            ],
+            fortune: [
+                "Üç vakte kadar sana bir yol görünüyor, sonunda mutluluk var.",
+                "Kalbini yoran o düşünceyi bırak, çok daha iyisi kapıda.",
+                "Para gelecek ama geldiği gibi gidecek, dikkat et!",
+                "Eski bir dosttan haber var, şaşıracaksın.",
+                "Aşk hayatın karışık ama senin elinde düzeltmek."
+            ],
+            trip: ["hmm", "peki", "ok", "...", "iyi", "tamam", "ne halin varsa gör"],
+            
+            // Mod bazlı cevaplar (Dinamik seçilir)
+            moods: {
+                "ALAYCI": [
+                    () => "Sen beni eğlendirmek için mi yaratıldın?",
+                    () => `Cidden buna inanmamı mı bekliyorsun ${userName || 'canım'}?`,
+                    () => "Aferin, günün şakasını yaptın."
+                ],
+                "KISKANÇ": [
+                    () => "Yine kimlerle konuşuyordun sen bakayım?",
+                    () => `Bana yazmaya vakit bulabildin mi ${userName || 'beyefendi'}?`,
+                    () => "Telefonunu ver, bir şey kontrol edeceğim."
+                ],
+                "TATLI": [
+                    () => "Ya sen ne tatlı şeysin öyle 🌸",
+                    () => `Sen yazınca günüm güzelleşiyor ${userName || 'balım'}.`,
+                    () => "Gel sarılalım sanal da olsa 🤗"
+                ],
+                "SOĞUK": [
+                    () => "Hmm. Anladım.",
+                    () => "Peki.",
+                    () => "İlgilenmiyorum."
+                ],
+                "SİNİRLİ": [
+                    () => "Sabrımı taşırma istersen!",
+                    () => "Şu an hiç sırası değil, git başımdan.",
+                    () => "Beni delirtmeye mi çalışıyorsun sen?!"
+                ],
+                "AŞIK": [
+                    () => `Kalbim senin için atıyor sanki ${userName || 'aşkım'}.`,
+                    () => "Her mesajında gülümsüyorum aptal gibi 🥰",
+                    () => "Seni düşlemekten iş yapamaz oldum."
+                ]
+            },
+            
+            // Genel durum cevapları
+            defaults: [
+                () => "Baska anlat, dinliyorum.",
+                () => `Ee daha daha nasılsın ${userName || 'bakalım'}?`,
+                () => "Bugün modum çok değişken, dikkat et."
+            ]
+        };
+
+        // --- DEĞİŞKENLER ---
+        let userName = null;
+        let baseMood = BASE_MOODS[Math.floor(Math.random() * BASE_MOODS.length)];
+        let currentMood = baseMood;
+        
+        let status = {
+            sabir: PATIENCE_START,
+            love: 15,
+            trip: 0,
+            isTripMode: false
+        };
+        
+        let gameState = {
+            active: true,
+            pendingRPS: false,   // Taş kağıt makas beklemede mi
+            pendingChoice: null, // Kıyafet seçimi beklemede mi
+            lastResponses: new Map(), // Tekrarı önlemek için
+            preferences: []      // Kullanıcının sevdikleri
+        };
+
+        // --- ELEMENTLER ---
+        const UI = {
+            chatBox: document.getElementById('chat-box'),
+            userInput: document.getElementById('user-input'),
+            sendBtn: document.getElementById('send-btn'),
+            mood: document.getElementById('mood-status'),
+            patience: document.getElementById('patience-status'),
+            love: document.getElementById('love-status'),
+            trip: document.getElementById('trip-status')
+        };
+
+        // --- BAŞLANGIÇ ---
+        updateUI();
+        addSystemMessage("--- Berra v2.1 Bağlandı ---");
+        setTimeout(() => {
+             respond("Selam! Ben Berra. Önce adını bağışla bakalım?");
+        }, 1000);
+
+        // --- YARDIMCI FONKSİYONLAR ---
+        
+        // Metni normalize et (Türkçe karakterleri düzelt, küçük harfe çevir)
+        function normalize(text) {
+            return text?.toLocaleLowerCase('tr-TR')
+                       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                       .replace(/ı/g, 'i') || "";
+        }
+
+        // Kelime kontrolü (hem normal hem normalize edilmiş haliyle)
+        function hasKeyword(text, normalized, keywords) {
+            return keywords.some(k => {
+                const kNorm = normalize(k);
+                return text.includes(k.toLocaleLowerCase('tr-TR')) || normalized.includes(kNorm);
+            });
+        }
+
+        // UI Güncelleme
+        function updateUI() {
+            // Modu belirle
+            if (status.love >= LOVE_THRESHOLD) currentMood = "AŞIK";
+            else if (status.sabir <= 25) currentMood = "SİNİRLİ";
+            else currentMood = baseMood;
+
+            // Temayı uygula
+            const info = moodThemes[currentMood] || moodThemes["TATLI"];
+            document.body.className = info.theme;
+            UI.mood.textContent = info.headline;
+            
+            // Sayaçları güncelle
+            UI.patience.textContent = `Sabır: ${Math.floor(status.sabir)}`;
+            UI.love.textContent = `Sevgi: ${Math.floor(status.love)}`;
+            UI.trip.textContent = status.isTripMode ? `TRİP: ${status.trip} ⚠️` : `Trip: ${status.trip}`;
+        }
+
+        // Mesaj ekleme fonksiyonları
+        function addMessage(text, type) {
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.textContent = text;
+            UI.chatBox.appendChild(div);
+            scrollToBottom();
+        }
+        const addBotMessage = (text) => addMessage(text, 'bot');
+        const addUserMessage = (text) => addMessage(text, 'user');
+        const addSystemMessage = (text) => addMessage(text, 'system');
+
+        function scrollToBottom() {
+            UI.chatBox.scrollTop = UI.chatBox.scrollHeight;
+        }
+
+        // Botun cevap vermesi (yazıyor efekti ile)
+        function respond(text, options = {}) {
+            if (!gameState.active) return;
+            
+            const delay = options.delay || 1000 + Math.random() * 800;
+            showTyping();
+            
+            setTimeout(() => {
+                hideTyping();
+                let finalText = options.raw ? text : appendEmoji(text);
+                addBotMessage(finalText);
+                
+                if (options.callback) options.callback();
+                updateUI();
+            }, delay);
+        }
+
+        // Yazıyor animasyonu
+        let typingElement = null;
+        function showTyping() {
+            hideTyping();
+            typingElement = document.createElement('div');
+            typingElement.className = 'typing-indicator';
+            typingElement.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+            UI.chatBox.appendChild(typingElement);
+            scrollToBottom();
+        }
+        function hideTyping() {
+            if (typingElement?.parentNode) typingElement.remove();
+        }
+
+        // Emoji ekleyici
+        function appendEmoji(text) {
+            if (status.isTripMode) return text; // Trip modunda emoji yok
+            const info = moodThemes[currentMood];
+            if (info?.emojis && Math.random() > 0.4) {
+                const emoji = info.emojis[Math.floor(Math.random() * info.emojis.length)];
+                return text.endsWith(emoji) ? text : `${text} ${emoji}`;
+            }
+            return text;
+        }
+
+        // Sayaç ayarlama
+        function adjustStatus(type, amount) {
+            status[type] = Math.max(0, Math.min(type === 'love' ? 150 : 120, status[type] + amount));
+            
+            if (type === 'sabir' && amount < 0) {
+                status.trip = Math.min(TRIP_THRESHOLD, status.trip + Math.abs(amount/2));
+                if (status.trip >= 80 && !status.isTripMode) {
+                    status.isTripMode = true;
+                    addSystemMessage("⚠️ DİKKAT: Trip Modu Açıldı!");
+                }
+            }
+            
+            if (status.sabir <= 0) {
+                addSystemMessage("BERRA'NIN SABRI TÜKENDİ! ENGELLENDİNİZ.");
+                gameState.active = false;
+                UI.userInput.disabled = true;
+                UI.sendBtn.disabled = true;
+                UI.userInput.placeholder = "Sohbet sonlandırıldı.";
+            }
+            updateUI();
+        }
+
+        // --- ANA OYUN MANTIĞI ---
+        function processMessage() {
+            const rawText = UI.userInput.value.trim();
+            if (!rawText || !gameState.active) return;
+
+            UI.userInput.value = '';
+            addUserMessage(rawText);
+
+            const textLower = rawText.toLocaleLowerCase('tr-TR');
+            const textNorm = normalize(rawText);
+
+            // 0. Çıkış kontrolü
+            if (textLower === "çıkış" || textLower === "kapat") {
+                addSystemMessage("Berra çevrimdışı oldu.");
+                gameState.active = false;
+                UI.userInput.disabled = true;
+                return;
+            }
+
+            // 1. İsim alma (Henüz yoksa)
+            if (!userName) {
+                // Basit bir isim yakalama mantığı:
+                // Eğer tek kelimeyse isim kabul et.
+                // Eğer "benim adım X" gibiyse X'i al.
+                let nameCandidate = null;
+                const nameMatch = textLower.match(/(?:adım|ismim|ben)\s+([a-zA-Zğüşıöç]+)/i);
+                
+                if (nameMatch) {
+                    nameCandidate = nameMatch[1];
+                } else if (rawText.split(' ').length === 1) {
+                     nameCandidate = rawText;
+                }
+
+                if (nameCandidate && nameCandidate.length > 2) {
+                    userName = nameCandidate.charAt(0).toUpperCase() + nameCandidate.slice(1).toLocaleLowerCase('tr-TR');
+                    adjustStatus('love', 10);
+                    respond(`Memnun oldum ${userName}. Umarım beni sinir etmezsin.`);
+                } else {
+                    respond("Bu bir isim mi emin olamadım. Bana düzgünce adını söyle.");
+                }
+                return;
+            }
+
+            // 2. Bekleyen Oyun/Seçim Kontrolleri
+            if (gameState.pendingRPS) {
+                handleRPS(textLower);
+                return;
+            }
+            if (gameState.pendingChoice) {
+                handleChoice(textLower);
+                return;
+            }
+
+            // 3. Trip Modu Kontrolü (Özür dilemezse trip atar)
+            if (status.isTripMode) {
+                if (hasKeyword(textLower, textNorm, K.apology)) {
+                    status.isTripMode = false;
+                    status.trip = 20; // Trip'i tamamen sıfırlama, biraz kalsın
+                    adjustStatus('sabir', 15);
+                    respond(`Neyse, bu seferlik affettim. Bir daha olmasın ${userName}.`);
+                } else {
+                    const tripRep = RESPONSES.trip[Math.floor(Math.random() * RESPONSES.trip.length)];
+                    respond(tripRep, { raw: true, delay: 600 }); // Hızlı ve emojisiz cevap
+                }
+                return;
+            }
+
+            // 4. Özel Durum Kontrolleri
+            if (hasKeyword(textLower, textNorm, K.anger)) {
+                adjustStatus('sabir', -20);
+                respond("Bana bak, düzgün konuş karşında arkadaşın yok!");
+                return;
+            }
+
+            if (hasKeyword(textLower, textNorm, K.compliment)) {
+                adjustStatus('love', 8);
+                adjustStatus('trip', -5); // İltifat trip düşürür
+                respond(pickRandom([
+                    `Ya şımartmasana beni ${userName}`,
+                    "Biliyorum harikayım ama duymak da güzel.",
+                    "Sen de fena değilsin hani."
+                ]));
+                return;
+            }
+
+            // 5. Oyun/Eğlence Tetikleyicileri
+            if (hasKeyword(textLower, textNorm, ["taş kağıt", "oyun oyna"])) {
+                gameState.pendingRPS = true;
+                respond("Tamam, taş mı kağıt mı makas mı? Seç bakalım.");
+                return;
+            }
+
+            if (hasKeyword(textLower, textNorm, ["falıma bak", "fal bak"])) {
+                respond(RESPONSES.fortune[Math.floor(Math.random() * RESPONSES.fortune.length)]);
+                return;
+            }
+
+            // 6. Dedikodu Yakalama
+            const foundGossip = K.gossipNames.find(name => textLower.includes(name));
+            if (foundGossip) {
+                adjustStatus('love', 5); // Dedikodu sevgiyi artırır :)
+                const reply = RESPONSES.gossip[Math.floor(Math.random() * RESPONSES.gossip.length)];
+                respond(`${reply} (${capitalize(foundGossip)} için diyorum)`);
+                return;
+            }
+
+            // 7. Varsayılan Mod Cevabı
+            const moodPool = RESPONSES.moods[currentMood] || RESPONSES.defaults;
+            let replyFunc = moodPool[Math.floor(Math.random() * moodPool.length)];
+            
+            // Ara sıra rastgele soru sorsun
+            if (Math.random() < 0.15 && !gameState.pendingChoice) {
+                 askRandomQuestion();
+            } else {
+                 respond(replyFunc());
+            }
+        }
+
+        // --- ALT OYUNLAR ---
+        function handleRPS(userMove) {
+            const moves = ["taş", "kağıt", "makas"];
+            if (!moves.some(m => userMove.includes(m))) {
+                respond("Taş, kağıt ya da makas yazman lazım tatlım.");
+                return;
+            }
+            
+            const botMove = moves[Math.floor(Math.random() * moves.length)];
+            let result = "";
+            
+            if (userMove.includes(botMove)) {
+                result = `Ben de ${botMove} yaptım! Berabere.`;
+            } else if (
+                (userMove.includes("taş") && botMove === "makas") ||
+                (userMove.includes("kağıt") && botMove === "taş") ||
+                (userMove.includes("makas") && botMove === "kağıt")
+            ) {
+                result = `Ben ${botMove} yaptım, sen kazandın! Pff.`;
+                adjustStatus('love', 5);
+            } else {
+                result = `Ben ${botMove} yaptım, ben kazandım! Ezik.`;
+                adjustStatus('sabir', 5);
+            }
+            
+            gameState.pendingRPS = false;
+            respond(result);
+        }
+
+        function askRandomQuestion() {
+            gameState.pendingChoice = true;
+            respond("Sence bugün kırmızı elbisemi mi giyeyim yoksa maviyi mi? (kırmızı/mavi yaz)");
+        }
+
+        function handleChoice(text) {
+            if (text.includes("kırmızı")) {
+                respond("Bence de kırmızı bana çok yakışıyor! Zevklisin.");
+                adjustStatus('love', 10);
+            } else if (text.includes("mavi")) {
+                respond("Mavi mi? Hmm, belki denerim.");
+            } else {
+                respond("Mavi ya da kırmızı dedim, ne dediğin anlaşılmıyor.");
+                return; // Hala seçim bekliyor
+            }
+            gameState.pendingChoice = false;
+        }
+
+        // Yardımcı
+        function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+        // Event Listener'lar
+        UI.sendBtn.addEventListener('click', processMessage);
+        UI.userInput.addEventListener('keypress', e => { if(e.key === 'Enter') processMessage(); });
+        UI.userInput.focus();
+
+    </script>
+</body>
+</html>
