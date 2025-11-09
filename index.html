@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Berra Simülatör V2.6 (Final)</title>
+    <title>Berra Simülatör V2.7</title>
     <style>
         :root { color-scheme: light; }
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             background-color: #e5ddd5;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex; justify-content: center; align-items: center;
             height: 100vh; height: 100dvh; margin: 0;
+            overscroll-behavior: none;
         }
-        /* Temalar */
         body.theme-tatli { background-color: #ffe6f1; }
         body.theme-sinirli { background-color: #7a0000; }
         body.theme-soguk { background-color: #d7ecff; }
@@ -41,14 +41,15 @@
         #chat-box {
             flex: 1; background: #f0e7df; padding: 15px;
             overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
+            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
         }
         .message {
             max-width: 85%; padding: 8px 14px; border-radius: 18px; position: relative;
-            font-size: 15px; line-height: 1.4; word-wrap: break-word; animation: fadeIn 0.2s ease-out;
+            font-size: 15px; line-height: 1.4; word-wrap: break-word; animation: fadeIn 0.15s ease-out;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        .message.bot { background: #fff; align-self: flex-start; border-bottom-left-radius: 4px; }
-        .message.user { background: #dcf8c6; align-self: flex-end; border-bottom-right-radius: 4px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .message.bot { background: #fff; align-self: flex-start; border-bottom-left-radius: 4px; box-shadow: 0 1px 1px rgba(0,0,0,0.05); }
+        .message.user { background: #dcf8c6; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 1px 1px rgba(0,0,0,0.05); }
         .message.system {
             background-color: #ffebee; color: #c62828; align-self: center; text-align: center;
             font-weight: 500; font-size: 0.85rem; padding: 4px 12px; border-radius: 12px; opacity: 0.8; margin: 5px 0;
@@ -56,6 +57,7 @@
         .typing-indicator {
             padding: 8px 12px; background: #fff; border-radius: 18px; border-bottom-left-radius: 4px;
             align-self: flex-start; display: flex; align-items: center; width: fit-content; margin-bottom: 5px;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.05);
         }
         .typing-dots { display: flex; gap: 4px; }
         .typing-dots span {
@@ -66,27 +68,26 @@
         .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
 
-        /* STANDART FORM CSS */
         #input-form {
             background: #f0f0f0; padding: 8px 10px; display: flex; align-items: center;
-            gap: 8px; flex-shrink: 0; width: 100%;
+            gap: 8px; flex-shrink: 0; width: 100%; z-index: 10;
         }
         #user-input {
             flex: 1; padding: 12px 15px; border: none; border-radius: 24px;
-            outline: none; font-size: 16px; background: #fff;
+            outline: none; font-size: 16px; background: #fff; -webkit-appearance: none;
         }
         #send-btn {
             background: #075E54; color: white; border: none; width: 45px; height: 45px;
             border-radius: 50%; cursor: pointer; font-size: 20px; display: flex;
-            align-items: center; justify-content: center; flex-shrink: 0;
+            align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.1s;
         }
-        #send-btn:active { background: #0b8263; }
+        #send-btn:active { transform: scale(0.9); }
     </style>
 </head>
 <body class="theme-standart">
     <div id="chat-container">
         <div id="chat-header">
-            <h2>Berra Simülatör v2.6</h2>
+            <h2>Berra Simülatör v2.7</h2>
             <div id="status-row">
                 <span id="mood-status">Bağlanıyor...</span>
                 <div id="meters">
@@ -99,14 +100,13 @@
         
         <div id="chat-box"></div>
 
-        <form id="input-form" onsubmit="return handleFormSubmit(event)">
+        <form id="input-form" action="javascript:void(0);">
             <input type="text" id="user-input" placeholder="Mesaj yaz..." autocomplete="off" required>
             <button type="submit" id="send-btn">➤</button>
         </form>
     </div>
 
     <script>
-        // --- AYARLAR ---
         const BASE_MOODS = ["TATLI", "SOĞUK", "KISKANÇ", "İLGİLİ", "ALAYCI"];
         const LOVE_THRESHOLD = 100, PATIENCE_START = 100, TRIP_THRESHOLD = 100;
         const moodThemes = {
@@ -145,26 +145,25 @@
 
         const UI = {
             chatBox: document.getElementById('chat-box'),
+            inputForm: document.getElementById('input-form'),
             userInput: document.getElementById('user-input'),
+            sendBtn: document.getElementById('send-btn'),
             mood: document.getElementById('mood-status'),
             patience: document.getElementById('patience-status'),
             love: document.getElementById('love-status'),
             trip: document.getElementById('trip-status')
         };
 
-        // --- OYUN BAŞLATMA ---
         initGame();
         function initGame() {
             userName = null; baseMood = BASE_MOODS[Math.floor(Math.random() * BASE_MOODS.length)]; currentMood = baseMood;
             status = { sabir: PATIENCE_START, love: 15, trip: 0, isTripMode: false };
             gameState = { active: true, pendingRPS: false, pendingChoice: false };
-            UI.chatBox.innerHTML = '';
-            if(UI.userInput) { UI.userInput.disabled = false; UI.userInput.placeholder = "Mesaj yaz..."; }
-            updateUI(); addSystemMessage("--- Berra v2.6 (Final) Bağlandı ---");
+            UI.chatBox.innerHTML = ''; UI.userInput.disabled = false; UI.sendBtn.disabled = false; UI.userInput.placeholder = "Mesaj yaz...";
+            updateUI(); addSystemMessage("--- Berra v2.7 Bağlandı ---");
             setTimeout(() => respond("Selam! Ben Berra. Önce adını bağışla bakalım?"), 800);
         }
 
-        // --- YARDIMCI FONKSİYONLAR ---
         function normalize(text) { return text?.toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i') || ""; }
         function hasKeyword(text, normalized, keywords) { return keywords.some(k => { const kNorm = normalize(k); return text.includes(k.toLocaleLowerCase('tr-TR')) || normalized.includes(kNorm); }); }
         function updateUI() {
@@ -176,9 +175,15 @@
         function addMessage(text, type) {
             const div = document.createElement('div'); div.className = `message ${type}`; div.textContent = text;
             UI.chatBox.appendChild(div);
-            UI.chatBox.scrollTop = UI.chatBox.scrollHeight; // Basit kaydırma
+            scrollToBottom();
         }
         const addBotMessage = (text) => addMessage(text, 'bot'), addUserMessage = (text) => addMessage(text, 'user'), addSystemMessage = (text) => addMessage(text, 'system');
+        
+        // GÜÇLENDİRİLMİŞ KAYDIRMA
+        function scrollToBottom() {
+            UI.chatBox.scrollTop = UI.chatBox.scrollHeight;
+            requestAnimationFrame(() => UI.chatBox.scrollTop = UI.chatBox.scrollHeight);
+        }
 
         function respond(text, options = {}) {
             if (!gameState.active) return;
@@ -186,7 +191,7 @@
             setTimeout(() => { hideTyping(); addBotMessage(options.raw ? text : appendEmoji(text)); if (options.callback) options.callback(); updateUI(); }, delay);
         }
         let typingEl = null;
-        function showTyping() { hideTyping(); typingEl = document.createElement('div'); typingEl.className = 'typing-indicator'; typingEl.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>'; UI.chatBox.appendChild(typingEl); UI.chatBox.scrollTop = UI.chatBox.scrollHeight; }
+        function showTyping() { hideTyping(); typingEl = document.createElement('div'); typingEl.className = 'typing-indicator'; typingEl.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>'; UI.chatBox.appendChild(typingEl); scrollToBottom(); }
         function hideTyping() { if (typingEl?.parentNode) typingEl.remove(); }
         function appendEmoji(text) {
             if (status.isTripMode) return text; const info = moodThemes[currentMood];
@@ -198,52 +203,46 @@
             if (status.sabir <= 0) { addSystemMessage("BERRA'NIN SABRI TÜKENDİ! ENGELLENDİNİZ."); gameState.active = false; UI.userInput.disabled = true; UI.userInput.placeholder = "Sohbet sonlandırıldı."; } updateUI();
         }
 
-        // --- ANA FORM İŞLEYİCİ (EN BASİT HALİ) ---
-        function handleFormSubmit(e) {
+        // --- GARANTİLİ MESAJ İŞLEYİCİ ---
+        UI.inputForm.addEventListener('submit', (e) => {
             e.preventDefault(); // Sayfa yenilenmesini durdur
-            
             const rawText = UI.userInput.value.trim();
-            if (!rawText) return false;
+            if (!rawText) return;
 
-            UI.userInput.value = ''; // Temizle
-            addUserMessage(rawText); // Ekrana yaz
+            // 1. Önce mesajı ekrana bas (Gecikme olmaması için en üstte)
+            addUserMessage(rawText);
+            UI.userInput.value = '';
+            // UI.userInput.focus(); // Mobilde klavye sorunu yaparsa bu satırı silin
 
-            // --- OYUN MANTIĞI ---
+            // 2. Sonra mantığı çalıştır
             const textLower = rawText.toLocaleLowerCase('tr-TR'), textNorm = normalize(rawText);
-
-            if (textLower === "çıkış") { addSystemMessage("Berra çevrimdışı oldu."); gameState.active = false; UI.userInput.disabled = true; return false; }
-            if (textLower === "sıfırla" || textLower === "reset") { initGame(); return false; }
-            if (!gameState.active) return false;
+            if (textLower === "çıkış") { addSystemMessage("Berra çevrimdışı oldu."); gameState.active = false; UI.userInput.disabled = true; return; }
+            if (textLower === "sıfırla" || textLower === "reset") { initGame(); return; }
+            if (!gameState.active) return;
 
             if (!userName) {
                 let nameMatch = textLower.match(/(?:adım|ismim|benim\s+adım)\s+([a-zA-Zğüşıöç]+)/i);
                 if (!nameMatch && textLower.startsWith("ben ")) { const possibleName = textLower.split(" ")[1]; if (!["geldim", "gidiyorum", "buradayım"].includes(possibleName)) nameMatch = [null, possibleName]; }
                 let nameCandidate = nameMatch ? nameMatch[1] : (rawText.split(' ').length === 1 ? rawText : null);
                 if (nameCandidate && nameCandidate.length > 2) { userName = nameCandidate.charAt(0).toUpperCase() + nameCandidate.slice(1).toLocaleLowerCase('tr-TR'); adjustStatus('love', 10); respond(`Memnun oldum ${userName}. Umarım beni sinir etmezsin.`); }
-                else { respond("Bu bir isim mi emin olamadım. Bana düzgünce adını söyle."); } return false;
+                else { respond("Bu bir isim mi emin olamadım. Bana düzgünce adını söyle."); } return;
             }
-
-            if (gameState.pendingRPS) { handleRPS(textLower); return false; }
-            if (gameState.pendingChoice) { handleChoice(textLower); return false; }
+            if (gameState.pendingRPS) { handleRPS(textLower); return; }
+            if (gameState.pendingChoice) { handleChoice(textLower); return; }
             if (status.isTripMode) {
                 if (hasKeyword(textLower, textNorm, K.apology)) { status.isTripMode = false; status.trip = 30; adjustStatus('sabir', 20); respond(`Neyse, uzatmayalım. Bu seferlik affettim ${userName}.`); }
-                else { respond(RESPONSES.trip[Math.floor(Math.random() * RESPONSES.trip.length)], { raw: true, delay: 600 }); } return false;
+                else { respond(RESPONSES.trip[Math.floor(Math.random() * RESPONSES.trip.length)], { raw: true, delay: 600 }); } return;
             }
-
-            if (hasKeyword(textLower, textNorm, K.anger)) { adjustStatus('sabir', -25); respond("Bana bak, üslubunu düzelt karşında arkadaşın yok!"); return false; }
-            if (hasKeyword(textLower, textNorm, K.compliment)) { adjustStatus('love', 8); adjustStatus('trip', -10); respond(["Ya şımartmasana beni", "Biliyorum harikayım ama duymak da güzel.", "Sen de fena değilsin hani."][Math.floor(Math.random()*3)]); return false; }
-            if (hasKeyword(textLower, textNorm, ["taş kağıt", "oyun oyna"])) { gameState.pendingRPS = true; respond("Tamam, taş mı kağıt mı makas mı? Seç bakalım."); return false; }
-            if (hasKeyword(textLower, textNorm, ["falıma bak", "fal bak"])) { respond(RESPONSES.fortune[Math.floor(Math.random() * RESPONSES.fortune.length)]); return false; }
-            
+            if (hasKeyword(textLower, textNorm, K.anger)) { adjustStatus('sabir', -25); respond("Bana bak, üslubunu düzelt karşında arkadaşın yok!"); return; }
+            if (hasKeyword(textLower, textNorm, K.compliment)) { adjustStatus('love', 8); adjustStatus('trip', -10); respond(["Ya şımartmasana beni", "Biliyorum harikayım ama duymak da güzel.", "Sen de fena değilsin hani."][Math.floor(Math.random()*3)]); return; }
+            if (hasKeyword(textLower, textNorm, ["taş kağıt", "oyun oyna"])) { gameState.pendingRPS = true; respond("Tamam, taş mı kağıt mı makas mı? Seç bakalım."); return; }
+            if (hasKeyword(textLower, textNorm, ["falıma bak", "fal bak"])) { respond(RESPONSES.fortune[Math.floor(Math.random() * RESPONSES.fortune.length)]); return; }
             const gossipName = K.gossipNames.find(n => textLower.includes(n));
-            if (gossipName) { adjustStatus('love', 5); respond(`${RESPONSES.gossip[Math.floor(Math.random() * RESPONSES.gossip.length)]} (${gossipName.charAt(0).toUpperCase() + gossipName.slice(1)} için diyorum)`); return false; }
-
+            if (gossipName) { adjustStatus('love', 5); respond(`${RESPONSES.gossip[Math.floor(Math.random() * RESPONSES.gossip.length)]} (${gossipName.charAt(0).toUpperCase() + gossipName.slice(1)} için diyorum)`); return; }
             const pool = RESPONSES.moods[currentMood] || RESPONSES.defaults;
             if (Math.random() < 0.15 && !gameState.pendingChoice) { gameState.pendingChoice = true; respond("Sence bugün kırmızı elbisemi mi giyeyim yoksa maviyi mi? (kırmızı/mavi yaz)"); }
             else { respond(pool[Math.floor(Math.random() * pool.length)]()); }
-
-            return false;
-        }
+        });
 
         function handleRPS(move) {
             if (!["taş", "kağıt", "makas"].some(m => move.includes(m))) { respond("Taş, kağıt ya da makas yazman lazım tatlım."); return; }
