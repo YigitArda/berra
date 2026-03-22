@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profilim — arabalariseviyoruz.com</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1014;--bg2:#16181e;--bg3:#1d1f27;
+  --border:#24262f;--border2:#32353f;
+  --text:#e4e6ed;--text2:#8b8fa4;--text3:#484c5e;
+  --accent:#e03030;--acc2:#ff4d4d;
+  --green:#2ecc71;--amber:#f0a500;--blue:#4a90d9;
+  --font:'Barlow',sans-serif;--fontc:'Barlow Condensed',sans-serif;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+.topbar{height:46px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;position:sticky;top:0;z-index:100}
+.logo{font-family:var(--fontc);font-size:1.2rem;font-weight:700;color:var(--text);text-decoration:none}
+.logo span{color:var(--accent)}
+.back{font-size:.8rem;color:var(--text3);text-decoration:none;transition:color .15s}
+.back:hover{color:var(--text)}
+
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px;position:sticky;top:46px;z-index:99}
+.tab{padding:12px 16px;font-size:.85rem;font-weight:600;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--text2)}
+.tab.active{color:var(--text);border-bottom-color:var(--accent)}
+
+.page{display:none;max-width:900px;margin:0 auto;padding:24px 16px 60px}
+.page.active{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:6px;font-family:var(--font);font-size:.82rem;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-accent{background:var(--accent);color:#fff}
+.btn-accent:hover{background:var(--acc2)}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2)}
+.btn-sm{padding:4px 9px;font-size:.75rem}
+.btn-danger{background:rgba(224,48,48,.12);color:var(--accent);border:1px solid rgba(224,48,48,.25)}
+.btn-danger:hover{background:rgba(224,48,48,.2)}
+
+/* ── BAKIM TAKVİMİ ── */
+.maintenance-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.card-section{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.card-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-head-title{font-family:var(--fontc);font-size:1rem;font-weight:700;color:var(--text)}
+.card-body{padding:16px}
+
+.log-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.log-item:last-child{border-bottom:none}
+.log-icon{width:34px;height:34px;background:var(--bg3);border-radius:7px;display:grid;place-items:center;font-size:1rem;flex-shrink:0;border:1px solid var(--border)}
+.log-info{flex:1;min-width:0}
+.log-type{font-size:.88rem;font-weight:700;color:var(--text)}
+.log-meta{font-size:.75rem;color:var(--text3);margin-top:2px}
+.log-next{font-size:.75rem;margin-top:4px}
+.log-next.soon{color:var(--amber)}
+.log-next.overdue{color:var(--accent)}
+.log-next.ok{color:var(--green)}
+.log-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.8rem;padding:2px 4px;border-radius:3px;transition:color .12s}
+.log-del:hover{color:var(--accent)}
+
+.upcoming-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:7px;margin-bottom:8px;border:1px solid var(--border)}
+.upcoming-item.soon{border-color:rgba(240,165,0,.3);background:rgba(240,165,0,.06)}
+.upcoming-item.overdue{border-color:rgba(224,48,48,.3);background:rgba(224,48,48,.06)}
+.upcoming-icon{font-size:1.2rem;flex-shrink:0}
+.upcoming-text{flex:1}
+.upcoming-type{font-size:.85rem;font-weight:700;color:var(--text)}
+.upcoming-when{font-size:.75rem;color:var(--text3);margin-top:1px}
+
+/* ── ROZET ── */
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.badge-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;transition:border-color .15s}
+.badge-card:hover{border-color:var(--border2)}
+.badge-card.earned{border-color:var(--amber);background:rgba(240,165,0,.06)}
+.badge-icon{font-size:2rem;margin-bottom:8px}
+.badge-name{font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:3px}
+.badge-desc{font-size:.75rem;color:var(--text3)}
+.badge-date{font-size:.7rem;color:var(--amber);margin-top:4px}
+.badge-card.locked .badge-icon{opacity:.25;filter:grayscale(1)}
+.badge-card.locked .badge-name{color:var(--text3)}
+
+/* ── GALERİ ── */
+.gallery-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.gallery-item{position:relative;border-radius:8px;overflow:hidden;background:var(--bg3);aspect-ratio:4/3;cursor:pointer;border:1px solid var(--border);transition:border-color .15s}
+.gallery-item:hover{border-color:var(--border2)}
+.gallery-item img{width:100%;height:100%;object-fit:cover}
+.gallery-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:8px;opacity:0;transition:opacity .2s}
+.gallery-item:hover .gallery-overlay{opacity:1}
+.gallery-caption{font-size:.75rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gallery-like{display:flex;align-items:center;gap:4px;font-size:.75rem;color:#fff}
+.gallery-del{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);border:none;color:#fff;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:.7rem;display:grid;place-items:center;opacity:0;transition:opacity .2s}
+.gallery-item:hover .gallery-del{opacity:1}
+
+/* ── ÖNE ÇIKAN ── */
+.featured-explain{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px}
+.featured-explain h3{font-family:var(--fontc);font-size:1.1rem;font-weight:700;margin-bottom:8px;color:var(--text)}
+.featured-explain p{font-size:.85rem;color:var(--text2);line-height:1.6;margin-bottom:10px}
+.price-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin:16px 0}
+.price-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center}
+.price-card.popular{border-color:var(--accent);background:rgba(224,48,48,.06)}
+.price-card-duration{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:6px}
+.price-card-price{font-family:var(--fontc);font-size:1.8rem;font-weight:800;color:var(--text);margin-bottom:4px}
+.price-card-price span{font-size:.9rem;font-weight:400;color:var(--text3)}
+.price-card.popular .price-card-price{color:var(--accent)}
+.price-card-badge{font-size:.68rem;font-weight:700;padding:1px 6px;border-radius:3px;background:var(--accent);color:#fff;display:inline-block;margin-bottom:8px}
+.featured-list{display:flex;flex-direction:column;gap:10px}
+.featured-item{background:var(--bg2);border:1px solid var(--amber);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:12px}
+.featured-star{font-size:1.2rem;color:var(--amber)}
+.featured-info{flex:1}
+.featured-name{font-size:.9rem;font-weight:700;color:var(--text)}
+.featured-meta{font-size:.75rem;color:var(--text3);margin-top:2px}
+.featured-until{font-size:.72rem;color:var(--amber);margin-top:2px}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:grid;place-items:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .18s}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;padding:20px;transform:translateY(8px);transition:transform .18s}
+.overlay.open .modal{transform:translateY(0)}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-title{font-family:var(--fontc);font-size:1.2rem;font-weight:700}
+.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1rem;padding:2px 6px;border-radius:4px}
+.modal-close:hover{background:var(--bg3);color:var(--text)}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.fg label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text3)}
+.fg input,.fg select,.fg textarea{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:7px 10px;color:var(--text);font-family:var(--font);font-size:.85rem;outline:none;width:100%}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--border2)}
+.fg select option{background:var(--bg2)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.err{font-size:.78rem;color:var(--accent);display:none;margin-bottom:8px}
+.err.show{display:block}
+
+.toast{position:fixed;bottom:20px;right:20px;z-index:999;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:10px 16px;font-size:.82rem;opacity:0;transform:translateY(6px);transition:all .2s;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.ok{border-left:3px solid var(--green)}
+.toast.err{border-left:3px solid var(--accent)}
+
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.empty{text-align:center;padding:40px 20px;color:var(--text3);font-size:.88rem}
+.section-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="logo" href="index.html">🚗 arabalariseviyoruz<span>.com</span></a>
+  <a class="back" href="index.html">← Forum</a>
+  <span id="topbarUser" style="margin-left:auto;font-size:.82rem;color:var(--text2)"></span>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="maintenance">🔧 Bakım Takvimi</div>
+  <div class="tab" data-tab="badges">🏅 Rozetler</div>
+  <div class="tab" data-tab="gallery">📷 Galeri</div>
+  <div class="tab" data-tab="featured">⭐ Öne Çıkar</div>
+</div>
+
+<!-- BAKIM TAKVİMİ -->
+<div class="page active" id="page-maintenance">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div>
+      <div style="font-family:var(--fontc);font-size:1.4rem;font-weight:800">🔧 Bakım Takvimi</div>
+      <div style="font-size:.82rem;color:var(--text2);margin-top:2px">Araç bakımlarını takip et, unutma</div>
+    </div>
+    <button class="btn btn-accent" onclick="openModal('addLogModal')">+ Bakım Ekle</button>
+  </div>
+
+  <div class="maintenance-grid">
+    <div>
+      <div class="section-title">Yaklaşan Bakımlar</div>
+      <div id="upcomingList"><div class="empty">Yükleniyor...</div></div>
+    </div>
+    <div>
+      <div class="section-title">Bakım Geçmişi</div>
+      <div id="logList"><div class="empty">Yükleniyor...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ROZETLER -->
+<div class="page" id="page-badges">
+  <div style="margin-bottom:20px">
+    <div style="font-family:var(--fontc);font-size:1.4rem;font-weight:800">🏅 Rozetler</div>
+    <div style="font-size:.82rem;color:var(--text2);margin-top:2px">Aktif ol, rozet kazan</div>
+  </div>
+  <div id="badgeGrid" class="badge-grid"><div class="empty">Yükleniyor...</div></div>
+</div>
+
+<!-- GALERİ -->
+<div class="page" id="page-gallery">
+  <div class="gallery-header">
+    <div>
+      <div style="font-family:var(--fontc);font-size:1.4rem;font-weight:800">📷 Araç Galerisi</div>
+      <div style="font-size:.82rem;color:var(--text2);margin-top:2px">Topluluk araçları</div>
+    </div>
+    <button class="btn btn-accent" onclick="openModal('addPhotoModal')">+ Fotoğraf Ekle</button>
+  </div>
+  <div id="galleryGrid" class="gallery-grid"></div>
+</div>
+
+<!-- ÖNE ÇIKAN SANAYİ -->
+<div class="page" id="page-featured">
+  <div style="font-family:var(--fontc);font-size:1.4rem;font-weight:800;margin-bottom:16px">⭐ Öne Çıkan Sanayi İlanı</div>
+
+  <div class="featured-explain">
+    <h3>Sanayi ilanınızı öne çıkarın</h3>
+    <p>Öne çıkan işletmeler sanayi haritasında listenin en üstünde ve özel yıldız rozeti ile görünür. Aylık ortalama 3-5x daha fazla görüntülenme alır.</p>
+    <div class="price-card-grid">
+      <div class="price-card">
+        <div class="price-card-duration">7 Gün</div>
+        <div class="price-card-price">149<span> ₺</span></div>
+        <button class="btn btn-ghost btn-sm" onclick="selectPlan(7,149)">Seç</button>
+      </div>
+      <div class="price-card popular">
+        <div class="price-card-badge">En Popüler</div>
+        <div class="price-card-duration">30 Gün</div>
+        <div class="price-card-price">399<span> ₺</span></div>
+        <button class="btn btn-accent btn-sm" onclick="selectPlan(30,399)">Seç</button>
+      </div>
+      <div class="price-card">
+        <div class="price-card-duration">90 Gün</div>
+        <div class="price-card-price">899<span> ₺</span></div>
+        <button class="btn btn-ghost btn-sm" onclick="selectPlan(90,899)">Seç</button>
+      </div>
+    </div>
+    <p style="font-size:.78rem;color:var(--text3)">Ödeme için info@arabalariseviyoruz.com adresine ulaşın. Manuel aktivasyon yapılır.</p>
+  </div>
+
+  <div class="section-title">Şu an öne çıkan işletmeler</div>
+  <div id="featuredList"></div>
+</div>
+
+<!-- BAKIM EKLE MODAL -->
+<div class="overlay" id="addLogModal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">🔧 Bakım Ekle</span>
+      <button class="modal-close" onclick="closeModal('addLogModal')">✕</button>
+    </div>
+    <div class="fg">
+      <label>Bakım Türü</label>
+      <select id="log_type_sel" onchange="setLogType(this.value)">
+        <option value="yag-degisimi">🛢️ Yağ Değişimi</option>
+        <option value="fren">🛑 Fren Bakımı</option>
+        <option value="lastik">🛞 Lastik Değişimi</option>
+        <option value="filtre">🌀 Filtre Değişimi</option>
+        <option value="akü">🔋 Akü Değişimi</option>
+        <option value="cam-suyu">💧 Cam Suyu</option>
+        <option value="antifriz">❄️ Antifriz</option>
+        <option value="triger">⚙️ Triger Seti</option>
+        <option value="genel-bakim">🔧 Genel Bakım</option>
+        <option value="diger">📌 Diğer</option>
+      </select>
+    </div>
+    <div class="fg"><label>Bakım Türü (özel)</label><input id="log_type" placeholder="Yağ değişimi..."></div>
+    <div class="form-row">
+      <div class="fg"><label>Yapıldığı Tarih</label><input id="log_date" type="date"></div>
+      <div class="fg"><label>O Anki Km</label><input id="log_km" type="number" placeholder="85000"></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Sonraki Tarih</label><input id="log_next_date" type="date"></div>
+      <div class="fg"><label>Sonraki Km</label><input id="log_next_km" type="number" placeholder="95000"></div>
+    </div>
+    <div class="fg"><label>Not</label><input id="log_note" placeholder="Opsiyonel not..."></div>
+    <div class="err" id="logErr"></div>
+    <button class="btn btn-accent" id="btnAddLog" style="width:100%">Kaydet</button>
+  </div>
+</div>
+
+<!-- FOTOĞRAF EKLE MODAL -->
+<div class="overlay" id="addPhotoModal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">📷 Fotoğraf Ekle</span>
+      <button class="modal-close" onclick="closeModal('addPhotoModal')">✕</button>
+    </div>
+    <div class="fg">
+      <label>Fotoğraf Seç</label>
+      <input type="file" id="photoFile" accept="image/*" onchange="previewPhoto(this)" style="background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:7px 10px;color:var(--text);width:100%">
+    </div>
+    <div id="photoPreview" style="margin-bottom:10px"></div>
+    <div class="fg"><label>Açıklama (opsiyonel)</label><input id="photoCaption" placeholder="2019 Corolla, stage 1 remap..."></div>
+    <div class="err" id="photoErr"></div>
+    <button class="btn btn-accent" id="btnAddPhoto" style="width:100%">Yükle</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let user = null;
+let myBadges = new Set();
+let allBadges = [];
+let logs = [];
+let photos = [];
+let photoBase64 = null;
+
+// ── OTURUM ───────────────────────────────────────────────────
+async function apiCall(url, method='GET', body) {
+  const res = await fetch(url, {
+    method, credentials:'include',
+    headers:{'Content-Type':'application/json'},
+    body: body ? JSON.stringify(body) : undefined
+  });
+  return res.json();
+}
+
+async function initUser() {
+  try {
+    const data = await apiCall('/api/auth/me');
+    if (data.user) {
+      user = data.user;
+      document.getElementById('topbarUser').textContent = '👤 ' + user.username;
+      loadAll();
+    } else {
+      document.getElementById('topbarUser').innerHTML = '<a href="index.html" style="color:var(--accent);text-decoration:none">Giriş yap</a>';
+      showDemoData();
+    }
+  } catch(e) { showDemoData(); }
+}
+
+function loadAll() {
+  loadMaintenance();
+  loadBadges();
+  loadGallery();
+  loadFeatured();
+}
+
+function showDemoData() {
+  renderUpcoming(DEMO_UPCOMING);
+  renderLogs(DEMO_LOGS);
+  renderBadges(ALL_BADGE_DEFS, new Set(['ilk-yorum']));
+  renderGallery(DEMO_PHOTOS);
+  renderFeatured(DEMO_FEATURED);
+}
+
+// ── BAKIM TAKVİMİ ────────────────────────────────────────────
+const MAINTENANCE_ICONS = {
+  'yag-degisimi':'🛢️','fren':'🛑','lastik':'🛞','filtre':'🌀',
+  'akü':'🔋','cam-suyu':'💧','antifriz':'❄️','triger':'⚙️',
+  'genel-bakim':'🔧','diger':'📌'
+};
+
+const DEMO_UPCOMING = [
+  {id:1,type:'yag-degisimi',done_date:'2024-10-01',next_date:'2025-04-01',next_km:95000,done_km:85000,brand:'Toyota',model:'Corolla'},
+  {id:2,type:'fren',done_date:'2024-08-15',next_date:'2025-08-15',next_km:120000,done_km:80000,brand:'Toyota',model:'Corolla'},
+];
+const DEMO_LOGS = [
+  {id:1,type:'yag-degisimi',done_date:'2024-10-01',done_km:85000,next_date:'2025-04-01',next_km:95000,brand:'Toyota',model:'Corolla',note:'Castrol 5W40'},
+  {id:2,type:'lastik',done_date:'2024-06-10',done_km:78000,next_date:null,next_km:null,brand:'Toyota',model:'Corolla',note:'Michelin Pilot Sport 4'},
+  {id:3,type:'fren',done_date:'2024-08-15',done_km:80000,next_date:'2025-08-15',next_km:120000,brand:'Toyota',model:'Corolla',note:'Ön fren balatası değiştirildi'},
+];
+
+async function loadMaintenance() {
+  try {
+    const [upRes, logRes] = await Promise.all([
+      apiCall('/api/maintenance/upcoming'),
+      apiCall('/api/maintenance')
+    ]);
+    renderUpcoming(upRes.upcoming || []);
+    renderLogs(logRes.logs || []);
+  } catch(e) { renderUpcoming(DEMO_UPCOMING); renderLogs(DEMO_LOGS); }
+}
+
+function renderUpcoming(items) {
+  const el = document.getElementById('upcomingList');
+  if (!items.length) { el.innerHTML = '<div class="empty">Yaklaşan bakım yok 🎉</div>'; return; }
+  el.innerHTML = items.map(item => {
+    const daysLeft = item.next_date ? Math.ceil((new Date(item.next_date)-Date.now())/86400000) : null;
+    const cls = daysLeft !== null ? (daysLeft < 0 ? 'overdue' : daysLeft < 30 ? 'soon' : '') : '';
+    const label = daysLeft !== null
+      ? (daysLeft < 0 ? `${Math.abs(daysLeft)} gün gecikti!` : daysLeft === 0 ? 'Bugün!' : `${daysLeft} gün kaldı`)
+      : '';
+    return `<div class="upcoming-item ${cls}">
+      <span class="upcoming-icon">${MAINTENANCE_ICONS[item.type]||'🔧'}</span>
+      <div class="upcoming-text">
+        <div class="upcoming-type">${item.type.replace(/-/g,' ')}</div>
+        <div class="upcoming-when">${item.brand||''} ${item.model||''} • ${label}${item.next_km?' | '+item.next_km.toLocaleString('tr-TR')+' km':''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderLogs(items) {
+  const el = document.getElementById('logList');
+  if (!items.length) { el.innerHTML = '<div class="empty">Henüz bakım eklenmemiş.</div>'; return; }
+  el.innerHTML = items.map(item => {
+    const daysLeft = item.next_date ? Math.ceil((new Date(item.next_date)-Date.now())/86400000) : null;
+    const nextCls = daysLeft === null ? '' : daysLeft < 0 ? 'overdue' : daysLeft < 30 ? 'soon' : 'ok';
+    const nextLabel = daysLeft === null ? '' : daysLeft < 0 ? `⚠️ ${Math.abs(daysLeft)} gün gecikti` : `Sonraki: ${new Date(item.next_date).toLocaleDateString('tr-TR')}`;
+    return `<div class="log-item">
+      <div class="log-icon">${MAINTENANCE_ICONS[item.type]||'🔧'}</div>
+      <div class="log-info">
+        <div class="log-type">${item.type.replace(/-/g,' ')}</div>
+        <div class="log-meta">${new Date(item.done_date).toLocaleDateString('tr-TR')} • ${item.done_km ? item.done_km.toLocaleString('tr-TR')+' km' : ''}${item.brand?' • '+item.brand+' '+item.model:''}</div>
+        ${item.note ? `<div class="log-meta" style="font-style:italic">${item.note}</div>` : ''}
+        ${nextLabel ? `<div class="log-next ${nextCls}">${nextLabel}</div>` : ''}
+      </div>
+      ${user ? `<button class="log-del" onclick="deleteLog(${item.id})">✕</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function setLogType(val) {
+  const labels = {'yag-degisimi':'Yağ Değişimi','fren':'Fren Bakımı','lastik':'Lastik Değişimi','filtre':'Filtre Değişimi','akü':'Akü Değişimi','cam-suyu':'Cam Suyu','antifriz':'Antifriz','triger':'Triger Seti','genel-bakim':'Genel Bakım','diger':''};
+  document.getElementById('log_type').value = labels[val] || '';
+  // Otomatik sonraki tarih önerileri
+  const nextKmMap = {'yag-degisimi':10000,'triger':60000,'fren':30000,'lastik':40000};
+  const logKm = parseInt(document.getElementById('log_km').value) || 0;
+  if (nextKmMap[val] && logKm) document.getElementById('log_next_km').value = logKm + nextKmMap[val];
+}
+
+document.getElementById('btnAddLog').addEventListener('click', async () => {
+  const type = document.getElementById('log_type').value.trim() || document.getElementById('log_type_sel').value;
+  const date = document.getElementById('log_date').value;
+  const errEl = document.getElementById('logErr');
+  if (!type || !date) { errEl.textContent='Tür ve tarih zorunlu.'; errEl.classList.add('show'); return; }
+  const btn = document.getElementById('btnAddLog');
+  btn.innerHTML = '<span class="spinner"></span>';
+
+  const payload = {
+    type, done_date: date,
+    done_km: parseInt(document.getElementById('log_km').value) || null,
+    next_date: document.getElementById('log_next_date').value || null,
+    next_km: parseInt(document.getElementById('log_next_km').value) || null,
+    note: document.getElementById('log_note').value.trim() || null,
+  };
+
+  try {
+    const data = await apiCall('/api/maintenance', 'POST', payload);
+    btn.textContent = 'Kaydet';
+    if (data.error || data.errors) { errEl.textContent = data.error || data.errors[0].msg; errEl.classList.add('show'); return; }
+    closeModal('addLogModal');
+    showToast('Bakım eklendi!', 'ok');
+    // Rozetleri kontrol et
+    const awarded = data.awarded || [];
+    if (awarded.length) setTimeout(() => showToast('🏅 Yeni rozet kazandın: ' + awarded.join(', '), 'ok'), 1000);
+    loadMaintenance();
+  } catch(e) {
+    btn.textContent = 'Kaydet';
+    // Demo mode
+    const newLog = { id: Date.now(), ...payload, brand:'', model:'' };
+    DEMO_LOGS.unshift(newLog);
+    renderLogs(DEMO_LOGS);
+    closeModal('addLogModal');
+    showToast('Bakım eklendi! (Giriş yapınca kaydedilir)', 'ok');
+  }
+});
+
+async function deleteLog(id) {
+  if (!confirm('Bu kaydı silmek istediğine emin misin?')) return;
+  try {
+    await apiCall('/api/maintenance/' + id, 'DELETE');
+    showToast('Silindi.', 'ok');
+    loadMaintenance();
+  } catch(e) { showToast('Hata oluştu.', 'err'); }
+}
+
+// ── ROZETLER ─────────────────────────────────────────────────
+const ALL_BADGE_DEFS = [
+  {slug:'ilk-yorum',name:'İlk Yorum',icon:'💬',description:'İlk yorumunu yazdın'},
+  {slug:'aktif-uye',name:'Aktif Üye',icon:'🔥',description:'10 veya daha fazla yorum'},
+  {slug:'forum-ustasi',name:'Forum Ustası',icon:'⚡',description:'50 veya daha fazla yorum'},
+  {slug:'usta',name:'Usta',icon:'🏆',description:'100 veya daha fazla yorum'},
+  {slug:'ilk-konu',name:'Konu Açıcı',icon:'📌',description:'İlk konunu açtın'},
+  {slug:'rehber',name:'Rehber',icon:'🎓',description:'10 veya daha fazla konu'},
+  {slug:'arac-sahibi',name:'Araç Sahibi',icon:'🚗',description:'Profiline araç ekledin'},
+  {slug:'koleksiyoner',name:'Koleksiyoner',icon:'🏅',description:'3 veya daha fazla araç'},
+  {slug:'fotograf',name:'Fotoğrafçı',icon:'📷',description:'Galeriye fotoğraf yükledi'},
+  {slug:'populer',name:'Popüler',icon:'⭐',description:'50 veya daha fazla beğeni'},
+];
+
+async function loadBadges() {
+  try {
+    const data = await apiCall('/api/maintenance/badges/' + user.username);
+    myBadges = new Set((data.badges || []).map(b => b.slug));
+    const badgesWithDate = {};
+    (data.badges || []).forEach(b => badgesWithDate[b.slug] = b.earned_at);
+    renderBadges(ALL_BADGE_DEFS, myBadges, badgesWithDate);
+  } catch(e) { renderBadges(ALL_BADGE_DEFS, new Set()); }
+}
+
+function renderBadges(defs, earned, dates={}) {
+  const el = document.getElementById('badgeGrid');
+  const earnedArr = defs.filter(b => earned.has(b.slug));
+  const lockedArr = defs.filter(b => !earned.has(b.slug));
+
+  el.innerHTML = [...earnedArr, ...lockedArr].map(b => {
+    const isEarned = earned.has(b.slug);
+    const dateStr = dates[b.slug] ? new Date(dates[b.slug]).toLocaleDateString('tr-TR') : '';
+    return `<div class="badge-card ${isEarned ? 'earned' : 'locked'}">
+      <div class="badge-icon">${b.icon}</div>
+      <div class="badge-name">${b.name}</div>
+      <div class="badge-desc">${b.description}</div>
+      ${isEarned && dateStr ? `<div class="badge-date">✓ ${dateStr}</div>` : ''}
+      ${!isEarned ? '<div style="font-size:.7rem;color:var(--text3);margin-top:4px">Kilitli</div>' : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── GALERİ ───────────────────────────────────────────────────
+const DEMO_PHOTOS = [
+  {id:1,username:'Turbo_Berk',image_url:'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=400',caption:'Megane RS — stage 1',like_count:24},
+  {id:2,username:'elif_yilmaz',image_url:'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400',caption:'Corolla — temiz hali',like_count:18},
+  {id:3,username:'dizel_ahmet',image_url:'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400',caption:'BMW F30 — gece',like_count:31},
+];
+
+async function loadGallery() {
+  try {
+    const data = await apiCall('/api/maintenance/gallery');
+    renderGallery(data.photos || []);
+  } catch(e) { renderGallery(DEMO_PHOTOS); }
+}
+
+function renderGallery(items) {
+  const el = document.getElementById('galleryGrid');
+  if (!items.length) { el.innerHTML = '<div class="empty" style="grid-column:1/-1">Henüz fotoğraf yok. İlk fotoğrafı sen ekle!</div>'; return; }
+  el.innerHTML = items.map(p => `
+    <div class="gallery-item" onclick="openPhotoModal('${p.image_url}')">
+      <img src="${p.image_url}" alt="${p.caption||''}" loading="lazy" onerror="this.parentElement.style.display='none'">
+      <div class="gallery-overlay">
+        <div class="gallery-like">♥ ${p.like_count}</div>
+        <div class="gallery-caption">${p.caption||p.username}</div>
+      </div>
+      ${user && p.username === user.username ? `<button class="gallery-del" onclick="deletePhoto(event,${p.id})">✕</button>` : ''}
+    </div>`).join('');
+}
+
+function openPhotoModal(src) {
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:999;display:grid;place-items:center;cursor:pointer';
+  ov.innerHTML = `<img src="${src}" style="max-width:90vw;max-height:90vh;border-radius:8px">`;
+  ov.onclick = () => ov.remove();
+  document.body.appendChild(ov);
+}
+
+async function deletePhoto(e, id) {
+  e.stopPropagation();
+  if (!confirm('Bu fotoğrafı silmek istediğine emin misin?')) return;
+  try {
+    await apiCall('/api/maintenance/gallery/' + id, 'DELETE');
+    showToast('Silindi.', 'ok');
+    loadGallery();
+  } catch(e2) { showToast('Hata.', 'err'); }
+}
+
+function previewPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2000000) { showToast('Max 2MB olmalı.', 'err'); return; }
+  const canvas = document.createElement('canvas');
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = e => {
+    img.onload = () => {
+      const maxW = 800, maxH = 600;
+      let w = img.width, h = img.height;
+      if (w > maxW) { h = h * maxW / w; w = maxW; }
+      if (h > maxH) { w = w * maxH / h; h = maxH; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      photoBase64 = canvas.toDataURL('image/jpeg', 0.85);
+      document.getElementById('photoPreview').innerHTML =
+        `<img src="${photoBase64}" style="width:100%;border-radius:6px;max-height:200px;object-fit:cover">`;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById('btnAddPhoto').addEventListener('click', async () => {
+  if (!photoBase64) { document.getElementById('photoErr').textContent='Fotoğraf seç.'; document.getElementById('photoErr').classList.add('show'); return; }
+  const btn = document.getElementById('btnAddPhoto');
+  btn.innerHTML = '<span class="spinner"></span>';
+  const caption = document.getElementById('photoCaption').value.trim();
+  try {
+    const data = await apiCall('/api/maintenance/gallery', 'POST', { image_url: photoBase64, caption });
+    btn.textContent = 'Yükle';
+    if (data.error) { document.getElementById('photoErr').textContent=data.error; document.getElementById('photoErr').classList.add('show'); return; }
+    closeModal('addPhotoModal');
+    showToast('Fotoğraf yüklendi!', 'ok');
+    photoBase64 = null;
+    document.getElementById('photoPreview').innerHTML = '';
+    document.getElementById('photoCaption').value = '';
+    loadGallery();
+    // Rozet kontrol
+    const checkData = await apiCall('/api/maintenance/badges/check', 'POST');
+    if (checkData.awarded?.length) setTimeout(() => showToast('🏅 Yeni rozet: ' + checkData.awarded.join(', '), 'ok'), 1000);
+  } catch(e2) {
+    btn.textContent = 'Yükle';
+    // Demo mod
+    DEMO_PHOTOS.unshift({id:Date.now(),username:user?.username||'sen',image_url:photoBase64,caption,like_count:0});
+    closeModal('addPhotoModal');
+    renderGallery(DEMO_PHOTOS);
+    showToast('Fotoğraf eklendi!', 'ok');
+    photoBase64 = null;
+  }
+});
+
+// ── ÖNE ÇIKAN ────────────────────────────────────────────────
+const DEMO_FEATURED = [
+  {name:'Mehmet Usta Motor Servisi',city:'Istanbul',category:'Motor & Mekanik',featured_until:'2025-06-01'},
+  {name:'LPG Merkezi',city:'Izmir',category:'LPG & Gaz',featured_until:'2025-05-15'},
+];
+
+async function loadFeatured() {
+  try {
+    const data = await fetch('/api/businesses?featured=true').then(r=>r.json());
+    const items = (data.businesses||[]).filter(b=>b.is_featured);
+    renderFeatured(items.length ? items : DEMO_FEATURED);
+  } catch(e) { renderFeatured(DEMO_FEATURED); }
+}
+
+function renderFeatured(items) {
+  const el = document.getElementById('featuredList');
+  if (!items.length) { el.innerHTML = '<div class="empty">Şu an öne çıkan işletme yok.</div>'; return; }
+  el.innerHTML = '<div class="featured-list">' + items.map(b => `
+    <div class="featured-item">
+      <span class="featured-star">⭐</span>
+      <div class="featured-info">
+        <div class="featured-name">${b.name}</div>
+        <div class="featured-meta">📍 ${b.city} • ${b.category}</div>
+        ${b.featured_until ? `<div class="featured-until">Bitiş: ${new Date(b.featured_until).toLocaleDateString('tr-TR')}</div>` : ''}
+      </div>
+      <a href="sanayi.html" class="btn btn-ghost btn-sm">Haritada Gör</a>
+    </div>`).join('') + '</div>';
+}
+
+function selectPlan(days, price) {
+  showToast(`${days} günlük plan seçildi (${price}₺). İletişim: info@arabalariseviyoruz.com`, 'ok');
+}
+
+// ── YARDIMCILAR ──────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('page-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+const openModal  = id => document.getElementById(id).classList.add('open');
+const closeModal = id => document.getElementById(id).classList.remove('open');
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast '+type+' show';
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Bugünün tarihini log_date'e yaz
+document.getElementById('log_date').value = new Date().toISOString().split('T')[0];
+
+initUser();
+</script>
+</body>
+</html>
