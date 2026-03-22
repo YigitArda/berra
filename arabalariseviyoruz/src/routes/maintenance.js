@@ -3,6 +3,7 @@ const router  = express.Router();
 const db      = require('../../config/db');
 const { body, validationResult } = require('express-validator');
 const { requireAuth, optionalAuth } = require('../middleware/auth');
+const { validateImageMime } = require('../middleware/sanitize');
 
 // ── BAKIM TAKVİMİ ─────────────────────────────────────────────
 
@@ -192,6 +193,9 @@ router.post('/gallery', requireAuth, [
   const { image_url, caption, car_id } = req.body;
   if (!image_url.startsWith('data:image/') && !image_url.startsWith('http'))
     return res.status(422).json({ error: 'Gecersiz resim formati.' });
+  // MIME type kontrolü — sadece jpeg, png, gif, webp
+  if (!validateImageMime(image_url))
+    return res.status(422).json({ error: 'Sadece JPEG, PNG, GIF veya WEBP formatı kabul edilir.' });
   if (image_url.startsWith('data:') && image_url.length > 2000000)
     return res.status(422).json({ error: 'Resim cok buyuk. Max 1.5MB.' });
 

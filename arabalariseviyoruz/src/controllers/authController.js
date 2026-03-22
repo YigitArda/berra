@@ -111,6 +111,30 @@ function logout(req, res) {
   return res.json({ message: 'Çıkış yapıldı.' });
 }
 
+// POST /api/auth/refresh — mevcut token geçerliyse yeni token ver
+async function refresh(req, res) {
+  const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Token bulunamadı.' });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Kullanıcının hâlâ aktif olduğunu DB'den kontrol et
+    const { rows } = await db.query(
+      'SELECT id, username, role, is_banned FROM users WHERE id = $1',
+      [decoded.id]
+    );
+    if (!rows.length || rows[0].is_banned) {
+      return res.status(401).json({ error: 'Geçersiz oturum.' });
+    }
+
+    const newToken = issueToken(res, rows[0]);
+    return res.json({ message: 'Token yenilendi.', token: newToken });
+  } catch (err) {
+    return res.status(401).json({ error: 'Geçersiz veya süresi dolmuş token.' });
+  }
+}
+
 // GET /api/auth/me
 async function me(req, res) {
   try {
@@ -126,4 +150,4 @@ async function me(req, res) {
   }
 }
 
-module.exports = { register, login, logout, me };
+module.exports = { register, login, logout, me, refresh };
