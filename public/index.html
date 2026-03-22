@@ -107,6 +107,26 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 .feed-btn.liked:hover{background:rgba(224,48,48,.1);}
 .feed-load-more{text-align:center;padding:20px;font-size:.82rem;color:var(--text3);}
 .feed-divider{text-align:center;font-size:.72rem;color:var(--text3);padding:8px 16px;margin:4px 0;letter-spacing:.5px;}
+.feed-btn.shared{color:var(--green);}
+.feed-btn.shared:hover{background:rgba(56,161,105,.1);}
+/* Inline comment paneli */
+.feed-comments{overflow:hidden;max-height:0;transition:max-height .3s ease;border-top:1px solid var(--border);}
+.feed-comments.open{max-height:600px;}
+.feed-comments-inner{padding:12px 0 4px;}
+.feed-comment{display:flex;gap:8px;margin-bottom:10px;}
+.feed-comment-ava{width:30px;height:30px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:grid;place-items:center;font-size:.75rem;font-weight:700;color:var(--text2);flex-shrink:0;}
+.feed-comment-body{flex:1;min-width:0;}
+.feed-comment-author{font-size:.8rem;font-weight:700;color:var(--text);}
+.feed-comment-text{font-size:.82rem;color:var(--text2);line-height:1.5;margin-top:2px;word-break:break-word;}
+.feed-comment-time{font-size:.7rem;color:var(--text3);margin-left:6px;}
+.feed-comment-form{display:flex;gap:8px;align-items:flex-start;padding-top:8px;border-top:1px solid var(--border);}
+.feed-comment-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:7px 14px;color:var(--text);font-family:var(--font);font-size:.82rem;outline:none;resize:none;line-height:1.4;transition:border-color .15s;}
+.feed-comment-input::placeholder{color:var(--text3);}
+.feed-comment-input:focus{border-color:var(--border2);}
+.feed-comment-send{background:var(--accent);border:none;border-radius:50%;width:32px;height:32px;display:grid;place-items:center;cursor:pointer;flex-shrink:0;transition:opacity .15s;margin-top:1px;}
+.feed-comment-send:hover{opacity:.85;}
+/* Paylaşım toast stili */
+.feed-share-indicator{font-size:.7rem;color:var(--green);margin-left:4px;}
 
 /* KONU DETAY SAYFASI */
 .page{position:fixed;inset:0;top:46px;z-index:40;background:var(--bg);overflow-y:auto;display:none;}
@@ -579,12 +599,24 @@ let user = null;
 let currentCat = 'all';
 let threads = [];
 let feedData = [
-  {id:1,ava:'T',author:'Turbo_Berk',time:'5 dk',text:'Sabah Ankara çıkışında E90 M3 gördüm. O egzoz sesi başka bir şey.',likes:12,liked:false},
-  {id:2,ava:'D',author:'dizel_ahmet',time:'18 dk',text:'Benzin fiyatı yine arttı. LPG\'ye geçmeyi ciddi düşünüyorum. Kim geçti, memnun mu?',likes:7,liked:false},
-  {id:3,ava:'E',author:'elif_yilmaz',time:'42 dk',text:'"İlk arabam ne olsun" sorusuna cevabım: 4-5 yaşında düşük km Corolla veya Clio. Pişman olmayacaksınız.',likes:34,liked:true},
-  {id:4,ava:'M',author:'Murat_K',time:'1 saat',text:'Alınır mı skoru aracını denedim. 2018 Passat için 7.8 verdi. Mantıklı hesaplama.',likes:5,liked:false},
-  {id:5,ava:'K',author:'kamil_oto',time:'2 saat',text:'Oto fuarında Togg\'un yeni modelini test ettim. İç mekan iyileşmiş ama fiyat hâlâ zor.',likes:18,liked:false},
-  {id:6,ava:'S',author:'sahin_62',time:'3 saat',text:'Passat\'ı aldım. Forum\'daki yorumlar çok yardımcı oldu. Teşekkürler!',likes:22,liked:false},
+  {id:1,ava:'T',author:'Turbo_Berk',time:'5 dk',text:'Sabah Ankara çıkışında E90 M3 gördüm. O egzoz sesi başka bir şey.',likes:12,liked:false,shares:3,shared:false,comments:[
+    {id:1,ava:'K',author:'kamil_oto',time:'3 dk',text:'Evet o nesil M3\'ün sesi inanılmaz, V8 sesi gerçekten eşsiz.'},
+  ]},
+  {id:2,ava:'D',author:'dizel_ahmet',time:'18 dk',text:'Benzin fiyatı yine arttı. LPG\'ye geçmeyi ciddi düşünüyorum. Kim geçti, memnun mu?',likes:7,liked:false,shares:2,shared:false,comments:[
+    {id:2,ava:'S',author:'sahin_62',time:'15 dk',text:'Ben 2 yıl önce geçtim, çok memnunum. İlk dolum biraz pahalı ama sonrası kazanç.'},
+    {id:3,ava:'E',author:'elif_yilmaz',time:'10 dk',text:'Şehir içinde sık trafik giriyorsan kesinlikle değer. Ama uzun yolda performans biraz düşüyor.'},
+  ]},
+  {id:3,ava:'E',author:'elif_yilmaz',time:'42 dk',text:'"İlk arabam ne olsun" sorusuna cevabım: 4-5 yaşında düşük km Corolla veya Clio. Pişman olmayacaksınız.',likes:34,liked:true,shares:11,shared:false,comments:[
+    {id:4,ava:'M',author:'Murat_K',time:'38 dk',text:'Corolla +1. Bakım maliyeti çok düşük, güvenilirliği tartışılmaz.'},
+  ]},
+  {id:4,ava:'M',author:'Murat_K',time:'1 saat',text:'Alınır mı skoru aracını denedim. 2018 Passat için 7.8 verdi. Mantıklı hesaplama.',likes:5,liked:false,shares:1,shared:false,comments:[]},
+  {id:5,ava:'K',author:'kamil_oto',time:'2 saat',text:'Oto fuarında Togg\'un yeni modelini test ettim. İç mekan iyileşmiş ama fiyat hâlâ zor.',likes:18,liked:false,shares:7,shared:false,comments:[
+    {id:5,ava:'T',author:'Turbo_Berk',time:'1 saat 45 dk',text:'Fiyat konusunda haklısın. Yerli üretim ama uluslararası fiyat etiketiyle rekabet zor.'},
+  ]},
+  {id:6,ava:'S',author:'sahin_62',time:'3 saat',text:'Passat\'ı aldım. Forum\'daki yorumlar çok yardımcı oldu. Teşekkürler!',likes:22,liked:false,shares:4,shared:false,comments:[
+    {id:6,ava:'D',author:'dizel_ahmet',time:'2 saat',text:'Hayırlı olsun! Hangi motor aldın?'},
+    {id:7,ava:'S',author:'sahin_62',time:'1 saat 50 dk',text:'1.6 TDI 115hp aldım. Yakıt tüketimi harikaymış, ilk sürüşlerde 5.2L gördüm.'},
+  ]},
 ];
 
 const STATIC_THREADS = [
@@ -856,18 +888,42 @@ document.querySelectorAll('.cat-tab').forEach(tab => {
 });
 
 // ── FEED RENDER ───────────────────────────────────────────────
+function feedCommentHtml(c) {
+  return `<div class="feed-comment">
+    <div class="feed-comment-ava">${escapeHtml(c.ava)}</div>
+    <div class="feed-comment-body">
+      <span class="feed-comment-author">${escapeHtml(c.author)}</span>
+      <span class="feed-comment-time">${escapeHtml(c.time)}</span>
+      <div class="feed-comment-text">${escapeHtml(c.text)}</div>
+    </div>
+  </div>`;
+}
+
 function feedCard(p, delay) {
-  return `<div class="feed-item" style="animation-delay:${delay}s">
+  const commentsHtml = p.comments.map(feedCommentHtml).join('');
+  return `<div class="feed-item" id="fi-${p.id}" style="animation-delay:${delay}s" onclick="toggleFeedPost(event,${p.id})" style="cursor:pointer">
     <div class="feed-item-top">
-      <div class="feed-ava">${p.ava}</div>
+      <div class="feed-ava">${escapeHtml(p.ava)}</div>
       <div class="feed-meta">
-        <span class="feed-author" onclick="openProfile(this.dataset.u)" data-u="${escapeHtml(p.author)}">${escapeHtml(p.author)}</span>
-        <span class="feed-time">${p.time}</span>
+        <span class="feed-author" onclick="event.stopPropagation();openProfile(this.dataset.u)" data-u="${escapeHtml(p.author)}">${escapeHtml(p.author)}</span>
+        <span class="feed-time">${escapeHtml(p.time)}</span>
       </div>
     </div>
     <div class="feed-text">${escapeHtml(p.text)}</div>
-    <div class="feed-actions">
+    <div class="feed-actions" onclick="event.stopPropagation()">
       <button class="feed-btn ${p.liked?'liked':''}" onclick="likeFeed(${p.id},this)">♥ <span>${p.likes}</span></button>
+      <button class="feed-btn" onclick="toggleComments(${p.id},this)">💬 <span>${p.comments.length}</span></button>
+      <button class="feed-btn ${p.shared?'shared':''}" onclick="shareFeed(${p.id},this)">🔁 <span>${p.shares}</span></button>
+    </div>
+    <div class="feed-comments" id="fc-${p.id}">
+      <div class="feed-comments-inner">
+        <div id="fcl-${p.id}">${commentsHtml}</div>
+        <div class="feed-comment-form">
+          <div class="feed-comment-ava">${user?escapeHtml(user.ava||user.username[0].toUpperCase()):'👤'}</div>
+          <textarea class="feed-comment-input" id="fci-${p.id}" rows="1" placeholder="Yorum yaz..." onkeydown="commentKeydown(event,${p.id})"></textarea>
+          <button class="feed-comment-send" onclick="submitComment(${p.id})">➤</button>
+        </div>
+      </div>
     </div>
   </div>`;
 }
@@ -875,6 +931,71 @@ function feedCard(p, delay) {
 function renderFeed(posts) {
   const el = document.getElementById('feedList');
   el.innerHTML = posts.map((p, i) => feedCard(p, i * 0.04)).join('');
+}
+
+function toggleFeedPost(e, id) {
+  // Butona tıklandıysa açma
+  if (e.target.closest('.feed-actions') || e.target.closest('.feed-comments') || e.target.closest('.feed-author')) return;
+  toggleComments(id, null, true);
+}
+
+function toggleComments(id, btn, forceOpen) {
+  const panel = document.getElementById('fc-' + id);
+  if (!panel) return;
+  const isOpen = panel.classList.contains('open');
+  if (forceOpen && isOpen) return;
+  if (isOpen) {
+    panel.classList.remove('open');
+  } else {
+    panel.classList.add('open');
+    setTimeout(() => document.getElementById('fci-' + id)?.focus(), 310);
+  }
+}
+
+function shareFeed(id, btn) {
+  const p = feedData.find(x => x.id === id);
+  if (!p) return;
+  if (!p.shared) {
+    p.shared = true;
+    p.shares++;
+    btn.classList.add('shared');
+    btn.querySelector('span').textContent = p.shares;
+  }
+  const url = window.location.origin + '?post=' + id;
+  if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => showToast('Bağlantı kopyalandı!','ok'));
+  else showToast('Paylaşıldı!','ok');
+}
+
+async function submitComment(id) {
+  const inp = document.getElementById('fci-' + id);
+  const txt = inp.value.trim();
+  if (!txt) return;
+  const p = feedData.find(x => x.id === id);
+  if (!p) return;
+  const newComment = {
+    id: Date.now(),
+    ava: user ? (user.ava || user.username[0].toUpperCase()) : '👤',
+    author: user ? user.username : 'Misafir',
+    time: 'Az önce',
+    text: txt,
+  };
+  p.comments.push(newComment);
+  // DOM'a ekle
+  const list = document.getElementById('fcl-' + id);
+  list.insertAdjacentHTML('beforeend', feedCommentHtml(newComment));
+  inp.value = '';
+  // Yorum sayacını güncelle
+  const card = document.getElementById('fi-' + id);
+  const commentBtn = card?.querySelector('.feed-actions .feed-btn:nth-child(2) span');
+  if (commentBtn) commentBtn.textContent = p.comments.length;
+  // Scroll to new comment
+  list.lastElementChild?.scrollIntoView({behavior:'smooth',block:'nearest'});
+  // API call (hata varsa sessizce geç)
+  try { await apiCall('/api/feed/' + id + '/comment', 'POST', {text: txt}); } catch(_){}
+}
+
+function commentKeydown(e, id) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitComment(id); }
 }
 
 async function likeFeed(id, btn) {
@@ -905,7 +1026,7 @@ document.getElementById('btnPost').addEventListener('click', async () => {
   try {
     const data = await apiCall('/api/feed', 'POST', { body: txt });
     if (data.error) { showToast(data.error, 'err'); btn.disabled = false; return; }
-    feedData.unshift({ id: data.post?.id || Date.now(), ava: user.ava, author: user.username, time: 'Az önce', text: txt, likes: 0, liked: false });
+    feedData.unshift({ id: data.post?.id || Date.now(), ava: user.ava||user.username[0].toUpperCase(), author: user.username, time: 'Az önce', text: txt, likes: 0, liked: false, shares: 0, shared: false, comments: [] });
     renderFeed(feedData);
     document.getElementById('feedInput').value = '';
     document.getElementById('charCount').textContent = '0/500';
@@ -1566,6 +1687,9 @@ async function loadMoreFeed() {
         text: p.body,
         likes: p.like_count,
         liked: false,
+        shares: 0,
+        shared: false,
+        comments: [],
       }));
       // Duplicate kontrolü
       const existing = new Set(feedData.map(x => x.id));
