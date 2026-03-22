@@ -448,6 +448,59 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 .skeleton-line{height:12px;border-radius:6px;margin-bottom:8px;}
 .skeleton-circle{width:42px;height:42px;border-radius:50%;}
 
+/* ── MOBILE RESPONSIVE ─────────────────────────────────────── */
+@media (max-width: 960px) {
+  .nav-links { display: none; }
+  .nav-search { max-width: 160px; }
+  .sidebar-right { display: none; }
+}
+@media (max-width: 768px) {
+  .layout { grid-template-columns: 1fr !important; }
+  .sidebar-left { display: none; }
+  .sidebar-right { display: none; }
+  .feed-main { min-width: 0; max-width: 100%; }
+  .messages-layout { grid-template-columns: 1fr !important; }
+  .msg-sidebar { display: none; }
+  .msg-sidebar.show-mobile { display: flex !important; flex-direction: column; position: fixed; inset: 48px 0 0 0; z-index: 50; background: var(--bg); }
+  .msg-main { width: 100%; }
+  .post-detail-actions { flex-wrap: wrap; }
+  .profile-action-row { gap: 6px; }
+  .follow-btn, .msg-open-btn { padding: 6px 12px; font-size: .8rem; }
+}
+@media (max-width: 600px) {
+  .navbar { padding: 0 10px; gap: 6px; }
+  .nav-user-name { display: none; }
+  .nav-search { max-width: 120px; }
+  .logo-dot { display: none; }
+  .feed-item { margin: 0 0 6px; border-radius: 8px; }
+  .compose-area { border-radius: 8px; margin: 0 0 8px; }
+  .post-detail-text { font-size: .95rem; }
+  .modal-content { margin: 10px; border-radius: var(--r-lg); }
+  .nav-notif-btn, .nav-msg-btn { padding: 4px 6px; }
+  .page-inner { padding: 12px; }
+}
+/* Hamburger menü butonu (mobilde nav-links yerine) */
+.nav-hamburger { display: none; background: none; border: none; color: var(--text2); cursor: pointer; padding: 6px; font-size: 1.2rem; }
+@media (max-width: 960px) { .nav-hamburger { display: flex; align-items: center; } }
+/* Mobile slide-out menü */
+.mobile-menu { position: fixed; top: 48px; left: 0; right: 0; background: var(--bg2); border-bottom: 1px solid var(--border); z-index: 60; padding: 12px; display: flex; flex-direction: column; gap: 4px; transform: translateY(-110%); transition: transform .2s ease; }
+.mobile-menu.open { transform: translateY(0); }
+.mobile-menu a, .mobile-menu button { display: block; padding: 10px 14px; color: var(--text); font-size: .9rem; text-decoration: none; border-radius: var(--r-sm); border: none; background: none; text-align: left; cursor: pointer; font-family: var(--font); }
+.mobile-menu a:hover, .mobile-menu button:hover { background: var(--bg3); }
+/* Mesajlar: mobilde geri butonu */
+.msg-back-btn { display: none; }
+@media (max-width: 768px) { .msg-back-btn { display: flex; align-items: center; gap: 6px; } }
+
+/* ── ANİMASYONLAR ────────────────────────────────────────── */
+@keyframes slideOutLeft { 0%{opacity:1;transform:translateX(0)}100%{opacity:0;transform:translateX(-60px)}}
+.card-removing { animation: slideOutLeft .3s ease forwards; pointer-events: none; }
+@keyframes followPulse { 0%,100%{box-shadow:0 0 0 0 rgba(224,48,48,.4)} 50%{box-shadow:0 0 0 8px rgba(224,48,48,0)} }
+.follow-btn:not(.following):active { animation: followPulse .4s ease; }
+/* Feed btn geçiş animasyonu */
+.feed-btn { transition: color .15s, transform .1s; }
+.feed-btn:active { transform: scale(.92); }
+.feed-btn.liked { animation: heartPulse .3s ease; }
+
 /* LIGHT MODE ekleme */
 body.light {
   --bg:     #f0f2f5;
@@ -540,7 +593,7 @@ body.light .profile-header { background: var(--bg2); }
   <span class="theme-icon" id="themeIcon">🌙</span>
   <div class="nav-search" style="position:relative">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input type="text" id="searchInput" placeholder="Konu ara..." autocomplete="off">
+    <input type="text" id="searchInput" placeholder="Konu, araç, üye ara..." autocomplete="off">
     <div class="search-dropdown" id="searchDropdown"></div>
   </div>
   <div class="nav-links">
@@ -551,10 +604,20 @@ body.light .profile-header { background: var(--bg2); }
     <a class="nav-link" href="karsilastir.html">⚖️ Karşılaştır</a>
     <button class="nav-link" id="btnScore">🧮 Alınır mı?</button>
   </div>
+  <button class="nav-hamburger" id="btnHamburger" aria-label="Menüyü aç" onclick="toggleMobileMenu()">☰</button>
   <div class="nav-right" id="navRight">
     <button class="btn btn-ghost" id="btnLogin">Giriş Yap</button>
     <button class="btn btn-accent" id="btnRegBtn">Kayıt Ol</button>
   </div>
+</div>
+<!-- Mobil menü -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#">Forum</a>
+  <a href="sanayi.html">🏭 Sanayi</a>
+  <a href="ozellikler.html">🔧 Bakım &amp; Galeri</a>
+  <a href="rehber.html">📖 Rehber</a>
+  <a href="karsilastir.html">⚖️ Karşılaştır</a>
+  <button id="btnScoreMobile" onclick="document.getElementById('btnScore').click();toggleMobileMenu()">🧮 Alınır mı?</button>
 </div>
 
 <!-- ANA LAYOUT -->
@@ -695,7 +758,7 @@ body.light .profile-header { background: var(--bg2); }
 <div class="page" id="profilePage">
   <div style="height:calc(100vh - 48px);overflow-y:auto;">
     <div style="position:sticky;top:0;z-index:5;background:rgba(15,16,20,.85);backdrop-filter:blur(8px);padding:8px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
-      <button class="btn btn-icon" onclick="document.getElementById('profilePage').classList.remove('open')">←</button>
+      <button class="btn btn-icon" onclick="navigateBack()" aria-label="Geri">←</button>
       <span id="profilePageTitle" style="font-family:var(--fontc);font-weight:700;font-size:1rem;color:var(--text)">Profil</span>
     </div>
     <div class="profile-cover"><div class="profile-cover-inner"></div></div>
@@ -1266,20 +1329,26 @@ async function submitComment(id) {
   const inp = document.getElementById('fci-' + id);
   const txt = inp.value.trim();
   if (!txt) return;
+  if (!user) { showToast('Yorum yapmak için giriş yap.', 'err'); return; }
   const p = feedData.find(x => x.id === id);
   if (!p) return;
+  const sendBtn = inp?.parentElement?.querySelector('.feed-comment-send');
+  btnLoading(sendBtn, true);
   const newComment = {
     id: Date.now(),
-    ava: user ? (user.ava || user.username[0].toUpperCase()) : '👤',
-    author: user ? user.username : 'Misafir',
+    ava: user.ava || user.username[0].toUpperCase(),
+    author: user.username,
     time: 'Az önce',
     text: txt,
+    replies: [],
   };
   p.comments.push(newComment);
   // DOM'a ekle
   const list = document.getElementById('fcl-' + id);
   list.insertAdjacentHTML('beforeend', feedCommentHtml(newComment, id, false));
   inp.value = '';
+  if (inp) autoResize(inp);
+  btnLoading(sendBtn, false);
   // Yorum sayacını güncelle
   const card = document.getElementById('fi-' + id);
   const commentBtn = card?.querySelector('.feed-actions .feed-btn:nth-child(2) span');
@@ -1295,12 +1364,14 @@ function commentKeydown(e, id) {
 }
 
 async function likeFeed(id, btn) {
+  if (!user) { showToast('Beğenmek için giriş yap.', 'err'); return; }
   const p = feedData.find(x => x.id === id);
   if (!p) return;
   p.liked = !p.liked;
   p.likes += p.liked ? 1 : -1;
   btn.querySelector('span').textContent = p.likes;
   btn.classList.toggle('liked', p.liked);
+  if (p.liked) { btn.classList.add('heart-anim'); setTimeout(() => btn.classList.remove('heart-anim'), 400); }
   // API'ye gönder (gerçek post için)
   if (id < 1000000000000) { // timestamp ID değilse gerçek DB ID'si
     try {
@@ -1318,17 +1389,17 @@ document.getElementById('btnPost').addEventListener('click', async () => {
   if (!txt) return;
   if (!user) { showToast('Paylaşmak için giriş yap.', 'err'); return; }
   const btn = document.getElementById('btnPost');
-  btn.disabled = true;
+  btnLoading(btn, true);
   try {
     const data = await apiCall('/api/feed', 'POST', { body: txt });
-    if (data.error) { showToast(data.error, 'err'); btn.disabled = false; return; }
+    if (data.error) { showToast(data.error, 'err'); btnLoading(btn, false); return; }
     feedData.unshift({ id: data.post?.id || Date.now(), ava: user.ava||user.username[0].toUpperCase(), author: user.username, time: 'Az önce', text: txt, likes: 0, liked: false, shares: 0, shared: false, comments: [] });
     renderFeed(feedData);
     document.getElementById('feedInput').value = '';
     document.getElementById('charCount').textContent = '0/500';
-    showToast('Paylaşıldı!', 'ok');
+    showToast('Paylaşıldı! 🚗', 'ok');
   } catch(e) { showToast('Hata oluştu.', 'err'); }
-  btn.disabled = false;
+  btnLoading(btn, false);
 });
 
 // ── AUTH ──────────────────────────────────────────────────────
@@ -1349,8 +1420,9 @@ function setUser(u) {
       <span class="nav-user-name">${escapeHtml(u.username)}</span>
     </div>
     <button class="btn btn-ghost btn-sm" onclick="doLogout()">Çıkış</button>`;
-  document.getElementById('composeAva').textContent = u.ava || u.username[0].toUpperCase();
-  document.getElementById('composeAva').className = 'compose-ava ' + avaClass;
+  const ca2 = document.getElementById('composeAva');
+  if (ca2) { ca2.textContent = u.ava || u.username[0].toUpperCase(); ca2.className = 'compose-ava ' + avaClass; }
+  setTimeout(renderNavBadges, 0); // async olarak çalıştır
   if (!window._tokenRefreshInterval) {
     window._tokenRefreshInterval = setInterval(async () => {
       try { await apiCall('/api/auth/refresh', 'POST'); } catch(e) {}
@@ -1359,22 +1431,36 @@ function setUser(u) {
 }
 function doLogout() {
   user = null;
+  // Token yenileme interval'ini temizle
+  if (window._tokenRefreshInterval) {
+    clearInterval(window._tokenRefreshInterval);
+    window._tokenRefreshInterval = null;
+  }
   document.getElementById('navRight').innerHTML = `
     <button class="btn btn-ghost" id="btnLogin">Giriş Yap</button>
     <button class="btn btn-accent" id="btnRegBtn">Kayıt Ol</button>`;
   document.getElementById('btnLogin').onclick = () => openModal('authModal');
   document.getElementById('btnRegBtn').onclick = () => { openModal('authModal'); switchAuth('register'); };
-  document.getElementById('composeAva').textContent = '👤';
+  const ca = document.getElementById('composeAva');
+  if (ca) { ca.textContent = '👤'; ca.className = 'compose-ava'; }
   showToast('Çıkış yapıldı.', 'ok');
 }
 
 async function apiCall(url, method, body) {
-  const res = await fetch(url, {
-    method, credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: body ? JSON.stringify(body) : undefined
-  });
-  return res.json();
+  try {
+    const res = await fetch(url, {
+      method: method || 'GET', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (res.status === 401) {
+      showToast('Oturumun sona erdi, tekrar giriş yap.', 'err');
+    }
+    return res.json();
+  } catch(e) {
+    showToast('Bağlantı hatası. İnternet bağlantını kontrol et.', 'err');
+    throw e;
+  }
 }
 
 document.getElementById('doLogin').addEventListener('click', async () => {
@@ -1461,7 +1547,7 @@ document.getElementById('doNewThread').addEventListener('click', async () => {
       loadThreadBySlug(data.slug, newThread);
       document.getElementById('threadPage').classList.add('open');
     } else {
-      openThread(newThread.id);
+      openThread(newThread.id, newThread.slug || '');
     }
   } catch(e) { showErr(errEl, 'Bağlantı hatası.'); btn.textContent = 'Konuyu Yayınla'; }
 });
@@ -1634,6 +1720,14 @@ async function loadProfile(username) {
 function renderProfileHeader(data) {
   const u = data.user;
   const isMe = user && user.username === u.username;
+  // Kullanıcıya özgü cover rengi
+  const coverColors = ['#e03030','#2970c7','#1a9e52','#c47f00','#9b59b6','#e67e22'];
+  let ch = 0; for (let i=0;i<u.username.length;i++) ch=(ch*31+u.username.charCodeAt(i))&0xffffffff;
+  const cc = coverColors[Math.abs(ch)%6];
+  const coverEl = document.querySelector('.profile-cover');
+  if (coverEl) coverEl.style.background = `linear-gradient(135deg, ${cc}33 0%, #1a1c26 60%)`;
+  const coverInner = document.querySelector('.profile-cover-inner');
+  if (coverInner) coverInner.style.background = `linear-gradient(90deg, ${cc}2a 0%, transparent 60%)`;
   const avaHtml = u.avatar_url
     ? '<img src="' + u.avatar_url + '" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
     : '<span>' + u.username[0].toUpperCase() + '</span>';
@@ -1677,7 +1771,8 @@ function renderProfileHeader(data) {
     + '<div><div class="profile-stat-num">' + data.threads.length + '</div><div class="profile-stat-label">Konu</div></div>'
     + '<div><div class="profile-stat-num">' + data.posts.length + '</div><div class="profile-stat-label">Yanıt</div></div>'
     + '<div><div class="profile-stat-num">' + data.cars.length + '</div><div class="profile-stat-label">Araç</div></div>'
-    + '<div><div class="profile-stat-num">' + (following.size||0) + '</div><div class="profile-stat-label">Takip</div></div>'
+    + '<div><div class="profile-stat-num">' + (u.following_count ?? (isMe ? following.size : 0)) + '</div><div class="profile-stat-label">Takip</div></div>'
+    + '<div><div class="profile-stat-num">' + (u.follower_count ?? (isMe ? 0 : 0)) + '</div><div class="profile-stat-label">Takipçi</div></div>'
     + '</div>'
     + '</div>';
 }
@@ -1700,7 +1795,7 @@ function renderProfileTab(tab) {
     if (!profileData.threads.length) { c.innerHTML = '<div style="color:var(--text3);padding:20px 0">Henüz konu açmamış.</div>'; return; }
     c.innerHTML = '<div class="profile-section-title">Açılan Konular</div>' +
       profileData.threads.map(t => `
-        <div class="profile-thread-item" onclick="openThread(${t.id})">
+        <div class="profile-thread-item" onclick="navigate('/thread/' + (${JSON.stringify(t.slug||'')} || ${t.id}))">
           <div class="profile-thread-title">${escapeHtml(t.title)}</div>
           <div class="profile-thread-meta">
             <span>📂 ${escapeHtml(t.category_name)}</span>
@@ -2371,9 +2466,14 @@ async function loadMoreFeed() {
     } else {
       feedHasMore = false;
     }
-  } catch(e) {}
+  } catch(e) { /* API yoksa statik data göster */ }
   feedLoading = false;
   if (indicator) indicator.style.display = 'none';
+  // Feed hâlâ boşsa boş durum mesajı göster
+  setTimeout(() => {
+    const el = document.getElementById('feedList');
+    if (el && !el.querySelector('.feed-item')) renderFeedEmpty();
+  }, 100);
 }
 
 // Scroll dinle — akış panelinde
@@ -2426,7 +2526,7 @@ function renderExplore() {
   // Öne çıkan: en çok görüntülenen
   const top = [...STATIC_THREADS].sort((a,b) => b.views - a.views)[0];
   document.getElementById('featuredThread').innerHTML = top ? `
-    <div class="featured-card" onclick="openThread(STATIC_THREADS.find(t=>t.id===${top.id}))">
+    <div class="featured-card" onclick="navigate('/thread/${escapeHtml(top.slug||String(top.id))}')"
       <div class="featured-tag">📌 ${escapeHtml(top.cat)}</div>
       <div class="featured-title">${escapeHtml(top.title)}</div>
       <div class="featured-preview">${escapeHtml(top.sub)}</div>
@@ -2438,7 +2538,7 @@ function renderExplore() {
   ).join('');
   // Aktif kullanıcılar
   document.getElementById('activeUsers').innerHTML = ACTIVE_USERS.map(u => `
-    <div class="active-user" onclick="openProfile(${JSON.stringify(u.name)})">
+    <div class="active-user" onclick="navigate('/profile/${escapeHtml(u.name)}')"
       <div class="active-user-ava">${u.ava}</div>
       <div class="active-user-info">
         <div class="active-user-name">${escapeHtml(u.name)}</div>
@@ -2486,6 +2586,185 @@ function updateProfileTitle(name) {
   const el = document.getElementById('profilePageTitle');
   if (el) el.textContent = name || 'Profil';
 }
+
+// ══════════════════════════════════════════════════════════════
+// LOADING STATE YARDIMCISI
+// ══════════════════════════════════════════════════════════════
+function btnLoading(btn, on) {
+  if (!btn) return;
+  if (on) { btn.dataset.orig = btn.innerHTML; btn.innerHTML = '<span style="display:inline-block;animation:spin .7s linear infinite">⟳</span>'; btn.disabled = true; }
+  else { btn.innerHTML = btn.dataset.orig ?? btn.innerHTML; btn.disabled = false; }
+}
+// CSS spin animasyonu
+(function() {
+  if (!document.getElementById('spinStyle')) {
+    const s = document.createElement('style');
+    s.id = 'spinStyle';
+    s.textContent = '@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}';
+    document.head.appendChild(s);
+  }
+})();
+
+// ══════════════════════════════════════════════════════════════
+// NAVBAR BADGE GÜNCELLEME
+// ══════════════════════════════════════════════════════════════
+function renderNavBadges() {
+  if (!user) return;
+  const unread = notifData.filter(n => !n.read).length;
+  const msgUnread = Object.values(conversations).reduce((a, msgs) =>
+    a + msgs.filter(m => !m.read && m.from !== user.username).length, 0);
+  const nb = document.getElementById('navNotifBadge');
+  const mb = document.querySelector('.nav-msg-btn .msg-badge');
+  if (nb) { nb.textContent = unread; nb.style.display = unread ? '' : 'none'; }
+  if (mb) { mb.textContent = msgUnread; mb.style.display = msgUnread ? '' : 'none'; }
+}
+
+// ══════════════════════════════════════════════════════════════
+// BLOCK FIX: profil sayfasında UI güncelle
+// ══════════════════════════════════════════════════════════════
+// Override toggleBlock - profil sayfasındaysa header'ı da güncelle
+function toggleBlock(username) {
+  if (isBlocked(username)) {
+    blockedUsers.delete(username); saveBlocked();
+    showToast(username + ' engeli kaldırıldı.', 'ok');
+  } else {
+    blockedUsers.add(username); saveBlocked();
+    showToast(username + ' engellendi.', 'ok');
+    // Feed kartını animasyonlu kaldır
+    const card = document.getElementById('fi-0'); // generic
+    document.querySelectorAll('.feed-item').forEach(el => {
+      const authorEl = el.querySelector('.feed-author');
+      if (authorEl && authorEl.textContent === username) {
+        el.classList.add('card-removing');
+        setTimeout(() => el.remove(), 350);
+      }
+    });
+  }
+  // Profil sayfasındaysa butonları yenile
+  if (profileData?.user?.username === username) {
+    renderProfileHeader(profileData);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// MESSAGES: ID normalize
+// ══════════════════════════════════════════════════════════════
+function msgSafeId(username) {
+  return username.replace(/[^a-zA-Z0-9_\-]/g, '_');
+}
+// openConversation'ı override et - güvenli ID kullan
+function openConversation(toUser) {
+  activeMsgUser = toUser;
+  if (!conversations[toUser]) conversations[toUser] = [];
+  conversations[toUser].forEach(m => { if (m.from !== (user?.username||'')) m.read = true; });
+  saveMsgs();
+  renderMsgSidebar();
+  renderNavBadges();
+  const safeId = msgSafeId(toUser);
+  const main = document.getElementById('msgMain');
+  const msgs = conversations[toUser];
+  main.innerHTML = `
+    <div class="msg-main-top">
+      <button class="msg-back-btn btn btn-icon" onclick="showMsgSidebar()" style="margin-right:6px" aria-label="Geri">←</button>
+      <div class="msg-conv-ava ${avaColor(toUser)}" style="width:34px;height:34px;font-size:.85rem;flex-shrink:0">${toUser[0].toUpperCase()}</div>
+      <div>
+        <div class="msg-main-name">${escapeHtml(toUser)}</div>
+        <div style="font-size:.72rem;color:var(--text3)">@${escapeHtml(toUser.toLowerCase())}</div>
+      </div>
+      <div style="margin-left:auto">
+        <button class="btn btn-ghost btn-sm" onclick="navigate('/profile/${escapeHtml(toUser)}');document.getElementById('messagesPage').classList.remove('open')">Profil</button>
+      </div>
+    </div>
+    <div class="msg-thread" id="mt-${safeId}">
+      ${msgs.length ? msgs.map(m => msgBubbleHtml(m, user?.username)).join('') : '<div class="msg-empty"><div class="msg-empty-icon">👋</div><span>Merhaba de!</span></div>'}
+    </div>
+    <div class="msg-input-area">
+      <textarea class="msg-input" id="msgInput" rows="1" placeholder="Mesaj yaz..." aria-label="Mesaj yaz" onkeydown="msgKeydown(event,'${escapeHtml(toUser)}')"></textarea>
+      <button class="msg-send-btn" onclick="sendMessage('${escapeHtml(toUser)}')" aria-label="Gönder">➤</button>
+    </div>`;
+  document.getElementById('mt-' + safeId)?.scrollTo(0, 99999);
+}
+// sendMessage'ı da safe ID ile güncelle
+function sendMessage(toUser) {
+  const inp = document.getElementById('msgInput');
+  const txt = inp?.value.trim();
+  if (!txt) return;
+  if (!conversations[toUser]) conversations[toUser] = [];
+  const msg = { id: Date.now(), from: user?.username || 'Sen', text: txt, time: 'Az önce', read: true };
+  conversations[toUser].push(msg);
+  saveMsgs();
+  const safeId = msgSafeId(toUser);
+  const thread = document.getElementById('mt-' + safeId);
+  if (thread) {
+    thread.insertAdjacentHTML('beforeend', msgBubbleHtml(msg, user?.username || 'Sen'));
+    thread.scrollTo(0, 99999);
+  }
+  inp.value = '';
+  if (inp) autoResize(inp);
+  renderNavBadges();
+}
+function showMsgSidebar() {
+  const sidebar = document.querySelector('.msg-sidebar');
+  if (sidebar) sidebar.classList.toggle('show-mobile');
+}
+
+// ══════════════════════════════════════════════════════════════
+// MOBİL HAMBURGER MENÜ
+// ══════════════════════════════════════════════════════════════
+function toggleMobileMenu() {
+  document.getElementById('mobileMenu')?.classList.toggle('open');
+}
+// Menü dışına tıklayınca kapat
+document.addEventListener('click', e => {
+  if (!e.target.closest('#mobileMenu') && !e.target.closest('#btnHamburger')) {
+    document.getElementById('mobileMenu')?.classList.remove('open');
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+// FOLLOW: notif + badge güncelle
+// ══════════════════════════════════════════════════════════════
+function toggleFollow(username, btn) {
+  if (isFollowing(username)) {
+    following.delete(username); saveFollowing();
+    if (btn) { btn.textContent = 'Takip Et'; btn.classList.remove('following'); }
+    showToast(username + ' takipten çıkıldı.', 'ok');
+  } else {
+    following.add(username); saveFollowing();
+    if (btn) { btn.textContent = 'Takip Ediliyor'; btn.classList.add('following'); }
+    showToast(username + ' takip edildi! 🎉', 'ok');
+    notifData.unshift({id:Date.now(),type:'follow',icon:'👤',
+      text:`<strong>${escapeHtml(username)}</strong> kullanıcısını takip etmeye başladın`,
+      time:'Az önce',read:false});
+    renderNotifications();
+    renderNavBadges();
+  }
+  // Profil stats güncelle
+  if (profileData?.user?.username === username) {
+    const stat = document.querySelector('.profile-stat-num:last-of-type');
+    if (stat) stat.textContent = following.size;
+  }
+  if (user) setUser(user);
+}
+
+// ══════════════════════════════════════════════════════════════
+// FEED: boş durum + loading
+// ══════════════════════════════════════════════════════════════
+function renderFeedEmpty() {
+  const el = document.getElementById('feedList');
+  if (!el) return;
+  if (!el.children.length || (el.children.length === 1 && el.firstChild.classList?.contains('skeleton-card'))) {
+    el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text3)">
+      <div style="font-size:2rem;margin-bottom:10px">🚗</div>
+      <div style="font-size:.9rem">Henüz gönderi yok. İlk paylaşımı sen yap!</div>
+    </div>`;
+  }
+}
+
+// Bildirim panelini notif badge ile bağla - sayfa odaklandığında oku işaretle
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && user) renderNavBadges();
+});
 
 // ── İLK RENDER ────────────────────────────────────────────────
 renderThreads(threads);
