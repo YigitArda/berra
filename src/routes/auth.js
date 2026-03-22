@@ -23,10 +23,12 @@ const loginRules = [
   body('password').notEmpty().withMessage('Şifre boş olamaz.'),
 ];
 
-router.post('/register', registerRules, ctrl.register);
-router.post('/login',    loginRules,    ctrl.login);
-router.post('/logout',                  ctrl.logout);
-router.post('/refresh',                 ctrl.refresh);
-router.get ('/me',       requireAuth,   ctrl.me);
+router.post('/register',        registerRules, ctrl.register);
+router.post('/login',           loginRules,    ctrl.login);
+router.post('/logout',                         ctrl.logout);
+router.post('/refresh',                        ctrl.refresh);
+router.post('/forgot-password',                ctrl.forgotPassword);
+router.post('/reset-password',                 ctrl.resetPassword);
+router.get ('/me',              requireAuth,   ctrl.me);
 
 module.exports = router;

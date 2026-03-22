@@ -150,4 +150,63 @@ async function me(req, res) {
   }
 }
 
-module.exports = { register, login, logout, me, refresh };
+// POST /api/auth/forgot-password — şifre sıfırlama token'ı oluştur
+async function forgotPassword(req, res) {
+  const { email } = req.body;
+  if (!email) return res.status(422).json({ error: 'Email gerekli.' });
+
+  try {
+    const { rows } = await db.query('SELECT id, username FROM users WHERE email = $1', [email.toLowerCase()]);
+    // Güvenlik: kullanıcı olsun olmasın aynı mesajı ver
+    if (!rows.length) return res.json({ message: 'Eğer bu email kayıtlıysa, sıfırlama kodu oluşturuldu.' });
+
+    const crypto = require('crypto');
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 saat
+
+    await db.query(
+      'UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3',
+      [resetToken, resetExpiry, rows[0].id]
+    );
+
+    // Not: Gerçek mail gönderimi için nodemailer vb. gerekir
+    // Şimdilik token'ı döndürüyoruz (production'da mail gönderilir)
+    return res.json({
+      message: 'Sıfırlama kodu oluşturuldu.',
+      // Production'da bu satır kaldırılacak — sadece dev için:
+      resetToken: process.env.NODE_ENV !== 'production' ? resetToken : undefined,
+    });
+  } catch (err) {
+    console.error('forgotPassword error:', err);
+    return res.status(500).json({ error: 'Sunucu hatası.' });
+  }
+}
+
+// POST /api/auth/reset-password — yeni şifre belirle
+async function resetPassword(req, res) {
+  const { token, password } = req.body;
+  if (!token || !password) return res.status(422).json({ error: 'Token ve yeni şifre gerekli.' });
+  if (password.length < 6) return res.status(422).json({ error: 'Şifre en az 6 karakter olmalı.' });
+
+  try {
+    const { rows } = await db.query(
+      'SELECT id, username, role FROM users WHERE reset_token = $1 AND reset_token_expires > NOW()',
+      [token]
+    );
+    if (!rows.length) return res.status(400).json({ error: 'Geçersiz veya süresi dolmuş sıfırlama kodu.' });
+
+    const hash = await bcrypt.hash(password, 12);
+    await db.query(
+      'UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expires = NULL, updated_at = NOW() WHERE id = $2',
+      [hash, rows[0].id]
+    );
+
+    const newToken = issueToken(res, rows[0]);
+    return res.json({ message: 'Şifre değiştirildi. Otomatik giriş yapıldı.', token: newToken });
+  } catch (err) {
+    console.error('resetPassword error:', err);
+    return res.status(500).json({ error: 'Sunucu hatası.' });
+  }
+}
+
+module.exports = { register, login, logout, me, refresh, forgotPassword, resetPassword };

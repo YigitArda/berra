@@ -53,6 +53,8 @@ app.use('/api/search',            require('./routes/search'));
 app.use('/api/businesses',         require('./routes/businesses'));
 app.use('/api/maintenance',         require('./routes/maintenance').router);
 app.use('/api/preview',           require('./routes/preview'));
+app.use('/api/notifications',    require('./routes/notifications').router);
+app.use('/api/bookmarks',        require('./routes/bookmarks'));
 
 // ── Sağlık kontrolü ──────────────────────────────────────────
 app.get('/api/health', (req, res) => {

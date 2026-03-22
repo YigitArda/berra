@@ -7,7 +7,7 @@ router.get('/', async (req, res) => {
   const q    = (req.query.q || '').trim();
   const type = req.query.type || 'threads';
 
-  if (q.length < 2) return res.json({ results: [] });
+  if (q.length < 2 || q.length > 200) return res.json({ results: [] });
 
   try {
     if (type === 'threads') {

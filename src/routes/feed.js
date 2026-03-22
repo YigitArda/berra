@@ -52,10 +52,31 @@ router.post('/', requireAuth, [
 router.post('/:id/like', requireAuth, async (req, res) => {
   const feedId = parseInt(req.params.id);
   try {
-    await db.query(
-      'INSERT INTO feed_likes (user_id, feed_post_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+    const result = await db.query(
+      'INSERT INTO feed_likes (user_id, feed_post_id) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING *',
       [req.user.id, feedId]
     );
+    if (result.rows.length > 0) {
+      await db.query('UPDATE feed_posts SET like_count = like_count + 1 WHERE id = $1', [feedId]);
+    }
+    const { rows } = await db.query('SELECT like_count FROM feed_posts WHERE id = $1', [feedId]);
+    res.json({ like_count: rows[0]?.like_count ?? 0 });
+  } catch (err) {
+    res.status(500).json({ error: 'Sunucu hatası.' });
+  }
+});
+
+// DELETE /api/feed/:id/like
+router.delete('/:id/like', requireAuth, async (req, res) => {
+  const feedId = parseInt(req.params.id);
+  try {
+    const result = await db.query(
+      'DELETE FROM feed_likes WHERE user_id = $1 AND feed_post_id = $2 RETURNING *',
+      [req.user.id, feedId]
+    );
+    if (result.rows.length > 0) {
+      await db.query('UPDATE feed_posts SET like_count = GREATEST(like_count - 1, 0) WHERE id = $1', [feedId]);
+    }
     const { rows } = await db.query('SELECT like_count FROM feed_posts WHERE id = $1', [feedId]);
     res.json({ like_count: rows[0]?.like_count ?? 0 });
   } catch (err) {

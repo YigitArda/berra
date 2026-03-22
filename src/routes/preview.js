@@ -13,9 +13,15 @@ const ALLOWED_DOMAINS = [
   'mobile.de',
 ];
 
+// Özel/iç ağ IP'lerini engelle (SSRF koruması)
+const BLOCKED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '[::1]', '169.254.169.254'];
+const PRIVATE_IP_RE = /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/;
+
 function isAllowed(urlStr) {
   try {
     const parsed = new url.URL(urlStr);
+    if (BLOCKED_HOSTS.includes(parsed.hostname)) return false;
+    if (PRIVATE_IP_RE.test(parsed.hostname)) return false;
     return ALLOWED_DOMAINS.some(d => parsed.hostname.endsWith(d));
   } catch { return false; }
 }

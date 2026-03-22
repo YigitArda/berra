@@ -6,6 +6,7 @@ const { validationResult } = require('express-validator');
 const slugify = require('slugify');
 const db      = require('../../config/db');
 const { requireAuth, optionalAuth, requireMod } = require('../middleware/auth');
+const { createNotification } = require('./notifications');
 
 // Forum yazma işlemleri için rate limit — 5 dk'da max 10 istek
 const forumWriteLimiter = rateLimit({
@@ -174,6 +175,24 @@ router.post('/threads/:slug/posts', requireAuth, forumWriteLimiter, [
       RETURNING id, body, created_at
     `, [thread.id, req.user.id, req.body.body]);
 
+    // Konu sahibine bildirim gönder
+    const threadOwner = await db.query('SELECT user_id FROM threads WHERE id = $1', [thread.id]);
+    if (threadOwner.rows.length) {
+      createNotification({
+        userId: threadOwner.rows[0].user_id,
+        fromUserId: req.user.id,
+        type: 'reply',
+        message: req.user.username + ' konuna yanıt yazdı.',
+        link: '/thread/' + req.params.slug,
+      });
+    }
+
+    // reply_count ve last_reply_at güncelle
+    await db.query(
+      'UPDATE threads SET reply_count = reply_count + 1, last_reply_at = NOW() WHERE id = $1',
+      [thread.id]
+    );
+
     res.status(201).json({ message: 'Yanıt eklendi.', post: rows[0] });
   } catch (err) {
     console.error(err);
@@ -185,10 +204,23 @@ router.post('/threads/:slug/posts', requireAuth, forumWriteLimiter, [
 router.post('/posts/:id/like', requireAuth, async (req, res) => {
   const postId = parseInt(req.params.id);
   try {
-    await db.query(
-      'INSERT INTO post_likes (user_id, post_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+    const result = await db.query(
+      'INSERT INTO post_likes (user_id, post_id) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING *',
       [req.user.id, postId]
     );
+    if (result.rows.length > 0) {
+      await db.query('UPDATE posts SET like_count = like_count + 1 WHERE id = $1', [postId]);
+      // Beğeni bildirimi
+      const postOwner = await db.query('SELECT user_id FROM posts WHERE id = $1', [postId]);
+      if (postOwner.rows.length) {
+        createNotification({
+          userId: postOwner.rows[0].user_id,
+          fromUserId: req.user.id,
+          type: 'like',
+          message: req.user.username + ' yorumunu beğendi.',
+        });
+      }
+    }
     const { rows } = await db.query('SELECT like_count FROM posts WHERE id = $1', [postId]);
     res.json({ like_count: rows[0]?.like_count ?? 0 });
   } catch (err) {
@@ -200,12 +232,58 @@ router.post('/posts/:id/like', requireAuth, async (req, res) => {
 router.delete('/posts/:id/like', requireAuth, async (req, res) => {
   const postId = parseInt(req.params.id);
   try {
-    await db.query(
-      'DELETE FROM post_likes WHERE user_id = $1 AND post_id = $2',
+    const result = await db.query(
+      'DELETE FROM post_likes WHERE user_id = $1 AND post_id = $2 RETURNING *',
       [req.user.id, postId]
     );
+    if (result.rows.length > 0) {
+      await db.query('UPDATE posts SET like_count = GREATEST(like_count - 1, 0) WHERE id = $1', [postId]);
+    }
     const { rows } = await db.query('SELECT like_count FROM posts WHERE id = $1', [postId]);
     res.json({ like_count: rows[0]?.like_count ?? 0 });
+  } catch (err) {
+    res.status(500).json({ error: 'Sunucu hatası.' });
+  }
+});
+
+// DELETE /api/forum/posts/:id — kendi postunu sil (soft delete)
+router.delete('/posts/:id', requireAuth, async (req, res) => {
+  const postId = parseInt(req.params.id);
+  try {
+    const { rows } = await db.query(
+      'UPDATE posts SET is_deleted = true, body = \'[Bu yorum silindi]\', updated_at = NOW() WHERE id = $1 AND (user_id = $2 OR $3 = true) RETURNING *',
+      [postId, req.user.id, ['mod', 'admin'].includes(req.user.role)]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Yorum bulunamadı veya yetkiniz yok.' });
+    res.json({ message: 'Yorum silindi.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Sunucu hatası.' });
+  }
+});
+
+// PUT /api/forum/threads/:slug/lock — konu kilitle/aç (mod)
+router.put('/threads/:slug/lock', requireAuth, requireMod, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      'UPDATE threads SET is_locked = NOT is_locked WHERE slug = $1 RETURNING is_locked',
+      [req.params.slug]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Konu bulunamadı.' });
+    res.json({ message: rows[0].is_locked ? 'Konu kilitlendi.' : 'Konu açıldı.', is_locked: rows[0].is_locked });
+  } catch (err) {
+    res.status(500).json({ error: 'Sunucu hatası.' });
+  }
+});
+
+// PUT /api/forum/threads/:slug/pin — konu sabitle/kaldır (mod)
+router.put('/threads/:slug/pin', requireAuth, requireMod, async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      'UPDATE threads SET is_pinned = NOT is_pinned WHERE slug = $1 RETURNING is_pinned',
+      [req.params.slug]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Konu bulunamadı.' });
+    res.json({ message: rows[0].is_pinned ? 'Konu sabitlendi.' : 'Sabitleme kaldırıldı.', is_pinned: rows[0].is_pinned });
   } catch (err) {
     res.status(500).json({ error: 'Sunucu hatası.' });
   }

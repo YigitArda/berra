@@ -51,11 +51,15 @@ router.get('/:slug', optionalAuth, async (req, res) => {
     );
     if (!rows.length) return res.status(404).json({ error: 'Isletme bulunamadi.' });
 
+    const reviewPage   = Math.max(parseInt(req.query.review_page) || 1, 1);
+    const reviewLimit  = 20;
+    const reviewOffset = (reviewPage - 1) * reviewLimit;
     const reviews = await db.query(
       `SELECT r.*, u.username FROM business_reviews r
        JOIN users u ON u.id = r.user_id
-       WHERE r.business_id = $1 ORDER BY r.created_at DESC LIMIT 20`,
-      [rows[0].id]
+       WHERE r.business_id = $1 ORDER BY r.created_at DESC
+       LIMIT $2 OFFSET $3`,
+      [rows[0].id, reviewLimit, reviewOffset]
     );
 
     res.json({ business: rows[0], reviews: reviews.rows });
@@ -121,15 +125,21 @@ router.put('/:id/reject', requireMod, async (req, res) => {
   }
 });
 
-// GET /api/businesses/admin/pending — bekleyen isletmeler
+// GET /api/businesses/admin/pending — bekleyen isletmeler (pagination)
 router.get('/admin/pending', requireMod, async (req, res) => {
+  const page   = Math.max(parseInt(req.query.page) || 1, 1);
+  const limit  = 20;
+  const offset = (page - 1) * limit;
   try {
     const { rows } = await db.query(
       `SELECT b.*, u.username AS owner FROM businesses b
        LEFT JOIN users u ON u.id = b.user_id
-       WHERE b.status = 'pending' ORDER BY b.created_at ASC`
+       WHERE b.status = 'pending' ORDER BY b.created_at ASC
+       LIMIT $1 OFFSET $2`,
+      [limit, offset]
     );
-    res.json({ businesses: rows });
+    const total = await db.query("SELECT COUNT(*) FROM businesses WHERE status = 'pending'");
+    res.json({ businesses: rows, total: parseInt(total.rows[0].count), page, limit });
   } catch (err) {
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
@@ -152,6 +162,15 @@ router.post('/:id/reviews', requireAuth, [
       RETURNING *`,
       [req.params.id, req.user.id, req.body.rating, req.body.body || null]
     );
+    // avg_rating ve review_count güncelle
+    await db.query(`
+      UPDATE businesses SET
+        avg_rating = (SELECT COALESCE(AVG(rating), 0) FROM business_reviews WHERE business_id = $1),
+        review_count = (SELECT COUNT(*) FROM business_reviews WHERE business_id = $1),
+        updated_at = NOW()
+      WHERE id = $1
+    `, [req.params.id]);
+
     res.status(201).json({ review: rows[0] });
   } catch (err) {
     console.error(err);
