@@ -26,6 +26,7 @@ const loginRules = [
 router.post('/register', registerRules, ctrl.register);
 router.post('/login',    loginRules,    ctrl.login);
 router.post('/logout',                  ctrl.logout);
+router.post('/refresh',                 ctrl.refresh);
 router.get ('/me',       requireAuth,   ctrl.me);
 
 module.exports = router;

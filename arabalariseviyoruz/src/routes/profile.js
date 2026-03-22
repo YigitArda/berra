@@ -3,6 +3,7 @@ const router   = express.Router();
 const db       = require('../../config/db');
 const { requireAuth, optionalAuth } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
+const { validateImageMime } = require('../middleware/sanitize');
 
 // PUT /api/profile/me/info — bio güncelle
 router.put('/me/info', requireAuth, [
@@ -25,6 +26,8 @@ router.put('/me/avatar', requireAuth, async (req, res) => {
   if (!avatar_url) return res.status(422).json({ error: 'Avatar verisi eksik.' });
   // Sadece base64 data URL kabul et
   if (!avatar_url.startsWith('data:image/')) return res.status(422).json({ error: 'Geçersiz format.' });
+  // MIME type kontrolü — sadece jpeg, png, gif, webp
+  if (!validateImageMime(avatar_url)) return res.status(422).json({ error: 'Sadece JPEG, PNG, GIF veya WEBP formatı kabul edilir.' });
   // Max ~300KB (base64 ~400KB)
   if (avatar_url.length > 400000) return res.status(422).json({ error: 'Resim çok büyük. Max 300KB.' });
   try {

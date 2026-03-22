@@ -1,10 +1,20 @@
-const express = require('express');
-const router  = express.Router();
+const express   = require('express');
+const router    = express.Router();
+const rateLimit = require('express-rate-limit');
 const { body, param, query } = require('express-validator');
 const { validationResult } = require('express-validator');
 const slugify = require('slugify');
 const db      = require('../../config/db');
 const { requireAuth, optionalAuth, requireMod } = require('../middleware/auth');
+
+// Forum yazma işlemleri için rate limit — 5 dk'da max 10 istek
+const forumWriteLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Çok fazla içerik gönderdiniz. 5 dakika bekleyin.' },
+});
 
 // --- KATEGORILER ---
 
@@ -101,7 +111,7 @@ router.get('/threads/:slug', optionalAuth, async (req, res) => {
 });
 
 // POST /api/forum/threads — yeni konu aç
-router.post('/threads', requireAuth, [
+router.post('/threads', requireAuth, forumWriteLimiter, [
   body('title').trim().isLength({ min: 5, max: 200 }).withMessage('Başlık 5-200 karakter olmalı.'),
   body('body').trim().isLength({ min: 10 }).withMessage('İçerik en az 10 karakter olmalı.'),
   body('category_id').isInt({ min: 1 }).withMessage('Geçerli bir kategori seçin.'),
@@ -145,7 +155,7 @@ router.post('/threads', requireAuth, [
 });
 
 // POST /api/forum/threads/:slug/posts — yanıt yaz
-router.post('/threads/:slug/posts', requireAuth, [
+router.post('/threads/:slug/posts', requireAuth, forumWriteLimiter, [
   body('body').trim().isLength({ min: 1 }).withMessage('Yanıt boş olamaz.'),
 ], async (req, res) => {
   const errors = validationResult(req);

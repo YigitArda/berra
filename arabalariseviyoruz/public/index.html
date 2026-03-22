@@ -542,6 +542,16 @@ body.light .feed-item:hover { background: var(--bg3); }
 <div class="toast" id="toast"></div>
 
 <script>
+// ── XSS KORUMASI ───────────────────────────────────────────────
+function escapeHtml(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 // ── STATE ──────────────────────────────────────────────────────
 let user = null;
 let currentCat = 'all';
@@ -587,20 +597,20 @@ function renderThreads(list) {
     row.className = 'thread-row' + (t.pinned ? ' pinned' : '');
     row.innerHTML = `
       <div class="thread-main">
-        <div class="thread-ava">${t.ava}</div>
+        <div class="thread-ava">${escapeHtml(t.ava)}</div>
         <div class="thread-info">
           <div class="thread-title-row">
             ${t.pinned?'<span class="tag tag-pin">📌</span>':''}
             ${t.locked?'<span class="tag tag-lock">🔒</span>':''}
-            <span class="thread-title">${t.title}</span>
-            <span class="tag tag-cat">${t.cat}</span>
+            <span class="thread-title">${escapeHtml(t.title)}</span>
+            <span class="tag tag-cat">${escapeHtml(t.cat)}</span>
           </div>
-          <div class="thread-meta2"><span data-u="${t.author}" onclick="openProfile(this.dataset.u)" style="cursor:pointer;color:var(--text2)">${t.author}</span> · ${t.sub}</div>
+          <div class="thread-meta2"><span data-u="${escapeHtml(t.author)}" onclick="openProfile(this.dataset.u)" style="cursor:pointer;color:var(--text2)">${escapeHtml(t.author)}</span> · ${escapeHtml(t.sub)}</div>
         </div>
       </div>
-      <div class="thread-stat">${t.replies}<small>yanıt</small></div>
-      <div class="thread-stat">${t.views}<small>görüntü</small></div>
-      <div class="thread-time-col">${t.time}<br><span style="font-size:.67rem">${t.author}</span></div>`;
+      <div class="thread-stat">${escapeHtml(String(t.replies))}<small>yanıt</small></div>
+      <div class="thread-stat">${escapeHtml(String(t.views))}<small>görüntü</small></div>
+      <div class="thread-time-col">${escapeHtml(t.time)}<br><span style="font-size:.67rem">${escapeHtml(t.author)}</span></div>`;
     row.addEventListener('click', () => openThread(t.id));
     el.appendChild(row);
   });
@@ -679,12 +689,12 @@ function renderThreadDetail(t, posts) {
   currentThread = t;
   const el = document.getElementById('threadDetailContent');
   el.innerHTML =
-    '<div class="thread-detail-title">' + t.title + '</div>'
+    '<div class="thread-detail-title">' + escapeHtml(t.title) + '</div>'
     + '<div class="thread-detail-meta">'
-    + '<span data-u="' + t.author + '" onclick="openProfile(this.dataset.u)" style="cursor:pointer">👤 ' + t.author + '</span>'
-    + '<span>📂 ' + t.cat + '</span>'
-    + '<span>👁 ' + t.views + ' görüntülenme</span>'
-    + '<span>💬 ' + t.replies + ' yanıt</span>'
+    + '<span data-u="' + escapeHtml(t.author) + '" onclick="openProfile(this.dataset.u)" style="cursor:pointer">👤 ' + escapeHtml(t.author) + '</span>'
+    + '<span>📂 ' + escapeHtml(t.cat) + '</span>'
+    + '<span>👁 ' + escapeHtml(String(t.views)) + ' görüntülenme</span>'
+    + '<span>💬 ' + escapeHtml(String(t.replies)) + ' yanıt</span>'
     + (t.locked ? '<span class="tag tag-lock">🔒 Kilitli</span>' : '')
     + '</div>'
     + '<div id="postsList">' + posts.map(p => renderPost(p)).join('') + '</div>'
@@ -764,14 +774,14 @@ function renderPost(p) {
         </div>
       </a>` : '';
   return `<div class="post-item">
-    <div class="post-ava">${p.ava}</div>
+    <div class="post-ava">${escapeHtml(p.ava)}</div>
     <div class="post-body">
-      <span class="post-author" onclick="openProfile('${p.author}')" style="cursor:pointer">${p.author}</span>
-      <span class="post-time">${p.time}</span>
-      <div class="post-text">${p.text}</div>
+      <span class="post-author" onclick="openProfile('${escapeHtml(p.author)}')" style="cursor:pointer">${escapeHtml(p.author)}</span>
+      <span class="post-time">${escapeHtml(p.time)}</span>
+      <div class="post-text">${escapeHtml(p.text)}</div>
       ${imgsHtml}${prevHtml}
       <div class="post-actions">
-        <button class="post-like-btn ${p.liked?'liked':''}" onclick="likePost(${p.id},this)">♥ ${p.likes}</button>
+        <button class="post-like-btn ${p.liked?'liked':''}" onclick="likePost(${p.id},this)">♥ ${escapeHtml(String(p.likes))}</button>
       </div>
     </div>
   </div>`;
@@ -878,9 +888,15 @@ document.getElementById('btnPost').addEventListener('click', () => {
 function setUser(u) {
   user = u;
   document.getElementById('navRight').innerHTML = `
-    <span style="font-size:.82rem;color:var(--text2);font-weight:600;cursor:pointer" onclick="openProfile('${u.username}')">👤 ${u.username}</span>
+    <span style="font-size:.82rem;color:var(--text2);font-weight:600;cursor:pointer" onclick="openProfile('${escapeHtml(u.username)}')">👤 ${escapeHtml(u.username)}</span>
     <button class="btn btn-ghost btn-sm" onclick="doLogout()">Çıkış</button>`;
   document.getElementById('composeAva').textContent = u.ava;
+  // Token'ı her 6 saatte bir otomatik yenile
+  if (!window._tokenRefreshInterval) {
+    window._tokenRefreshInterval = setInterval(async () => {
+      try { await apiCall('/api/auth/refresh', 'POST'); } catch(e) {}
+    }, 6 * 60 * 60 * 1000);
+  }
 }
 function doLogout() {
   user = null;
@@ -1139,9 +1155,9 @@ function renderProfileHeader(data) {
     ? '<img src="' + u.avatar_url + '" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
     : '<span>' + u.username[0].toUpperCase() + '</span>';
   const joinDate = new Date(u.created_at).toLocaleDateString('tr-TR', { year:'numeric', month:'long' });
-  const roleHtml = u.role !== 'user' ? '<span class="profile-role">' + u.role.toUpperCase() + '</span>' : '';
+  const roleHtml = u.role !== 'user' ? '<span class="profile-role">' + escapeHtml(u.role.toUpperCase()) + '</span>' : '';
   const bioHtml  = u.bio
-    ? '<div class="profile-bio">' + u.bio + '</div>'
+    ? '<div class="profile-bio">' + escapeHtml(u.bio) + '</div>'
     : '<div class="profile-bio-empty">Henüz bio eklenmemiş.</div>';
   const editBioBtn = isMe ? '<button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="editBio()">✏ Bio düzenle</button>' : '';
   const avatarEdit = isMe ? '<div class="profile-ava-edit" onclick="triggerAvatarUpload()" title="Fotoğraf değiştir">✎</div><input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">' : '';
@@ -1152,7 +1168,7 @@ function renderProfileHeader(data) {
     + avatarEdit
     + '</div>'
     + '<div class="profile-info">'
-    + '<div><span class="profile-username">' + u.username + '</span>' + roleHtml + '</div>'
+    + '<div><span class="profile-username">' + escapeHtml(u.username) + '</span>' + roleHtml + '</div>'
     + '<div style="font-size:.75rem;color:var(--text3);margin-top:3px">🗓 ' + joinDate + ' tarihinde katıldı</div>'
     + '<div id="bioDisplay">' + bioHtml + editBioBtn + '</div>'
     + '<div class="profile-stats">'
@@ -1182,11 +1198,11 @@ function renderProfileTab(tab) {
     c.innerHTML = '<div class="profile-section-title">Açılan Konular</div>' +
       profileData.threads.map(t => `
         <div class="profile-thread-item" onclick="openThread(${t.id})">
-          <div class="profile-thread-title">${t.title}</div>
+          <div class="profile-thread-title">${escapeHtml(t.title)}</div>
           <div class="profile-thread-meta">
-            <span>📂 ${t.category_name}</span>
-            <span>💬 ${t.reply_count} yanıt</span>
-            <span>👁 ${t.view_count} görüntü</span>
+            <span>📂 ${escapeHtml(t.category_name)}</span>
+            <span>💬 ${escapeHtml(String(t.reply_count))} yanıt</span>
+            <span>👁 ${escapeHtml(String(t.view_count))} görüntü</span>
           </div>
         </div>`).join('');
   }
@@ -1196,9 +1212,9 @@ function renderProfileTab(tab) {
     c.innerHTML = '<div class="profile-section-title">Yazılan Yanıtlar</div>' +
       profileData.posts.map(p => `
         <div class="profile-post-item">
-          <div class="profile-post-thread">↩ ${p.thread_title}</div>
-          <div class="profile-post-body">${p.body.substring(0,200)}${p.body.length>200?'...':''}</div>
-          <div class="profile-post-meta">♥ ${p.like_count} beğeni</div>
+          <div class="profile-post-thread">↩ ${escapeHtml(p.thread_title)}</div>
+          <div class="profile-post-body">${escapeHtml(p.body.substring(0,200))}${p.body.length>200?'...':''}</div>
+          <div class="profile-post-meta">♥ ${escapeHtml(String(p.like_count))} beğeni</div>
         </div>`).join('');
   }
 
@@ -1208,10 +1224,10 @@ function renderProfileTab(tab) {
       ? '<div class="car-grid">' + profileData.cars.map(car => `
           <div class="car-card ${car.is_current?'current':''}">
             ${isMe ? `<button class="car-delete" onclick="deleteCar(${car.id})">✕</button>` : ''}
-            <div class="car-brand">${car.brand} ${car.is_current?'<span class="car-badge">Güncel</span>':''}</div>
-            <div class="car-model">${car.model}</div>
-            <div class="car-year">${car.year}${car.owned_from?' · '+car.owned_from+'-'+(car.owned_to||'hâlâ'):''}</div>
-            ${car.notes?`<div class="car-notes">"${car.notes}"</div>`:''}
+            <div class="car-brand">${escapeHtml(car.brand)} ${car.is_current?'<span class="car-badge">Güncel</span>':''}</div>
+            <div class="car-model">${escapeHtml(car.model)}</div>
+            <div class="car-year">${escapeHtml(String(car.year))}${car.owned_from?' · '+escapeHtml(String(car.owned_from))+'-'+(car.owned_to?escapeHtml(String(car.owned_to)):'hâlâ'):''}</div>
+            ${car.notes?`<div class="car-notes">"${escapeHtml(car.notes)}"</div>`:''}
           </div>`).join('') + '</div>'
       : '<div style="color:var(--text3);padding:20px 0 12px">Henüz araç eklenmemiş.</div>';
 

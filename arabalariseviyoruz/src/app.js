@@ -6,6 +6,7 @@ const cors        = require('cors');
 const cookieParser = require('cookie-parser');
 const rateLimit   = require('express-rate-limit');
 const path        = require('path');
+const { sanitizeBody } = require('./middleware/sanitize');
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use(limiter);
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(sanitizeBody);
 
 // ── Statik dosyalar ──────────────────────────────────────────
 app.use(express.static(path.join(__dirname, '../public')));
@@ -55,6 +57,11 @@ app.use('/api/preview',           require('./routes/preview'));
 // ── Sağlık kontrolü ──────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', ts: new Date().toISOString() });
+});
+
+// ── 404 handler (API rotaları için) ──────────────────────────
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ error: 'Endpoint bulunamadı.' });
 });
 
 // ── SPA fallback (frontend route'ları için) ──────────────────
