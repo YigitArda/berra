@@ -96,6 +96,12 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 /* SPINNER */
 .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg) } }
+/* LIGHT MODE */
+body.light{--bg:#f4f5f7;--bg2:#ffffff;--bg3:#eceef2;--border:#dde0e8;--border2:#c8ccd6;--text:#1a1c24;--text2:#4a4e62;--text3:#9096b0;--accent:#d42a2a;--acc2:#e84040;--green:#1a9e52;--amber:#c47f00;--blue:#2970c7;}
+.theme-toggle{width:32px;height:18px;background:var(--border2);border-radius:9px;position:relative;cursor:pointer;border:none;transition:background .2s;flex-shrink:0;}
+.theme-toggle.dark{background:var(--accent);}
+.theme-toggle::after{content:'';position:absolute;width:13px;height:13px;background:#fff;border-radius:50%;top:2.5px;left:2.5px;transition:transform .2s;}
+.theme-toggle.dark::after{transform:translateX(14px);}
 </style>
 </head>
 <body>
@@ -103,6 +109,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 <div class="topbar">
   <a class="topbar-logo" href="index.html">🚗 arabalariseviyoruz<span>.com</span></a>
   <a class="topbar-back" href="index.html">← Forum'a dön</a>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Tema değiştir" style="margin-left:auto"></button>
 </div>
 
 <div class="hero">
@@ -336,6 +343,8 @@ function compare() {
   document.getElementById('resultSection').classList.add('show');
   document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+function toggleTheme(){const d=document.body.classList.toggle('light');document.getElementById('themeToggle').classList.toggle('dark',!d);localStorage.setItem('theme',d?'light':'dark');}
+(function(){const s=localStorage.getItem('theme');if(s==='light'){document.body.classList.add('light');}else{document.getElementById('themeToggle').classList.add('dark');}})();
 </script>
 </body>
 </html>
