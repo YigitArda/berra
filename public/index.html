@@ -74,33 +74,39 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 .thread-stat small{display:block;font-size:.67rem;font-weight:400;color:var(--text3);margin-top:1px;}
 .thread-time-col{text-align:center;font-size:.72rem;color:var(--text3);line-height:1.4;}
 
-/* SAĞ — AKIŞ */
+/* SAĞ — AKIŞ (Twitter/Instagram tarzı) */
 .panel-right{display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
-.feed-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.feed-header-title{font-family:var(--fontc);font-size:1rem;font-weight:700;color:var(--text);letter-spacing:.3px;}
-.compose{border-bottom:1px solid var(--border);padding:10px 14px;background:var(--bg2);flex-shrink:0;}
-.compose-inner{display:flex;gap:9px;align-items:flex-start;}
-.compose-ava{width:32px;height:32px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:grid;place-items:center;font-size:.8rem;font-weight:700;color:var(--text3);flex-shrink:0;}
+.feed-scroll{flex:1;overflow-y:auto;}
+.feed-center{max-width:620px;margin:0 auto;padding:0 0 40px;}
+
+/* Compose kutusu */
+.compose{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;margin:16px 16px 8px;}
+.compose-inner{display:flex;gap:12px;align-items:flex-start;}
+.compose-ava{width:42px;height:42px;border-radius:50%;background:var(--bg3);border:2px solid var(--border2);display:grid;place-items:center;font-size:1rem;font-weight:700;color:var(--text2);flex-shrink:0;}
 .compose-area{flex:1;}
-.compose-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:7px 10px;color:var(--text);font-family:var(--font);font-size:.85rem;resize:none;outline:none;min-height:36px;line-height:1.5;transition:border-color .15s;}
+.compose-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border);padding:6px 0 10px;color:var(--text);font-family:var(--font);font-size:.95rem;resize:none;outline:none;line-height:1.5;}
 .compose-input::placeholder{color:var(--text3);}
-.compose-input:focus{border-color:var(--border2);}
-.compose-foot{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:7px;}
-.char-count{font-size:.73rem;color:var(--text3);}
-.feed-list{flex:1;overflow-y:auto;}
-.feed-item{display:flex;gap:9px;padding:11px 14px;border-bottom:1px solid var(--border);transition:background .1s;animation:fadeUp .25s ease both;}
-.feed-item:hover{background:var(--bg2);}
-@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-.feed-ava{width:32px;height:32px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:grid;place-items:center;font-size:.8rem;font-weight:700;color:var(--text2);flex-shrink:0;}
-.feed-body{flex:1;min-width:0;}
-.feed-top{display:flex;align-items:baseline;gap:6px;margin-bottom:4px;}
-.feed-author{font-size:.85rem;font-weight:700;color:var(--text);cursor:pointer;} .feed-author:hover{color:var(--acc2);}
-.feed-time{font-size:.73rem;color:var(--text3);}
-.feed-text{font-size:.85rem;color:var(--text2);line-height:1.55;word-break:break-word;}
-.feed-actions{display:flex;gap:14px;margin-top:7px;}
-.feed-btn{display:flex;align-items:center;gap:4px;font-size:.75rem;color:var(--text3);cursor:pointer;background:none;border:none;font-family:var(--font);padding:0;transition:color .12s;}
-.feed-btn:hover{color:var(--text2);}
+.compose-input:focus{border-bottom-color:var(--accent);}
+.compose-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;}
+.char-count{font-size:.72rem;color:var(--text3);}
+
+/* Feed kart */
+.feed-item{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0 16px 10px;transition:border-color .15s;animation:fadeUp .3s ease both;}
+.feed-item:hover{border-color:var(--border2);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.feed-item-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.feed-ava{width:42px;height:42px;border-radius:50%;background:var(--bg3);border:2px solid var(--border2);display:grid;place-items:center;font-size:1rem;font-weight:700;color:var(--text2);flex-shrink:0;}
+.feed-meta{flex:1;min-width:0;}
+.feed-author{font-size:.9rem;font-weight:700;color:var(--text);cursor:pointer;display:block;} .feed-author:hover{color:var(--acc2);}
+.feed-time{font-size:.75rem;color:var(--text3);}
+.feed-text{font-size:.95rem;color:var(--text);line-height:1.6;word-break:break-word;margin-bottom:12px;}
+.feed-actions{display:flex;gap:4px;border-top:1px solid var(--border);padding-top:10px;}
+.feed-btn{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--text3);cursor:pointer;background:none;border:none;font-family:var(--font);padding:7px 12px;border-radius:8px;transition:all .15s;flex:1;justify-content:center;}
+.feed-btn:hover{background:var(--bg3);color:var(--text2);}
 .feed-btn.liked{color:var(--accent);}
+.feed-btn.liked:hover{background:rgba(224,48,48,.1);}
+.feed-load-more{text-align:center;padding:20px;font-size:.82rem;color:var(--text3);}
+.feed-divider{text-align:center;font-size:.72rem;color:var(--text3);padding:8px 16px;margin:4px 0;letter-spacing:.5px;}
 
 /* KONU DETAY SAYFASI */
 .page{position:fixed;inset:0;top:46px;z-index:40;background:var(--bg);overflow-y:auto;display:none;}
@@ -241,8 +247,10 @@ body.light .compose,
 body.light .profile-header,
 body.light .profile-tabs,
 body.light .auth-tabs { background: var(--bg2); }
-body.light .thread-row:hover,
-body.light .feed-item:hover { background: var(--bg3); }
+body.light .thread-row:hover { background: var(--bg3); }
+body.light .feed-item { background: var(--bg2); border-color: var(--border); box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+body.light .feed-item:hover { border-color: var(--border2); }
+body.light .compose { background: var(--bg2); box-shadow: 0 1px 4px rgba(0,0,0,.06); }
 
 /* TOGGLE BUTTON */
 .theme-toggle {
@@ -351,24 +359,25 @@ body.light .feed-item:hover { background: var(--bg3); }
 
   <!-- SAĞ: AKIŞ -->
   <div class="panel-right">
-    <div class="feed-header">
-      <span class="feed-header-title">⚡ Akış</span>
-      <span style="font-size:.75rem;color:var(--text3)">Son paylaşımlar</span>
-    </div>
-    <div class="compose">
-      <div class="compose-inner">
-        <div class="compose-ava" id="composeAva">👤</div>
-        <div class="compose-area">
-          <textarea class="compose-input" id="feedInput" rows="2" placeholder="Kısa bir şey paylaş, soru sor..."></textarea>
-          <div class="compose-foot">
-            <span class="char-count" id="charCount">0/500</span>
-            <button class="btn btn-accent btn-sm" id="btnPost">Paylaş</button>
+    <div class="feed-scroll" id="feedScroll">
+      <div class="feed-center">
+        <div class="compose">
+          <div class="compose-inner">
+            <div class="compose-ava" id="composeAva">👤</div>
+            <div class="compose-area">
+              <textarea class="compose-input" id="feedInput" rows="2" placeholder="Ne düşünüyorsun? Paylaş..."></textarea>
+              <div class="compose-foot">
+                <span class="char-count" id="charCount">0/500</span>
+                <button class="btn btn-accent btn-sm" id="btnPost">Paylaş</button>
+              </div>
+            </div>
           </div>
         </div>
+        <div class="feed-divider">⚡ SON PAYLAŞIMLAR</div>
+        <div id="feedList"></div>
+        <div id="feedLoadMore" class="feed-load-more" style="display:none">Yükleniyor...</div>
       </div>
     </div>
-    <div class="feed-list" id="feedList"></div>
-    <div id="feedLoadMore" style="display:none;padding:14px;text-align:center;font-size:.78rem;color:var(--text3)">Yükleniyor...</div>
   </div>
 </div>
 
@@ -847,25 +856,25 @@ document.querySelectorAll('.cat-tab').forEach(tab => {
 });
 
 // ── FEED RENDER ───────────────────────────────────────────────
+function feedCard(p, delay) {
+  return `<div class="feed-item" style="animation-delay:${delay}s">
+    <div class="feed-item-top">
+      <div class="feed-ava">${p.ava}</div>
+      <div class="feed-meta">
+        <span class="feed-author" onclick="openProfile(this.dataset.u)" data-u="${escapeHtml(p.author)}">${escapeHtml(p.author)}</span>
+        <span class="feed-time">${p.time}</span>
+      </div>
+    </div>
+    <div class="feed-text">${escapeHtml(p.text)}</div>
+    <div class="feed-actions">
+      <button class="feed-btn ${p.liked?'liked':''}" onclick="likeFeed(${p.id},this)">♥ <span>${p.likes}</span></button>
+    </div>
+  </div>`;
+}
+
 function renderFeed(posts) {
   const el = document.getElementById('feedList');
-  el.innerHTML = '';
-  posts.forEach((p, i) => {
-    const div = document.createElement('div');
-    div.className = 'feed-item';
-    div.style.animationDelay = `${i * 0.04}s`;
-    div.innerHTML = `
-      <div class="feed-ava">${p.ava}</div>
-      <div class="feed-body">
-        <div class="feed-top"><span class="feed-author" onclick="openProfile(this.dataset.u)" data-u="${p.author}">${p.author}</span><span class="feed-time">${p.time}</span></div>
-        <div class="feed-text">${p.text}</div>
-        <div class="feed-actions">
-          <button class="feed-btn ${p.liked?'liked':''}" onclick="likeFeed(${p.id},this)">♥ <span>${p.likes}</span></button>
-          <button class="feed-btn">💬 Yanıtla</button>
-        </div>
-      </div>`;
-    el.appendChild(div);
-  });
+  el.innerHTML = posts.map((p, i) => feedCard(p, i * 0.04)).join('');
 }
 
 async function likeFeed(id, btn) {
@@ -1538,20 +1547,7 @@ let feedHasMore = true;
 
 function appendFeedPosts(posts) {
   const el = document.getElementById('feedList');
-  posts.forEach(p => {
-    const div = document.createElement('div');
-    div.className = 'feed-item';
-    div.innerHTML = `
-      <div class="feed-ava">${p.ava}</div>
-      <div class="feed-body">
-        <div class="feed-top"><span class="feed-author" onclick="openProfile(this.dataset.u)" data-u="${p.author}">${p.author}</span><span class="feed-time">${p.time}</span></div>
-        <div class="feed-text">${p.text}</div>
-        <div class="feed-actions">
-          <button class="feed-btn ${p.liked?'liked':''}" onclick="likeFeed(${p.id},this)">♥ <span>${p.likes}</span></button>
-        </div>
-      </div>`;
-    el.appendChild(div);
-  });
+  el.insertAdjacentHTML('beforeend', posts.map((p, i) => feedCard(p, i * 0.04)).join(''));
 }
 
 async function loadMoreFeed() {
@@ -1590,10 +1586,10 @@ async function loadMoreFeed() {
   if (indicator) indicator.style.display = 'none';
 }
 
-// Scroll dinle
-document.getElementById('feedList').addEventListener('scroll', () => {
-  const el = document.getElementById('feedList');
-  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 200) {
+// Scroll dinle — feed-scroll container'ında
+document.getElementById('feedScroll').addEventListener('scroll', () => {
+  const el = document.getElementById('feedScroll');
+  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 300) {
     loadMoreFeed();
   }
 });
