@@ -41,8 +41,8 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 .btn-sm{padding:4px 9px;font-size:0.78rem;}
 .btn-full{width:100%;}
 
-/* ANA LAYOUT — 55% konular | 45% akış */
-.layout{display:grid;grid-template-columns:55fr 45fr;height:calc(100vh - 46px);overflow:hidden;}
+/* ANA LAYOUT — 38% konular | 62% akış */
+.layout{display:grid;grid-template-columns:38fr 62fr;height:calc(100vh - 46px);overflow:hidden;}
 
 /* SOL */
 .panel-left{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden;}
@@ -368,6 +368,7 @@ body.light .feed-item:hover { background: var(--bg3); }
       </div>
     </div>
     <div class="feed-list" id="feedList"></div>
+    <div id="feedLoadMore" style="display:none;padding:14px;text-align:center;font-size:.78rem;color:var(--text3)">Yükleniyor...</div>
   </div>
 </div>
 
@@ -1530,15 +1531,38 @@ document.addEventListener('click', async function(e) {
   } catch(_) {}
 })();
 
-// ── İLK RENDER ────────────────────────────────────────────────
-renderThreads(threads);
-renderFeed(feedData);
-// Gerçek feed'i de yükle
-(async () => {
+// ── FEED INFINITE SCROLL ──────────────────────────────────────
+let feedPage = 1;
+let feedLoading = false;
+let feedHasMore = true;
+
+function appendFeedPosts(posts) {
+  const el = document.getElementById('feedList');
+  posts.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'feed-item';
+    div.innerHTML = `
+      <div class="feed-ava">${p.ava}</div>
+      <div class="feed-body">
+        <div class="feed-top"><span class="feed-author" onclick="openProfile(this.dataset.u)" data-u="${p.author}">${p.author}</span><span class="feed-time">${p.time}</span></div>
+        <div class="feed-text">${p.text}</div>
+        <div class="feed-actions">
+          <button class="feed-btn ${p.liked?'liked':''}" onclick="likeFeed(${p.id},this)">♥ <span>${p.likes}</span></button>
+        </div>
+      </div>`;
+    el.appendChild(div);
+  });
+}
+
+async function loadMoreFeed() {
+  if (feedLoading || !feedHasMore) return;
+  feedLoading = true;
+  const indicator = document.getElementById('feedLoadMore');
+  if (indicator) indicator.style.display = 'block';
   try {
-    const data = await apiCall('/api/feed?page=1', 'GET');
+    const data = await apiCall('/api/feed?page=' + feedPage, 'GET');
     if (data.posts && data.posts.length > 0) {
-      const dbPosts = data.posts.map(p => ({
+      const newPosts = data.posts.map(p => ({
         id: p.id,
         ava: p.username ? p.username[0].toUpperCase() : '?',
         author: p.username,
@@ -1547,11 +1571,37 @@ renderFeed(feedData);
         likes: p.like_count,
         liked: false,
       }));
-      feedData = [...dbPosts, ...feedData.slice(0, 3)];
-      renderFeed(feedData);
+      // Duplicate kontrolü
+      const existing = new Set(feedData.map(x => x.id));
+      const fresh = newPosts.filter(x => !existing.has(x.id));
+      feedData = [...feedData, ...fresh];
+      if (feedPage === 1) {
+        renderFeed(feedData);
+      } else {
+        appendFeedPosts(fresh);
+      }
+      feedPage++;
+      if (data.posts.length < data.limit) feedHasMore = false;
+    } else {
+      feedHasMore = false;
     }
   } catch(e) {}
-})();
+  feedLoading = false;
+  if (indicator) indicator.style.display = 'none';
+}
+
+// Scroll dinle
+document.getElementById('feedList').addEventListener('scroll', () => {
+  const el = document.getElementById('feedList');
+  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 200) {
+    loadMoreFeed();
+  }
+});
+
+// ── İLK RENDER ────────────────────────────────────────────────
+renderThreads(threads);
+renderFeed(feedData);
+loadMoreFeed();
 </script>
 </body>
 </html>
