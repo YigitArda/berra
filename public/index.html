@@ -333,7 +333,122 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 .car-delete:hover{color:var(--accent);}
 .bio-edit-area{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;color:var(--text);font-family:var(--font);font-size:.85rem;resize:none;outline:none;min-height:70px;line-height:1.5;margin-top:8px;display:block;}
 .bio-edit-area::placeholder{color:var(--text3);}
-/* LIGHT MODE */
+
+/* ── NAVBAR: BİLDİRİMLER + KULLANICI ── */
+.nav-notif-btn{position:relative;background:none;border:none;cursor:pointer;padding:6px 8px;border-radius:var(--r-sm);color:var(--text2);font-size:1rem;transition:all var(--t);display:flex;align-items:center;gap:4px;}
+.nav-notif-btn:hover{background:var(--bg3);color:var(--text);}
+.nav-notif-btn .notif-badge{position:absolute;top:2px;right:2px;min-width:16px;height:16px;padding:0 3px;background:var(--accent);color:#fff;border-radius:var(--r-full);font-size:.6rem;font-weight:700;line-height:16px;text-align:center;}
+.nav-msg-btn{position:relative;background:none;border:none;cursor:pointer;padding:6px 8px;border-radius:var(--r-sm);color:var(--text2);font-size:1rem;transition:all var(--t);}
+.nav-msg-btn:hover{background:var(--bg3);color:var(--text);}
+.nav-msg-btn .msg-badge{position:absolute;top:2px;right:2px;min-width:16px;height:16px;padding:0 3px;background:var(--blue);color:#fff;border-radius:var(--r-full);font-size:.6rem;font-weight:700;line-height:16px;text-align:center;}
+.nav-user-chip{display:flex;align-items:center;gap:7px;padding:4px 10px 4px 5px;border-radius:var(--r-full);cursor:pointer;border:1px solid var(--border);background:var(--bg3);transition:all var(--t);}
+.nav-user-chip:hover{border-color:var(--border2);background:var(--bg2);}
+.nav-user-ava{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0;}
+.nav-user-name{font-size:.8rem;font-weight:600;color:var(--text);}
+
+/* ── FEED KART: YENİ STILLER ── */
+.feed-item.is-trend{border-left:3px solid var(--accent)!important;}
+.feed-item.is-question{border-left:3px solid var(--blue)!important;}
+.feed-item.is-announce{border-left:3px solid var(--amber)!important;background:rgba(240,165,0,.03);}
+.feed-item-badge{display:inline-flex;align-items:center;gap:3px;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:var(--r-full);margin-bottom:8px;}
+.badge-trend{background:rgba(224,48,48,.12);color:var(--accent);border:1px solid rgba(224,48,48,.25);}
+.badge-question{background:rgba(74,144,217,.12);color:var(--blue);border:1px solid rgba(74,144,217,.25);}
+.badge-announce{background:rgba(240,165,0,.12);color:var(--amber);border:1px solid rgba(240,165,0,.25);}
+.feed-tag-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.feed-auto-tag{font-size:.72rem;color:var(--text3);background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-full);padding:2px 8px;cursor:pointer;transition:all var(--t);}
+.feed-auto-tag:hover{color:var(--text2);border-color:var(--border2);}
+/* Avatar renk paleti */
+.ava-c0{background:#e03030;} .ava-c1{background:#2970c7;} .ava-c2{background:#1a9e52;}
+.ava-c3{background:#c47f00;} .ava-c4{background:#9b59b6;} .ava-c5{background:#e67e22;}
+/* Kalp animasyonu */
+@keyframes heartPulse{0%{transform:scale(1)}30%{transform:scale(1.4)}60%{transform:scale(.9)}100%{transform:scale(1)}}
+.heart-anim{animation:heartPulse .4s ease;}
+/* 3-nokta menü */
+.post-menu-wrap{position:relative;}
+.post-menu-btn{background:none;border:none;color:var(--text3);cursor:pointer;padding:4px 7px;border-radius:var(--r-sm);font-size:.95rem;transition:all var(--t);}
+.post-menu-btn:hover{background:var(--bg3);color:var(--text2);}
+.post-menu-dropdown{position:absolute;right:0;top:calc(100% + 4px);background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);min-width:160px;z-index:90;box-shadow:var(--shadow-md);overflow:hidden;opacity:0;pointer-events:none;transform:translateY(-4px);transition:all var(--t);}
+.post-menu-dropdown.open{opacity:1;pointer-events:all;transform:translateY(0);}
+.post-menu-item{display:flex;align-items:center;gap:8px;padding:9px 14px;font-size:.83rem;color:var(--text2);cursor:pointer;transition:background var(--t);}
+.post-menu-item:hover{background:var(--bg3);color:var(--text);}
+.post-menu-item.danger{color:var(--accent);}
+.post-menu-item.danger:hover{background:rgba(224,48,48,.08);}
+
+/* ── POST DETAY SAYFASI ── */
+.post-detail-header{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px;}
+.post-detail-ava{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-size:1.3rem;font-weight:700;color:#fff;flex-shrink:0;}
+.post-detail-meta{flex:1;}
+.post-detail-author{font-size:1rem;font-weight:700;color:var(--text);cursor:pointer;}
+.post-detail-author:hover{color:var(--acc2);}
+.post-detail-time{font-size:.78rem;color:var(--text3);margin-top:2px;}
+.post-detail-text{font-size:1.05rem;color:var(--text);line-height:1.7;word-break:break-word;padding:16px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:16px;}
+.post-detail-actions{display:flex;gap:6px;margin-bottom:20px;}
+.post-detail-btn{display:flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--r-sm);font-size:.85rem;font-weight:600;color:var(--text2);background:var(--bg3);border:1px solid var(--border);cursor:pointer;font-family:var(--font);transition:all var(--t);}
+.post-detail-btn:hover{border-color:var(--border2);color:var(--text);}
+.post-detail-btn.liked{color:var(--accent);border-color:rgba(224,48,48,.3);}
+.post-detail-btn.shared{color:var(--green);border-color:rgba(46,204,113,.3);}
+.post-detail-comments-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:12px;}
+
+/* ── ARKADAŞ/TAKİP ── */
+.profile-action-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.follow-btn{padding:7px 16px;border-radius:var(--r-full);font-size:.83rem;font-weight:700;cursor:pointer;border:2px solid var(--accent);background:var(--accent);color:#fff;transition:all var(--t);font-family:var(--font);}
+.follow-btn.following{background:transparent;color:var(--accent);}
+.follow-btn.following:hover{background:rgba(224,48,48,.08);}
+.msg-open-btn{padding:7px 16px;border-radius:var(--r-full);font-size:.83rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text);transition:all var(--t);font-family:var(--font);}
+.msg-open-btn:hover{border-color:var(--border2);background:var(--bg2);}
+
+/* ── MESAJLAR SAYFASI ── */
+.messages-layout{height:calc(100vh - 48px);display:grid;grid-template-columns:280px 1fr;overflow:hidden;}
+.msg-sidebar{border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+.msg-sidebar-top{padding:14px 14px 10px;border-bottom:1px solid var(--border);font-family:var(--fontc);font-weight:700;font-size:1rem;color:var(--text);}
+.msg-conv-list{flex:1;overflow-y:auto;}
+.msg-conv-item{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background var(--t);}
+.msg-conv-item:hover,.msg-conv-item.active{background:var(--bg3);}
+.msg-conv-ava{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:.95rem;font-weight:700;color:#fff;flex-shrink:0;}
+.msg-conv-info{flex:1;min-width:0;}
+.msg-conv-name{font-size:.87rem;font-weight:700;color:var(--text);}
+.msg-conv-preview{font-size:.77rem;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.msg-conv-unread{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+.msg-main{display:flex;flex-direction:column;overflow:hidden;}
+.msg-main-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;background:var(--bg2);}
+.msg-main-name{font-weight:700;color:var(--text);font-size:.9rem;}
+.msg-thread{flex:1;overflow-y:auto;padding:16px;}
+.msg-bubble-wrap{display:flex;margin-bottom:10px;}
+.msg-bubble-wrap.mine{justify-content:flex-end;}
+.msg-bubble{max-width:70%;padding:9px 13px;border-radius:12px;font-size:.87rem;line-height:1.5;word-break:break-word;}
+.msg-bubble-wrap.mine .msg-bubble{background:var(--accent);color:#fff;border-radius:12px 12px 3px 12px;}
+.msg-bubble-wrap:not(.mine) .msg-bubble{background:var(--bg3);color:var(--text);border-radius:12px 12px 12px 3px;}
+.msg-time{font-size:.67rem;margin-top:3px;opacity:.6;}
+.msg-bubble-wrap.mine .msg-time{text-align:right;}
+.msg-input-area{border-top:1px solid var(--border);padding:12px 16px;display:flex;gap:10px;align-items:flex-end;flex-shrink:0;background:var(--bg2);}
+.msg-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-full);padding:9px 16px;color:var(--text);font-family:var(--font);font-size:.87rem;outline:none;resize:none;line-height:1.4;max-height:120px;transition:border-color var(--t);}
+.msg-input:focus{border-color:var(--border2);}
+.msg-input::placeholder{color:var(--text3);}
+.msg-send-btn{width:38px;height:38px;border-radius:50%;background:var(--accent);border:none;color:#fff;cursor:pointer;display:grid;place-items:center;font-size:1rem;flex-shrink:0;transition:opacity var(--t);}
+.msg-send-btn:hover{opacity:.85;}
+.msg-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text3);gap:10px;font-size:.9rem;}
+.msg-empty-icon{font-size:2.5rem;}
+
+/* ── NESTED YORUMLAR ── */
+.comment-action-row{display:flex;gap:8px;margin-top:4px;}
+.comment-reply-btn{background:none;border:none;font-size:.72rem;color:var(--text3);cursor:pointer;padding:0;font-family:var(--font);transition:color var(--t);}
+.comment-reply-btn:hover{color:var(--blue);}
+.comment-reply-form{display:none;margin-top:6px;padding:6px 0;}
+.comment-reply-form.show{display:flex;gap:6px;align-items:flex-start;}
+.comment-reply-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-full);padding:5px 12px;color:var(--text);font-family:var(--font);font-size:.8rem;outline:none;resize:none;line-height:1.4;transition:border-color var(--t);}
+.comment-reply-input:focus{border-color:var(--border2);}
+.comment-reply-send{width:28px;height:28px;border-radius:50%;background:var(--blue);border:none;color:#fff;cursor:pointer;display:grid;place-items:center;font-size:.8rem;flex-shrink:0;}
+.comment-replies{margin-top:6px;}
+.feed-comment.is-reply{margin-left:36px;border-left:2px solid var(--border2);padding-left:10px;}
+
+/* ── SKELETON LOADING ── */
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.skeleton{background:linear-gradient(90deg,var(--bg3) 25%,var(--bg2) 50%,var(--bg3) 75%);background-size:400px 100%;animation:shimmer 1.4s infinite;}
+.skeleton-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;margin:0 14px 10px;}
+.skeleton-line{height:12px;border-radius:6px;margin-bottom:8px;}
+.skeleton-circle{width:42px;height:42px;border-radius:50%;}
+
+/* LIGHT MODE ekleme */
 body.light {
   --bg:     #f0f2f5;
   --bg2:    #ffffff;
@@ -544,6 +659,37 @@ body.light .profile-header { background: var(--bg2); }
   </div>
 </div>
 
+<!-- POST DETAY SAYFASI -->
+<div class="page" id="postDetailPage">
+  <div style="height:calc(100vh - 48px);overflow-y:auto;" id="postDetailScroll">
+    <div style="position:sticky;top:0;z-index:5;background:rgba(15,16,20,.88);backdrop-filter:blur(8px);padding:8px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+      <button class="btn btn-icon" onclick="navigateBack()">←</button>
+      <span style="font-family:var(--fontc);font-weight:700;font-size:1rem;color:var(--text)">Gönderi</span>
+    </div>
+    <div class="page-inner" id="postDetailContent"></div>
+  </div>
+</div>
+
+<!-- MESAJLAR SAYFASI -->
+<div class="page" id="messagesPage">
+  <div class="messages-layout">
+    <div class="msg-sidebar">
+      <div class="msg-sidebar-top">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span>💬 Mesajlar</span>
+          <button class="btn btn-icon" onclick="navigateBack()">✕</button>
+        </div>
+      </div>
+      <div class="msg-conv-list" id="msgConvList"></div>
+    </div>
+    <div class="msg-main" id="msgMain">
+      <div class="msg-empty">
+        <div class="msg-empty-icon">💬</div>
+        <span>Bir konuşma seç</span>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- PROFİL SAYFASI -->
 <div class="page" id="profilePage">
@@ -703,22 +849,22 @@ let currentCat = 'all';
 let threads = [];
 let feedData = [
   {id:1,ava:'T',author:'Turbo_Berk',time:'5 dk',text:'Sabah Ankara çıkışında E90 M3 gördüm. O egzoz sesi başka bir şey.',likes:12,liked:false,shares:3,shared:false,comments:[
-    {id:1,ava:'K',author:'kamil_oto',time:'3 dk',text:'Evet o nesil M3\'ün sesi inanılmaz, V8 sesi gerçekten eşsiz.'},
+    {id:1,ava:'K',author:'kamil_oto',time:'3 dk',text:'Evet o nesil M3\'ün sesi inanılmaz, V8 sesi gerçekten eşsiz.',replies:[]},
   ]},
   {id:2,ava:'D',author:'dizel_ahmet',time:'18 dk',text:'Benzin fiyatı yine arttı. LPG\'ye geçmeyi ciddi düşünüyorum. Kim geçti, memnun mu?',likes:7,liked:false,shares:2,shared:false,comments:[
-    {id:2,ava:'S',author:'sahin_62',time:'15 dk',text:'Ben 2 yıl önce geçtim, çok memnunum. İlk dolum biraz pahalı ama sonrası kazanç.'},
-    {id:3,ava:'E',author:'elif_yilmaz',time:'10 dk',text:'Şehir içinde sık trafik giriyorsan kesinlikle değer. Ama uzun yolda performans biraz düşüyor.'},
+    {id:2,ava:'S',author:'sahin_62',time:'15 dk',text:'Ben 2 yıl önce geçtim, çok memnunum. İlk dolum biraz pahalı ama sonrası kazanç.',replies:[]},
+    {id:3,ava:'E',author:'elif_yilmaz',time:'10 dk',text:'Şehir içinde sık trafik giriyorsan kesinlikle değer. Ama uzun yolda performans biraz düşüyor.',replies:[]},
   ]},
   {id:3,ava:'E',author:'elif_yilmaz',time:'42 dk',text:'"İlk arabam ne olsun" sorusuna cevabım: 4-5 yaşında düşük km Corolla veya Clio. Pişman olmayacaksınız.',likes:34,liked:true,shares:11,shared:false,comments:[
-    {id:4,ava:'M',author:'Murat_K',time:'38 dk',text:'Corolla +1. Bakım maliyeti çok düşük, güvenilirliği tartışılmaz.'},
+    {id:4,ava:'M',author:'Murat_K',time:'38 dk',text:'Corolla +1. Bakım maliyeti çok düşük, güvenilirliği tartışılmaz.',replies:[]},
   ]},
   {id:4,ava:'M',author:'Murat_K',time:'1 saat',text:'Alınır mı skoru aracını denedim. 2018 Passat için 7.8 verdi. Mantıklı hesaplama.',likes:5,liked:false,shares:1,shared:false,comments:[]},
   {id:5,ava:'K',author:'kamil_oto',time:'2 saat',text:'Oto fuarında Togg\'un yeni modelini test ettim. İç mekan iyileşmiş ama fiyat hâlâ zor.',likes:18,liked:false,shares:7,shared:false,comments:[
-    {id:5,ava:'T',author:'Turbo_Berk',time:'1 saat 45 dk',text:'Fiyat konusunda haklısın. Yerli üretim ama uluslararası fiyat etiketiyle rekabet zor.'},
+    {id:5,ava:'T',author:'Turbo_Berk',time:'1 saat 45 dk',text:'Fiyat konusunda haklısın. Yerli üretim ama uluslararası fiyat etiketiyle rekabet zor.',replies:[]},
   ]},
   {id:6,ava:'S',author:'sahin_62',time:'3 saat',text:'Passat\'ı aldım. Forum\'daki yorumlar çok yardımcı oldu. Teşekkürler!',likes:22,liked:false,shares:4,shared:false,comments:[
-    {id:6,ava:'D',author:'dizel_ahmet',time:'2 saat',text:'Hayırlı olsun! Hangi motor aldın?'},
-    {id:7,ava:'S',author:'sahin_62',time:'1 saat 50 dk',text:'1.6 TDI 115hp aldım. Yakıt tüketimi harikaymış, ilk sürüşlerde 5.2L gördüm.'},
+    {id:6,ava:'D',author:'dizel_ahmet',time:'2 saat',text:'Hayırlı olsun! Hangi motor aldın?',replies:[]},
+    {id:7,ava:'S',author:'sahin_62',time:'1 saat 50 dk',text:'1.6 TDI 115hp aldım. Yakıt tüketimi harikaymış, ilk sürüşlerde 5.2L gördüm.',replies:[]},
   ]},
 ];
 
@@ -768,7 +914,7 @@ function renderThreads(list) {
       <div class="thread-stat">${escapeHtml(String(t.replies))}<small>yanıt</small></div>
       <div class="thread-stat">${escapeHtml(String(t.views))}<small>görüntü</small></div>
       <div class="thread-time-col">${escapeHtml(t.time)}<br><span style="font-size:.67rem">${escapeHtml(t.author)}</span></div>`;
-    row.addEventListener('click', () => openThread(t.id));
+    row.addEventListener('click', () => navigate('/thread/' + (t.slug || t.id)));
     el.appendChild(row);
   });
 }
@@ -776,16 +922,20 @@ function renderThreads(list) {
 // ── KONU DETAY ────────────────────────────────────────────────
 let currentThread = null;
 
-function openThread(id) {
+function openThread(id, slug) {
   document.getElementById('threadPage').classList.add('open');
   document.getElementById('threadPage').scrollTop = 0;
   document.getElementById('threadDetailContent').innerHTML =
     '<div style="padding:20px;color:var(--text3)">Yükleniyor...</div>';
-
+  if (!history.state?.path?.startsWith('/thread')) navigate('/thread/' + (slug || id), false);
   // Önce statik listede bak
-  const local = threads.find(x => x.id === id);
+  const local = slug
+    ? STATIC_THREADS.find(x => x.slug === slug) || threads.find(x => x.id === id)
+    : threads.find(x => x.id === id);
   if (local && local.slug) {
     loadThreadBySlug(local.slug, local);
+  } else if (slug) {
+    loadThreadBySlug(slug, null);
   } else {
     loadThreadById(id);
   }
@@ -968,9 +1118,7 @@ async function likePost(id, btn) {
   }
 }
 
-document.getElementById('btnBack').addEventListener('click', () => {
-  document.getElementById('threadPage').classList.remove('open');
-});
+document.getElementById('btnBack').addEventListener('click', () => navigateBack());
 document.getElementById('profilePage').addEventListener('click', function(e) {
   if (e.target === this) this.classList.remove('open');
 });
@@ -990,31 +1138,77 @@ document.querySelectorAll('.cat-tab').forEach(tab => {
   });
 });
 
+// ── YARDIMCI: avatar renk ──────────────────────────────────────
+function avaColor(name) {
+  let h = 0; for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffffffff;
+  return 'ava-c' + Math.abs(h) % 6;
+}
+// Metinden otomatik etiket çıkar
+const TAG_MAP = {BMW:'BMW',Mercedes:'Mercedes',Audi:'Audi',Toyota:'Toyota',Corolla:'Corolla',Clio:'Clio',Passat:'Passat',Golf:'Golf',Togg:'Togg',LPG:'LPG',dizel:'Dizel',benzin:'Benzin',modifiye:'Modifiye',egzoz:'Egzoz',bakım:'Bakım',kaza:'Kaza',sigorta:'Sigorta',fiyat:'Fiyat'};
+function extractTags(text) {
+  return Object.entries(TAG_MAP).filter(([k]) => text.toLowerCase().includes(k.toLowerCase())).slice(0,4).map(([,v]) => v);
+}
+
 // ── FEED RENDER ───────────────────────────────────────────────
-function feedCommentHtml(c) {
-  return `<div class="feed-comment">
-    <div class="feed-comment-ava">${escapeHtml(c.ava)}</div>
-    <div class="feed-comment-body">
+function feedCommentHtml(c, postId, isReply) {
+  const repliesHtml = (!isReply && c.replies && c.replies.length)
+    ? c.replies.map(r => feedCommentHtml(r, postId, true)).join('')
+    : '';
+  return `<div class="feed-comment${isReply?' is-reply':''}">
+    <div class="feed-comment-ava ${avaColor(c.author)}">${escapeHtml(c.ava)}</div>
+    <div class="feed-comment-body" style="flex:1;min-width:0">
       <span class="feed-comment-author">${escapeHtml(c.author)}</span>
       <span class="feed-comment-time">${escapeHtml(c.time)}</span>
       <div class="feed-comment-text">${escapeHtml(c.text)}</div>
+      ${!isReply ? `<div class="comment-action-row">
+        <button class="comment-reply-btn" onclick="event.stopPropagation();toggleCommentReply(${postId},${c.id})">↩ Yanıtla</button>
+      </div>
+      <div class="comment-reply-form" id="cr-${postId}-${c.id}">
+        <div class="feed-comment-ava ${user?avaColor(user.username):''}">
+          ${user?escapeHtml(user.ava||user.username[0].toUpperCase()):'👤'}
+        </div>
+        <textarea class="comment-reply-input" id="cri-${postId}-${c.id}" rows="1"
+          placeholder="Yanıtla..." onkeydown="replyKeydown(event,${postId},${c.id})"></textarea>
+        <button class="comment-reply-send" onclick="submitReply(${postId},${c.id})">➤</button>
+      </div>
+      <div class="comment-replies" id="crp-${postId}-${c.id}">${repliesHtml}</div>` : ''}
     </div>
   </div>`;
 }
 
 function feedCard(p, delay) {
-  const commentsHtml = p.comments.map(feedCommentHtml).join('');
-  return `<div class="feed-item" id="fi-${p.id}" style="animation-delay:${delay}s" onclick="toggleFeedPost(event,${p.id})" style="cursor:pointer">
+  if (isBlocked(p.author)) return '';
+  const tags = extractTags(p.text);
+  const isTrend = p.likes >= 20;
+  const isQ = p.text.includes('?');
+  const isAnn = false; // gelecekte admin check
+  let cardClass = isTrend ? ' is-trend' : (isQ ? ' is-question' : (isAnn ? ' is-announce' : ''));
+  let badge = isTrend ? '<div class="feed-item-badge badge-trend">🔥 Trend</div>' :
+              (isQ ? '<div class="feed-item-badge badge-question">❓ Soru</div>' : '');
+  const tagRow = tags.length ? `<div class="feed-tag-row">${tags.map(t=>`<span class="feed-auto-tag">#${t}</span>`).join('')}</div>` : '';
+  const commentsHtml = p.comments.map(c => feedCommentHtml(c, p.id, false)).join('');
+  const menuId = 'pm-' + p.id;
+  return `<div class="feed-item${cardClass}" id="fi-${p.id}" style="animation-delay:${delay}s" onclick="openFeedPost(event,${p.id})">
     <div class="feed-item-top">
-      <div class="feed-ava">${escapeHtml(p.ava)}</div>
+      <div class="feed-ava ${avaColor(p.author)}">${escapeHtml(p.ava)}</div>
       <div class="feed-meta">
-        <span class="feed-author" onclick="event.stopPropagation();openProfile(this.dataset.u)" data-u="${escapeHtml(p.author)}">${escapeHtml(p.author)}</span>
+        <span class="feed-author" onclick="event.stopPropagation();navigate('/profile/${escapeHtml(p.author)}')">${escapeHtml(p.author)}</span>
         <span class="feed-time">${escapeHtml(p.time)}</span>
       </div>
+      <div class="post-menu-wrap" onclick="event.stopPropagation()">
+        <button class="post-menu-btn" onclick="togglePostMenu('${menuId}')">···</button>
+        <div class="post-menu-dropdown" id="${menuId}">
+          <div class="post-menu-item" onclick="navigate('/profile/${escapeHtml(p.author)}');closeAllMenus()">👤 Profili gör</div>
+          <div class="post-menu-item" onclick="openMessages('${escapeHtml(p.author)}');closeAllMenus()">💬 Mesaj gönder</div>
+          <div class="post-menu-item danger" onclick="blockAndRefresh('${escapeHtml(p.author)}');closeAllMenus()">🚫 Engelle</div>
+        </div>
+      </div>
     </div>
+    ${badge}
     <div class="feed-text">${escapeHtml(p.text)}</div>
+    ${tagRow}
     <div class="feed-actions" onclick="event.stopPropagation()">
-      <button class="feed-btn ${p.liked?'liked':''}" onclick="likeFeed(${p.id},this)">♥ <span>${p.likes}</span></button>
+      <button class="feed-btn ${p.liked?'liked':''}" id="lb-${p.id}" onclick="likeFeed(${p.id},this)">♥ <span>${p.likes}</span></button>
       <button class="feed-btn" onclick="toggleComments(${p.id},this)">💬 <span>${p.comments.length}</span></button>
       <button class="feed-btn ${p.shared?'shared':''}" onclick="shareFeed(${p.id},this)">🔁 <span>${p.shares}</span></button>
     </div>
@@ -1022,7 +1216,7 @@ function feedCard(p, delay) {
       <div class="feed-comments-inner">
         <div id="fcl-${p.id}">${commentsHtml}</div>
         <div class="feed-comment-form">
-          <div class="feed-comment-ava">${user?escapeHtml(user.ava||user.username[0].toUpperCase()):'👤'}</div>
+          <div class="feed-comment-ava ${user?avaColor(user.username):''}">${user?escapeHtml(user.ava||user.username[0].toUpperCase()):'👤'}</div>
           <textarea class="feed-comment-input" id="fci-${p.id}" rows="1" placeholder="Yorum yaz..." onkeydown="commentKeydown(event,${p.id})"></textarea>
           <button class="feed-comment-send" onclick="submitComment(${p.id})">➤</button>
         </div>
@@ -1036,10 +1230,9 @@ function renderFeed(posts) {
   el.innerHTML = posts.map((p, i) => feedCard(p, i * 0.04)).join('');
 }
 
-function toggleFeedPost(e, id) {
-  // Butona tıklandıysa açma
-  if (e.target.closest('.feed-actions') || e.target.closest('.feed-comments') || e.target.closest('.feed-author')) return;
-  toggleComments(id, null, true);
+function openFeedPost(e, id) {
+  if (e.target.closest('.feed-actions') || e.target.closest('.feed-comments') || e.target.closest('.feed-author') || e.target.closest('.post-menu-wrap')) return;
+  navigate('/post/' + id);
 }
 
 function toggleComments(id, btn, forceOpen) {
@@ -1085,7 +1278,7 @@ async function submitComment(id) {
   p.comments.push(newComment);
   // DOM'a ekle
   const list = document.getElementById('fcl-' + id);
-  list.insertAdjacentHTML('beforeend', feedCommentHtml(newComment));
+  list.insertAdjacentHTML('beforeend', feedCommentHtml(newComment, id, false));
   inp.value = '';
   // Yorum sayacını güncelle
   const card = document.getElementById('fi-' + id);
@@ -1141,11 +1334,23 @@ document.getElementById('btnPost').addEventListener('click', async () => {
 // ── AUTH ──────────────────────────────────────────────────────
 function setUser(u) {
   user = u;
+  const avaClass = avaColor(u.username);
+  const unreadCount = notifData.filter(n => !n.read).length;
+  const msgCount = Object.values(conversations).reduce((a,msgs) => a + msgs.filter(m => !m.read && m.from !== u.username).length, 0);
   document.getElementById('navRight').innerHTML = `
-    <span style="font-size:.82rem;color:var(--text2);font-weight:600;cursor:pointer" onclick="openProfile('${escapeHtml(u.username)}')">👤 ${escapeHtml(u.username)}</span>
+    <button class="nav-msg-btn" title="Mesajlar" onclick="navigate('/messages')">
+      💬${msgCount > 0 ? `<span class="msg-badge">${msgCount}</span>` : ''}
+    </button>
+    <button class="nav-notif-btn" title="Bildirimler" onclick="openNotifPanel()">
+      🔔${unreadCount > 0 ? `<span class="notif-badge">${unreadCount}</span>` : ''}
+    </button>
+    <div class="nav-user-chip" onclick="navigate('/profile/${escapeHtml(u.username)}')">
+      <div class="nav-user-ava ${avaClass}">${escapeHtml(u.ava || u.username[0].toUpperCase())}</div>
+      <span class="nav-user-name">${escapeHtml(u.username)}</span>
+    </div>
     <button class="btn btn-ghost btn-sm" onclick="doLogout()">Çıkış</button>`;
-  document.getElementById('composeAva').textContent = u.ava;
-  // Token'ı her 6 saatte bir otomatik yenile
+  document.getElementById('composeAva').textContent = u.ava || u.username[0].toUpperCase();
+  document.getElementById('composeAva').className = 'compose-ava ' + avaClass;
   if (!window._tokenRefreshInterval) {
     window._tokenRefreshInterval = setInterval(async () => {
       try { await apiCall('/api/auth/refresh', 'POST'); } catch(e) {}
@@ -1376,9 +1581,11 @@ function toggleTheme() {
 })();
 
 // ── ANA SAYFA ────────────────────────────────────────────────
-function goHome() {
-  document.getElementById('threadPage').classList.remove('open');
-  document.getElementById('profilePage').classList.remove('open');
+function goHome(noNav) {
+  ['threadPage','profilePage','postDetailPage','messagesPage'].forEach(id => {
+    document.getElementById(id)?.classList.remove('open');
+  });
+  if (!noNav) navigate('/', true);
 }
 
 // ── PROFİL ────────────────────────────────────────────────────
@@ -1387,13 +1594,7 @@ let profileTab  = 'threads';
 
 function openProfile(username) {
   if (!username) return;
-  document.getElementById('profilePage').classList.add('open');
-  document.getElementById('profilePage').querySelector('div').scrollTop = 0;
-  updateProfileTitle(username);
-  document.getElementById('profileHeader').innerHTML = '<div style="padding:20px;color:var(--text3);font-size:.85rem">Yükleniyor...</div>';
-  document.getElementById('profileTabsEl').innerHTML = '';
-  document.getElementById('profileContent').innerHTML = '';
-  loadProfile(username);
+  navigate('/profile/' + username);
 }
 
 async function loadProfile(username) {
@@ -1443,20 +1644,40 @@ function renderProfileHeader(data) {
     : '<div class="profile-bio-empty">Henüz bio eklenmemiş.</div>';
   const editBioBtn = isMe ? '<button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="editBio()">✏ Bio düzenle</button>' : '';
   const avatarEdit = isMe ? '<div class="profile-ava-edit" onclick="triggerAvatarUpload()" title="Fotoğraf değiştir">✎</div><input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">' : '';
+  // Takip / mesaj / engelle butonları (başkasının profili)
+  const followingNow = isFollowing(u.username);
+  const blockedNow = isBlocked(u.username);
+  const actionRow = !isMe ? `<div class="profile-action-row">
+    <button class="follow-btn ${followingNow?'following':''}" id="followBtn-${escapeHtml(u.username)}"
+      onclick="toggleFollow('${escapeHtml(u.username)}',this)">
+      ${followingNow ? 'Takip Ediliyor' : 'Takip Et'}
+    </button>
+    <button class="msg-open-btn" onclick="openMessages('${escapeHtml(u.username)}')">💬 Mesaj</button>
+    <div class="post-menu-wrap">
+      <button class="post-menu-btn" onclick="togglePostMenu('profile-menu-${escapeHtml(u.username)}')">···</button>
+      <div class="post-menu-dropdown" id="profile-menu-${escapeHtml(u.username)}">
+        <div class="post-menu-item danger" onclick="toggleBlock('${escapeHtml(u.username)}');closeAllMenus();navigateBack()">
+          ${blockedNow ? '✅ Engeli kaldır' : '🚫 Engelle'}
+        </div>
+      </div>
+    </div>
+  </div>` : '';
 
   document.getElementById('profileHeader').innerHTML =
     '<div class="profile-ava-wrap">'
-    + '<div class="profile-ava" id="profileAvaEl">' + avaHtml + '</div>'
+    + '<div class="profile-ava ' + avaColor(u.username) + '" id="profileAvaEl">' + avaHtml + '</div>'
     + avatarEdit
     + '</div>'
     + '<div class="profile-info">'
     + '<div><span class="profile-username">' + escapeHtml(u.username) + '</span>' + roleHtml + '</div>'
     + '<div class="profile-handle">@' + escapeHtml(u.username.toLowerCase()) + ' · 🗓 ' + joinDate + '</div>'
     + '<div id="bioDisplay">' + bioHtml + editBioBtn + '</div>'
+    + actionRow
     + '<div class="profile-stats">'
     + '<div><div class="profile-stat-num">' + data.threads.length + '</div><div class="profile-stat-label">Konu</div></div>'
     + '<div><div class="profile-stat-num">' + data.posts.length + '</div><div class="profile-stat-label">Yanıt</div></div>'
     + '<div><div class="profile-stat-num">' + data.cars.length + '</div><div class="profile-stat-label">Araç</div></div>'
+    + '<div><div class="profile-stat-num">' + (following.size||0) + '</div><div class="profile-stat-label">Takip</div></div>'
     + '</div>'
     + '</div>';
 }
@@ -1765,6 +1986,347 @@ document.addEventListener('click', async function(e) {
   } catch(_) {}
 })();
 
+// ══════════════════════════════════════════════════════════════
+// URL ROUTING
+// ══════════════════════════════════════════════════════════════
+function navigate(path, replace = false) {
+  history[replace ? 'replaceState' : 'pushState']({path}, '', path);
+  handleRoute(path);
+}
+function navigateBack() {
+  if (history.length > 1) history.back();
+  else { goHome(); navigate('/', true); }
+}
+function handleRoute(path) {
+  path = path || location.pathname;
+  const parts = path.replace(/^\//, '').split('/');
+  const type = parts[0];
+  const arg = parts[1];
+  // Önce tüm sayfaları kapat
+  ['threadPage','profilePage','postDetailPage','messagesPage'].forEach(id => {
+    document.getElementById(id)?.classList.remove('open');
+  });
+  if (type === 'post' && arg) {
+    renderPostDetail(arg);
+    document.getElementById('postDetailPage').classList.add('open');
+  } else if (type === 'thread' && arg) {
+    openThread(null, arg);
+  } else if (type === 'profile' && arg) {
+    _openProfile(arg);
+  } else if (type === 'messages') {
+    document.getElementById('messagesPage').classList.add('open');
+    if (arg) openConversation(arg);
+    else renderMsgSidebar();
+  }
+}
+window.addEventListener('popstate', () => handleRoute(location.pathname));
+
+// ── Post detay render ─────────────────────────────────────────
+function renderPostDetail(id) {
+  const p = feedData.find(x => x.id == id);
+  const el = document.getElementById('postDetailContent');
+  if (!p) { el.innerHTML = '<div style="color:var(--text3)">Gönderi bulunamadı.</div>'; return; }
+  const tags = extractTags(p.text);
+  const tagRow = tags.length ? `<div class="feed-tag-row" style="margin-bottom:12px">${tags.map(t=>`<span class="feed-auto-tag">#${t}</span>`).join('')}</div>` : '';
+  const allComments = p.comments.map(c => feedCommentHtml(c, p.id, false)).join('');
+  el.innerHTML = `
+    <div class="post-detail-header">
+      <div class="post-detail-ava ${avaColor(p.author)}">${escapeHtml(p.ava)}</div>
+      <div class="post-detail-meta">
+        <div class="post-detail-author" onclick="navigate('/profile/${escapeHtml(p.author)}')">${escapeHtml(p.author)}</div>
+        <div class="post-detail-time">${escapeHtml(p.time)}</div>
+      </div>
+    </div>
+    <div class="post-detail-text">${escapeHtml(p.text)}</div>
+    ${tagRow}
+    <div class="post-detail-actions">
+      <button class="post-detail-btn ${p.liked?'liked':''}" onclick="likeFeedDetail(${p.id},this)">♥ ${p.likes} Beğeni</button>
+      <button class="post-detail-btn ${p.shared?'shared':''}" onclick="shareFeed(${p.id},this)">🔁 ${p.shares} Paylaşım</button>
+    </div>
+    <div class="post-detail-comments-title">${p.comments.length} Yorum</div>
+    <div id="pdComments-${p.id}">${allComments}</div>
+    <div class="feed-comment-form" style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+      <div class="feed-comment-ava ${user?avaColor(user.username):''}">${user?escapeHtml(user.ava||user.username[0].toUpperCase()):'👤'}</div>
+      <textarea class="feed-comment-input" id="pdc-${p.id}" rows="2" placeholder="Yorum yaz..." onkeydown="commentKeydown(event,${p.id})"></textarea>
+      <button class="feed-comment-send" onclick="submitCommentDetail(${p.id})">➤</button>
+    </div>`;
+}
+async function submitCommentDetail(id) {
+  const inp = document.getElementById('pdc-' + id);
+  const txt = inp?.value.trim();
+  if (!txt) return;
+  const p = feedData.find(x => x.id === id);
+  if (!p) return;
+  const c = { id: Date.now(), ava: user?(user.ava||user.username[0].toUpperCase()):'👤', author: user?user.username:'Misafir', time:'Az önce', text: txt, replies:[] };
+  p.comments.push(c);
+  const list = document.getElementById('pdComments-' + id);
+  list?.insertAdjacentHTML('beforeend', feedCommentHtml(c, id, false));
+  inp.value = '';
+  // Feed kartındaki yorum sayacını da güncelle
+  const countEl = document.querySelector(`#fi-${id} .feed-btn:nth-child(2) span`);
+  if (countEl) countEl.textContent = p.comments.length;
+  try { await apiCall('/api/feed/' + id + '/comment', 'POST', {text: txt}); } catch(_){}
+}
+function likeFeedDetail(id, btn) {
+  likeFeed(id, btn);
+  const likeBtn = document.querySelector(`#fi-${id} .feed-btn.liked, #fi-${id} .feed-btn:first-child`);
+}
+
+// ── openProfile güncelle: navigate kullan ─────────────────────
+function _openProfile(username) {
+  if (!username) return;
+  document.getElementById('profilePage').classList.add('open');
+  document.getElementById('profilePage').querySelector('div').scrollTop = 0;
+  updateProfileTitle(username);
+  document.getElementById('profileHeader').innerHTML = '<div style="padding:20px;color:var(--text3);font-size:.85rem">Yükleniyor...</div>';
+  document.getElementById('profileTabsEl').innerHTML = '';
+  document.getElementById('profileContent').innerHTML = '';
+  loadProfile(username);
+}
+
+// ══════════════════════════════════════════════════════════════
+// ENGELLEME
+// ══════════════════════════════════════════════════════════════
+let blockedUsers = new Set(JSON.parse(localStorage.getItem('berra_blocked') || '[]'));
+function saveBlocked() { localStorage.setItem('berra_blocked', JSON.stringify([...blockedUsers])); }
+function isBlocked(username) { return blockedUsers.has(username); }
+function blockUser(username) {
+  blockedUsers.add(username); saveBlocked();
+  showToast(username + ' engellendi.', 'ok');
+  renderFeed(feedData);
+}
+function unblockUser(username) {
+  blockedUsers.delete(username); saveBlocked();
+  showToast(username + ' engeli kaldırıldı.', 'ok');
+  renderFeed(feedData);
+}
+function blockAndRefresh(username) { blockUser(username); }
+function toggleBlock(username) {
+  isBlocked(username) ? unblockUser(username) : blockUser(username);
+}
+
+// ══════════════════════════════════════════════════════════════
+// TAKİP SİSTEMİ
+// ══════════════════════════════════════════════════════════════
+let following = new Set(JSON.parse(localStorage.getItem('berra_following') || '[]'));
+function saveFollowing() { localStorage.setItem('berra_following', JSON.stringify([...following])); }
+function isFollowing(username) { return following.has(username); }
+function toggleFollow(username, btn) {
+  if (isFollowing(username)) {
+    following.delete(username); saveFollowing();
+    if (btn) { btn.textContent = 'Takip Et'; btn.classList.remove('following'); }
+    showToast(username + ' takipten çıkıldı.', 'ok');
+  } else {
+    following.add(username); saveFollowing();
+    if (btn) { btn.textContent = 'Takip Ediliyor'; btn.classList.add('following'); }
+    showToast(username + ' takip edildi!', 'ok');
+    // Bildirim simüle et
+    notifData.unshift({id:Date.now(),type:'like',icon:'👤',text:`Siz <strong>${escapeHtml(username)}</strong> kullanıcısını takip etmeye başladınız`,time:'Az önce',read:false});
+    renderNotifications();
+    if (user) setUser(user);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// MESAJLAR
+// ══════════════════════════════════════════════════════════════
+let conversations = JSON.parse(localStorage.getItem('berra_msgs') || '{}');
+function saveMsgs() { localStorage.setItem('berra_msgs', JSON.stringify(conversations)); }
+let activeMsgUser = null;
+
+function openMessages(toUser) {
+  document.getElementById('messagesPage').classList.add('open');
+  navigate('/messages' + (toUser ? '/' + toUser : ''), false);
+  renderMsgSidebar();
+  if (toUser) openConversation(toUser);
+}
+function openNotifPanel() {
+  document.querySelectorAll('.feed-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.feed-panel').forEach(p => p.classList.remove('active'));
+  const tab = document.querySelector('.feed-tab[data-panel="bildirim"]');
+  const panel = document.getElementById('panelBildirim');
+  if (tab) tab.classList.add('active');
+  if (panel) panel.classList.add('active');
+  renderNotifications();
+}
+function renderMsgSidebar() {
+  const list = document.getElementById('msgConvList');
+  const convUsers = Object.keys(conversations);
+  if (!convUsers.length) {
+    list.innerHTML = '<div style="padding:20px;color:var(--text3);font-size:.83rem">Henüz mesaj yok.</div>';
+    return;
+  }
+  list.innerHTML = convUsers.map(u => {
+    const msgs = conversations[u];
+    const last = msgs[msgs.length - 1];
+    const unread = msgs.filter(m => !m.read && m.from !== (user?.username||'')).length;
+    return `<div class="msg-conv-item ${activeMsgUser===u?'active':''}" onclick="openConversation('${escapeHtml(u)}')">
+      <div class="msg-conv-ava ${avaColor(u)}">${u[0].toUpperCase()}</div>
+      <div class="msg-conv-info">
+        <div class="msg-conv-name">${escapeHtml(u)}</div>
+        <div class="msg-conv-preview">${last ? escapeHtml(last.text.slice(0,40)) : ''}</div>
+      </div>
+      ${unread ? `<div class="msg-conv-unread"></div>` : ''}
+    </div>`;
+  }).join('');
+}
+function openConversation(toUser) {
+  activeMsgUser = toUser;
+  if (!conversations[toUser]) conversations[toUser] = [];
+  // Mark read
+  conversations[toUser].forEach(m => { if (m.from !== (user?.username||'')) m.read = true; });
+  saveMsgs();
+  renderMsgSidebar();
+  const main = document.getElementById('msgMain');
+  const msgs = conversations[toUser];
+  main.innerHTML = `
+    <div class="msg-main-top">
+      <div class="msg-conv-ava ${avaColor(toUser)}" style="width:34px;height:34px;font-size:.85rem">${toUser[0].toUpperCase()}</div>
+      <div>
+        <div class="msg-main-name">${escapeHtml(toUser)}</div>
+        <div style="font-size:.72rem;color:var(--text3)">@${escapeHtml(toUser.toLowerCase())}</div>
+      </div>
+      <div style="margin-left:auto">
+        <button class="btn btn-ghost btn-sm" onclick="navigate('/profile/${escapeHtml(toUser)}');document.getElementById('messagesPage').classList.remove('open')">Profil</button>
+      </div>
+    </div>
+    <div class="msg-thread" id="msgThread-${escapeHtml(toUser)}">
+      ${msgs.length ? msgs.map(m => msgBubbleHtml(m, user?.username)).join('') : '<div class="msg-empty"><div class="msg-empty-icon">👋</div><span>Merhaba de!</span></div>'}
+    </div>
+    <div class="msg-input-area">
+      <textarea class="msg-input" id="msgInput" rows="1" placeholder="Mesaj yaz..." onkeydown="msgKeydown(event,'${escapeHtml(toUser)}')"></textarea>
+      <button class="msg-send-btn" onclick="sendMessage('${escapeHtml(toUser)}')">➤</button>
+    </div>`;
+  document.getElementById('msgThread-' + toUser)?.scrollTo(0, 99999);
+}
+function msgBubbleHtml(m, myUsername) {
+  const mine = m.from === myUsername;
+  return `<div class="msg-bubble-wrap ${mine?'mine':''}">
+    <div>
+      <div class="msg-bubble">${escapeHtml(m.text)}</div>
+      <div class="msg-time">${escapeHtml(m.time)}</div>
+    </div>
+  </div>`;
+}
+function sendMessage(toUser) {
+  const inp = document.getElementById('msgInput');
+  const txt = inp?.value.trim();
+  if (!txt) return;
+  if (!conversations[toUser]) conversations[toUser] = [];
+  const msg = { id: Date.now(), from: user?.username || 'Sen', text: txt, time: 'Az önce', read: true };
+  conversations[toUser].push(msg);
+  saveMsgs();
+  const thread = document.getElementById('msgThread-' + toUser);
+  if (thread) {
+    thread.insertAdjacentHTML('beforeend', msgBubbleHtml(msg, user?.username || 'Sen'));
+    thread.scrollTo(0, 99999);
+  }
+  inp.value = '';
+  autoResize(inp);
+}
+function msgKeydown(e, toUser) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(toUser); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// 3-NOKTA MENÜ
+// ══════════════════════════════════════════════════════════════
+function togglePostMenu(id) {
+  closeAllMenus();
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+function closeAllMenus() {
+  document.querySelectorAll('.post-menu-dropdown.open').forEach(el => el.classList.remove('open'));
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.post-menu-wrap')) closeAllMenus();
+});
+
+// ══════════════════════════════════════════════════════════════
+// NESTED YORUMLAR
+// ══════════════════════════════════════════════════════════════
+function toggleCommentReply(postId, commentId) {
+  const form = document.getElementById(`cr-${postId}-${commentId}`);
+  if (!form) return;
+  const isShown = form.classList.contains('show');
+  form.classList.toggle('show', !isShown);
+  if (!isShown) document.getElementById(`cri-${postId}-${commentId}`)?.focus();
+}
+function submitReply(postId, commentId) {
+  const inp = document.getElementById(`cri-${postId}-${commentId}`);
+  const txt = inp?.value.trim();
+  if (!txt) return;
+  const p = feedData.find(x => x.id === postId);
+  if (!p) return;
+  const c = p.comments.find(x => x.id === commentId);
+  if (!c) return;
+  if (!c.replies) c.replies = [];
+  const reply = { id: Date.now(), ava: user?(user.ava||user.username[0].toUpperCase()):'👤', author: user?user.username:'Misafir', time:'Az önce', text: txt };
+  c.replies.push(reply);
+  const repliesEl = document.getElementById(`crp-${postId}-${commentId}`);
+  if (repliesEl) repliesEl.insertAdjacentHTML('beforeend', feedCommentHtml(reply, postId, true));
+  inp.value = '';
+  document.getElementById(`cr-${postId}-${commentId}`)?.classList.remove('show');
+  showToast('Yanıt gönderildi!', 'ok');
+}
+function replyKeydown(e, postId, commentId) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitReply(postId, commentId); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// UX FİXLERİ
+// ══════════════════════════════════════════════════════════════
+// Auto-resize textarea
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+}
+document.addEventListener('input', e => {
+  if (e.target.matches('textarea')) autoResize(e.target);
+});
+// Escape ile kapat
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    // Modal kapat
+    const openOverlay = document.querySelector('.overlay.open');
+    if (openOverlay) { openOverlay.classList.remove('open'); return; }
+    // Sayfaları kapat (ters sıra)
+    const pages = ['postDetailPage','messagesPage','profilePage','threadPage'];
+    for (const id of pages) {
+      const page = document.getElementById(id);
+      if (page?.classList.contains('open')) { navigateBack(); return; }
+    }
+  }
+  // j/k navigasyon (akış açıkken)
+  if (document.querySelector('.feed-panel.active')?.id === 'panelAkis') {
+    const items = [...document.querySelectorAll('.feed-item')];
+    if (!items.length) return;
+    const visible = items.findIndex(el => {
+      const rect = el.getBoundingClientRect();
+      return rect.top >= 0 && rect.top < window.innerHeight / 2;
+    });
+    if (e.key === 'j' && visible < items.length - 1) {
+      items[visible + 1]?.scrollIntoView({behavior:'smooth', block:'start'});
+    } else if (e.key === 'k' && visible > 0) {
+      items[visible - 1]?.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+  }
+});
+// Double-click beğen (feed + post detay)
+document.addEventListener('dblclick', e => {
+  const card = e.target.closest('.feed-item');
+  if (!card || e.target.closest('.feed-actions') || e.target.closest('.feed-comments')) return;
+  const id = parseInt(card.id.replace('fi-', ''));
+  if (!id) return;
+  const btn = card.querySelector('.feed-btn:first-child');
+  if (btn) {
+    btn.classList.add('heart-anim');
+    setTimeout(() => btn.classList.remove('heart-anim'), 400);
+    likeFeed(id, btn);
+  }
+});
+
 // ── FEED INFINITE SCROLL ──────────────────────────────────────
 let feedPage = 1;
 let feedLoading = false;
@@ -1930,8 +2492,11 @@ renderThreads(threads);
 updateCatCounts();
 renderFeed(feedData);
 loadMoreFeed();
-// Bildirim badge'ini başlangıçta güncelle
 renderNotifications();
+// Sayfa yenilendiğinde URL route'u işle
+if (location.pathname && location.pathname !== '/') {
+  handleRoute(location.pathname);
+}
 </script>
 </body>
 </html>
