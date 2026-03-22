@@ -502,6 +502,18 @@ body.light .feed-item:hover { background: var(--bg3); }
       <div class="fg"><label>Şifre</label><input id="l_pass" type="password" placeholder="••••••"></div>
       <div class="auth-error" id="loginErr"></div>
       <button class="btn btn-accent btn-full" id="doLogin">Giriş Yap</button>
+      <div style="text-align:center;margin-top:8px"><a href="#" onclick="switchAuth('forgot');return false" style="font-size:.78rem;color:var(--text2)">Şifremi unuttum</a></div>
+    </div>
+    <div class="a-form" id="forgotF">
+      <div class="fg"><label>Email adresiniz</label><input id="f_email" type="email" placeholder="ornek@mail.com"></div>
+      <div class="auth-error" id="forgotErr"></div>
+      <button class="btn btn-accent btn-full" id="doForgot">Sıfırlama Kodu Gönder</button>
+      <div id="resetForm" style="display:none;margin-top:12px">
+        <div class="fg"><label>Sıfırlama Kodu</label><input id="f_token" placeholder="Kodu yapıştır"></div>
+        <div class="fg"><label>Yeni Şifre</label><input id="f_newpass" type="password" placeholder="En az 6 karakter"></div>
+        <button class="btn btn-accent btn-full" id="doReset">Şifreyi Değiştir</button>
+      </div>
+      <div style="text-align:center;margin-top:8px"><a href="#" onclick="switchAuth('login');return false" style="font-size:.78rem;color:var(--text2)">Giriş ekranına dön</a></div>
     </div>
     <div class="a-form" id="regF">
       <div class="fg"><label>Kullanıcı Adı</label><input id="r_user" placeholder="arabasever_42"></div>
@@ -874,14 +886,22 @@ async function likeFeed(id, btn) {
 document.getElementById('feedInput').addEventListener('input', function() {
   document.getElementById('charCount').textContent = this.value.length + '/500';
 });
-document.getElementById('btnPost').addEventListener('click', () => {
+document.getElementById('btnPost').addEventListener('click', async () => {
   const txt = document.getElementById('feedInput').value.trim();
   if (!txt) return;
-  feedData.unshift({ id: Date.now(), ava: user ? user.ava : '?', author: user ? user.username : 'Misafir', time: 'Az önce', text: txt, likes: 0, liked: false });
-  renderFeed(feedData);
-  document.getElementById('feedInput').value = '';
-  document.getElementById('charCount').textContent = '0/500';
-  showToast('Paylaşıldı!', 'ok');
+  if (!user) { showToast('Paylaşmak için giriş yap.', 'err'); return; }
+  const btn = document.getElementById('btnPost');
+  btn.disabled = true;
+  try {
+    const data = await apiCall('/api/feed', 'POST', { body: txt });
+    if (data.error) { showToast(data.error, 'err'); btn.disabled = false; return; }
+    feedData.unshift({ id: data.post?.id || Date.now(), ava: user.ava, author: user.username, time: 'Az önce', text: txt, likes: 0, liked: false });
+    renderFeed(feedData);
+    document.getElementById('feedInput').value = '';
+    document.getElementById('charCount').textContent = '0/500';
+    showToast('Paylaşıldı!', 'ok');
+  } catch(e) { showToast('Hata oluştu.', 'err'); }
+  btn.disabled = false;
 });
 
 // ── AUTH ──────────────────────────────────────────────────────
@@ -1062,8 +1082,35 @@ function switchAuth(tab) {
   document.querySelectorAll('.a-tab').forEach(t => t.classList.toggle('active', t.dataset.t === tab));
   document.getElementById('loginF').classList.toggle('show', tab === 'login');
   document.getElementById('regF').classList.toggle('show', tab === 'register');
+  document.getElementById('forgotF').classList.toggle('show', tab === 'forgot');
 }
 document.querySelectorAll('.a-tab').forEach(t => t.onclick = () => switchAuth(t.dataset.t));
+
+// Şifremi unuttum
+document.getElementById('doForgot').addEventListener('click', async () => {
+  const email = document.getElementById('f_email').value.trim();
+  const errEl = document.getElementById('forgotErr');
+  if (!email) { showErr(errEl, 'Email gerekli.'); return; }
+  const data = await apiCall('/api/auth/forgot-password', 'POST', { email });
+  if (data.error) { showErr(errEl, data.error); return; }
+  document.getElementById('resetForm').style.display = 'block';
+  if (data.resetToken) document.getElementById('f_token').value = data.resetToken; // Dev mode
+  showToast('Sıfırlama kodu oluşturuldu.', 'ok');
+});
+document.getElementById('doReset').addEventListener('click', async () => {
+  const token = document.getElementById('f_token').value.trim();
+  const password = document.getElementById('f_newpass').value;
+  const errEl = document.getElementById('forgotErr');
+  if (!token || !password) { showErr(errEl, 'Kod ve yeni şifre gerekli.'); return; }
+  if (password.length < 6) { showErr(errEl, 'Şifre en az 6 karakter olmalı.'); return; }
+  const data = await apiCall('/api/auth/reset-password', 'POST', { token, password });
+  if (data.error) { showErr(errEl, data.error); return; }
+  showToast('Şifre değiştirildi!', 'ok');
+  closeModal('authModal');
+  // Otomatik giriş
+  const me = await apiCall('/api/auth/me', 'GET');
+  if (me.user) { me.user.ava = me.user.username[0].toUpperCase(); setUser(me.user); }
+});
 
 // ── TOAST ─────────────────────────────────────────────────────
 function showToast(msg, type) {

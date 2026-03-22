@@ -185,6 +185,35 @@ CREATE TABLE IF NOT EXISTS car_scores (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Bildirimler
+CREATE TABLE IF NOT EXISTS notifications (
+  id           SERIAL PRIMARY KEY,
+  user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  from_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  type         VARCHAR(50) NOT NULL,
+  message      TEXT NOT NULL,
+  link         TEXT,
+  is_read      BOOLEAN NOT NULL DEFAULT false,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Kaydedilenler (bookmark)
+CREATE TABLE IF NOT EXISTS bookmarks (
+  id        SERIAL PRIMARY KEY,
+  user_id   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  thread_id INTEGER NOT NULL REFERENCES threads(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (user_id, thread_id)
+);
+
+-- Sifre sifirlama icin users tablosuna ek sutunlar
+-- (ALTER TABLE ile eklenir, CREATE TABLE'da zaten olmayabilir)
+DO $$ BEGIN
+  ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(64);
+  ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMPTZ;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
 -- ── İNDEXLER ─────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_posts_user       ON posts (user_id);
 CREATE INDEX IF NOT EXISTS idx_posts_created    ON posts (created_at DESC);
@@ -198,6 +227,10 @@ CREATE INDEX IF NOT EXISTS idx_users_username   ON users (username);
 CREATE INDEX IF NOT EXISTS idx_car_scores_user  ON car_scores (user_id);
 CREATE INDEX IF NOT EXISTS idx_gallery_likes    ON gallery_likes (photo_id);
 CREATE INDEX IF NOT EXISTS idx_maintenance_date ON maintenance_logs (next_date ASC) WHERE next_date IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications (user_id, is_read, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON bookmarks (user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_feed_created ON feed_posts (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_business_reviews ON business_reviews (business_id);
 
 -- ── BAŞLANGIÇ VERİLERİ ────────────────────────────────────────
 

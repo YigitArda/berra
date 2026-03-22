@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
+const db  = require('../../config/db');
 
-// JWT doğrulama — zorunlu
-function requireAuth(req, res, next) {
+// JWT doğrulama — zorunlu (ban kontrolü dahil)
+async function requireAuth(req, res, next) {
   const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
 
   if (!token) {
@@ -10,6 +11,12 @@ function requireAuth(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Ban kontrolü
+    const { rows } = await db.query('SELECT is_banned FROM users WHERE id = $1', [decoded.id]);
+    if (!rows.length || rows[0].is_banned) {
+      res.clearCookie('token');
+      return res.status(403).json({ error: 'Hesabınız askıya alınmış.' });
+    }
     req.user = decoded;
     next();
   } catch (err) {
