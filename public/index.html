@@ -1969,7 +1969,7 @@ function searchSelect(threadId) {
   searchInput.value = '';
   // Statik listede bul, yoksa scroll
   const t = threads.find(x => x.id === threadId);
-  if (t) openThread(t.id);
+  if (t) openThread(t.id, t.slug || '');
 }
 
 document.addEventListener('click', e => {
@@ -2198,6 +2198,7 @@ function unblockUser(username) {
 function blockAndRefresh(username) { blockUser(username); }
 function toggleBlock(username) {
   isBlocked(username) ? unblockUser(username) : blockUser(username);
+  if (profileData?.user?.username === username) renderProfileHeader(profileData);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2285,14 +2286,14 @@ function openConversation(toUser) {
         <button class="btn btn-ghost btn-sm" onclick="navigate('/profile/${escapeHtml(toUser)}');document.getElementById('messagesPage').classList.remove('open')">Profil</button>
       </div>
     </div>
-    <div class="msg-thread" id="msgThread-${escapeHtml(toUser)}">
+    <div class="msg-thread" id="msgThread-${toUser.replace(/\W/g,'_')}">
       ${msgs.length ? msgs.map(m => msgBubbleHtml(m, user?.username)).join('') : '<div class="msg-empty"><div class="msg-empty-icon">👋</div><span>Merhaba de!</span></div>'}
     </div>
     <div class="msg-input-area">
       <textarea class="msg-input" id="msgInput" rows="1" placeholder="Mesaj yaz..." onkeydown="msgKeydown(event,'${escapeHtml(toUser)}')"></textarea>
       <button class="msg-send-btn" onclick="sendMessage('${escapeHtml(toUser)}')">➤</button>
     </div>`;
-  document.getElementById('msgThread-' + toUser)?.scrollTo(0, 99999);
+  document.getElementById('msgThread-' + toUser.replace(/\W/g,'_'))?.scrollTo(0, 99999);
 }
 function msgBubbleHtml(m, myUsername) {
   const mine = m.from === myUsername;
@@ -2311,7 +2312,7 @@ function sendMessage(toUser) {
   const msg = { id: Date.now(), from: user?.username || 'Sen', text: txt, time: 'Az önce', read: true };
   conversations[toUser].push(msg);
   saveMsgs();
-  const thread = document.getElementById('msgThread-' + toUser);
+  const thread = document.getElementById('msgThread-' + toUser.replace(/\W/g,'_'));
   if (thread) {
     thread.insertAdjacentHTML('beforeend', msgBubbleHtml(msg, user?.username || 'Sen'));
     thread.scrollTo(0, 99999);
