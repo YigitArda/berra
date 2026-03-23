@@ -106,7 +106,7 @@ router.post('/', optionalAuth, [
 });
 
 // PUT /api/businesses/:id/approve — mod/admin onaylar
-router.put('/:id/approve', requireMod, async (req, res) => {
+router.put('/:id/approve', requireAuth, requireMod, async (req, res) => {
   try {
     await db.query(`UPDATE businesses SET status = 'approved', updated_at = NOW() WHERE id = $1`, [req.params.id]);
     res.json({ message: 'Onaylandi.' });
@@ -116,7 +116,7 @@ router.put('/:id/approve', requireMod, async (req, res) => {
 });
 
 // PUT /api/businesses/:id/reject
-router.put('/:id/reject', requireMod, async (req, res) => {
+router.put('/:id/reject', requireAuth, requireMod, async (req, res) => {
   try {
     await db.query(`UPDATE businesses SET status = 'rejected', updated_at = NOW() WHERE id = $1`, [req.params.id]);
     res.json({ message: 'Reddedildi.' });
@@ -126,7 +126,7 @@ router.put('/:id/reject', requireMod, async (req, res) => {
 });
 
 // GET /api/businesses/admin/pending — bekleyen isletmeler (pagination)
-router.get('/admin/pending', requireMod, async (req, res) => {
+router.get('/admin/pending', requireAuth, requireMod, async (req, res) => {
   const page   = Math.max(parseInt(req.query.page) || 1, 1);
   const limit  = 20;
   const offset = (page - 1) * limit;
