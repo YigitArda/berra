@@ -61,6 +61,16 @@ npm run dev
 | POST  | /api/score    | Alınır mı skoru    |
 | GET   | /api/score/stats | İstatistikler   |
 
+### İşletmeler
+| Metod | Rota                      | Açıklama |
+|-------|---------------------------|----------|
+| GET   | /api/businesses           | Onaylı işletme listesi |
+| GET   | /api/businesses/:slug     | İşletme detay sayfası; varsayılan olarak sadece `approved` işletmeleri gösterir |
+| POST  | /api/businesses           | Yeni işletme ekler, kayıt `pending` başlar |
+| GET   | /api/businesses/admin/pending | Moderasyon için bekleyen işletmeler |
+
+> Not: İşletme detay sayfası yalnızca onaylı (`approved`) işletmeleri gösterir. `mod` ve `admin` rollerindeki kullanıcılar moderasyon amacıyla bekleyen/reddedilen kayıtları da görüntüleyebilir.
+
 ## Klasör Yapısı
 
 ```
