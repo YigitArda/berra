@@ -5,6 +5,39 @@ const { body, validationResult } = require('express-validator');
 const { requireAuth, requireMod, optionalAuth } = require('../middleware/auth');
 const slugify = require('slugify');
 
+async function getBusinessBySlug(slug, includeUnapproved = false) {
+  if (includeUnapproved) {
+    return db.query(
+      `SELECT b.*, u.username AS owner FROM businesses b
+       LEFT JOIN users u ON u.id = b.user_id
+       WHERE b.slug = $1`,
+      [slug]
+    );
+  }
+
+  return db.query(
+    `SELECT b.*, u.username AS owner FROM businesses b
+     LEFT JOIN users u ON u.id = b.user_id
+     WHERE b.slug = $1 AND b.status = 'approved'`,
+    [slug]
+  );
+}
+
+async function getBusinessReviews(businessId, page = 1) {
+  const reviewLimit  = 20;
+  const reviewOffset = (page - 1) * reviewLimit;
+
+  const reviews = await db.query(
+    `SELECT r.*, u.username FROM business_reviews r
+     JOIN users u ON u.id = r.user_id
+     WHERE r.business_id = $1 ORDER BY r.created_at DESC
+     LIMIT $2 OFFSET $3`,
+    [businessId, reviewLimit, reviewOffset]
+  );
+
+  return { rows: reviews.rows, limit: reviewLimit };
+}
+
 // GET /api/businesses?city=istanbul&cat=motor&page=1
 router.get('/', optionalAuth, async (req, res) => {
   const { city, cat, page = 1 } = req.query;
@@ -41,7 +74,6 @@ router.get('/', optionalAuth, async (req, res) => {
 });
 
 // GET /api/businesses/admin/pending — bekleyen isletmeler (pagination)
-// requireMod req.user bekledigi icin requireAuth once calismali.
 router.get('/admin/pending', requireAuth, requireMod, async (req, res) => {
   const page   = Math.max(parseInt(req.query.page) || 1, 1);
   const limit  = 20;
@@ -111,7 +143,6 @@ router.post('/', optionalAuth, [
 });
 
 // PUT /api/businesses/:id/approve — mod/admin onaylar
-// requireMod req.user bekledigi icin requireAuth once calismali.
 router.put('/:id/approve', requireAuth, requireMod, async (req, res) => {
   try {
     await db.query(`UPDATE businesses SET status = 'approved', updated_at = NOW() WHERE id = $1`, [req.params.id]);
@@ -122,7 +153,6 @@ router.put('/:id/approve', requireAuth, requireMod, async (req, res) => {
 });
 
 // PUT /api/businesses/:id/reject
-// requireMod req.user bekledigi icin requireAuth once calismali.
 router.put('/:id/reject', requireAuth, requireMod, async (req, res) => {
   try {
     await db.query(`UPDATE businesses SET status = 'rejected', updated_at = NOW() WHERE id = $1`, [req.params.id]);
@@ -149,7 +179,7 @@ router.post('/:id/reviews', requireAuth, [
       RETURNING *`,
       [req.params.id, req.user.id, req.body.rating, req.body.body || null]
     );
-    // avg_rating ve review_count güncelle
+
     await db.query(`
       UPDATE businesses SET
         avg_rating = (SELECT COALESCE(AVG(rating), 0) FROM business_reviews WHERE business_id = $1),
@@ -168,36 +198,22 @@ router.post('/:id/reviews', requireAuth, [
 // GET /api/businesses/:slug — genel kullanicilar sadece approved detaylari gorebilir
 router.get('/:slug', optionalAuth, async (req, res) => {
   try {
-    const canViewUnapproved = ['mod', 'admin'].includes(req.user?.role);
-    const params = [req.params.slug];
-    let statusClause = 'AND b.status = $2';
+    const includeUnapproved = ['mod', 'admin'].includes(req.user?.role);
+    const businessResult = await getBusinessBySlug(req.params.slug, includeUnapproved);
 
-    if (canViewUnapproved) {
-      statusClause = '';
-    } else {
-      params.push('approved');
+    if (!businessResult.rows.length) {
+      return res.status(404).json({ error: 'Isletme bulunamadi.' });
     }
 
-    const { rows } = await db.query(
-      `SELECT b.*, u.username AS owner FROM businesses b
-       LEFT JOIN users u ON u.id = b.user_id
-       WHERE b.slug = $1 ${statusClause}`,
-      params
-    );
-    if (!rows.length) return res.status(404).json({ error: 'Isletme bulunamadi.' });
+    const reviewPage = Math.max(parseInt(req.query.review_page) || 1, 1);
+    const reviews = await getBusinessReviews(businessResult.rows[0].id, reviewPage);
 
-    const reviewPage   = Math.max(parseInt(req.query.review_page) || 1, 1);
-    const reviewLimit  = 20;
-    const reviewOffset = (reviewPage - 1) * reviewLimit;
-    const reviews = await db.query(
-      `SELECT r.*, u.username FROM business_reviews r
-       JOIN users u ON u.id = r.user_id
-       WHERE r.business_id = $1 ORDER BY r.created_at DESC
-       LIMIT $2 OFFSET $3`,
-      [rows[0].id, reviewLimit, reviewOffset]
-    );
-
-    res.json({ business: rows[0], reviews: reviews.rows });
+    res.json({
+      business: businessResult.rows[0],
+      reviews: reviews.rows,
+      review_page: reviewPage,
+      review_limit: reviews.limit,
+    });
   } catch (err) {
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
