@@ -42,15 +42,22 @@ router.get('/', optionalAuth, async (req, res) => {
 
 // GET /api/businesses/:slug
 router.get('/:slug', optionalAuth, async (req, res) => {
+  const canViewAllStatuses = ['mod', 'admin'].includes(req.user?.role);
+  const params = [req.params.slug];
+  const statusFilter = canViewAllStatuses ? '' : ' AND b.status = $2';
+
+  if (!canViewAllStatuses) params.push('approved');
+
   try {
     const { rows } = await db.query(
       `SELECT b.*, u.username AS owner FROM businesses b
        LEFT JOIN users u ON u.id = b.user_id
-       WHERE b.slug = $1`,
-      [req.params.slug]
+       WHERE b.slug = $1${statusFilter}`,
+      params
     );
     if (!rows.length) return res.status(404).json({ error: 'Isletme bulunamadi.' });
 
+    const business = rows[0];
     const reviewPage   = Math.max(parseInt(req.query.review_page) || 1, 1);
     const reviewLimit  = 20;
     const reviewOffset = (reviewPage - 1) * reviewLimit;
@@ -59,10 +66,10 @@ router.get('/:slug', optionalAuth, async (req, res) => {
        JOIN users u ON u.id = r.user_id
        WHERE r.business_id = $1 ORDER BY r.created_at DESC
        LIMIT $2 OFFSET $3`,
-      [rows[0].id, reviewLimit, reviewOffset]
+      [business.id, reviewLimit, reviewOffset]
     );
 
-    res.json({ business: rows[0], reviews: reviews.rows });
+    res.json({ business, reviews: reviews.rows });
   } catch (err) {
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
