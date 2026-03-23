@@ -61,6 +61,14 @@ npm run dev
 | POST  | /api/score    | Alınır mı skoru    |
 | GET   | /api/score/stats | İstatistikler   |
 
+### İşletmeler
+| Metod | Rota                          | Açıklama |
+|-------|-------------------------------|----------|
+| GET   | /api/businesses               | Onaylı işletmeleri listeler |
+| GET   | /api/businesses/:slug         | Sadece onaylı işletme detayını gösterir; mod/admin bekleyen kayıtları da görebilir |
+| GET   | /api/businesses/cities/list   | Onaylı işletmeler için şehir listesini döner |
+| GET   | /api/businesses/admin/pending | Sadece mod/admin için bekleyen işletmeler |
+
 ## Klasör Yapısı
 
 ```
