@@ -2,6 +2,8 @@
 
 Türkiye'nin araba topluluk platformu — Forum + Akış + Araçlar.
 
+> **Not:** Aktif uygulama depo kökünde yer alır. `package.json`, `scripts/migrate.js` ve `schema.sql` dosyaları bu kök dizin için kanonik kaynaktır; yanlışlıkla alt klasörlerde çalışmayın.
+
 ## Kurulum
 
 ### 1. Bağımlılıkları yükle
@@ -15,10 +17,18 @@ cp .env.example .env
 # .env dosyasını düzenle
 ```
 
-### 3. Veritabanını oluştur
+### 3. Veritabanını oluştur ve şemayı uygula
+`npm run migrate`, kökteki `scripts/migrate.js` dosyasını çalıştırır ve kökteki `schema.sql` şemasını uygular.
+
 ```bash
 createdb arabalariseviyoruz
-psql -U postgres -d arabalariseviyoruz -f ../001_initial_schema.sql
+npm run migrate
+```
+
+İsterseniz aynı akışı manuel olarak da kök dizinden çalıştırabilirsiniz:
+
+```bash
+node scripts/migrate.js
 ```
 
 ### 4. Geliştirme sunucusunu başlat
@@ -63,8 +73,8 @@ npm run dev
 
 ## Klasör Yapısı
 
-```
-arabalariseviyoruz/
+```text
+.
 ├── src/
 │   ├── app.js               # Express giriş noktası
 │   ├── routes/
@@ -79,9 +89,9 @@ arabalariseviyoruz/
 ├── config/
 │   └── db.js                # PostgreSQL bağlantısı
 ├── public/                  # Frontend dosyaları
-│   ├── css/
-│   ├── js/
-│   └── index.html
+├── scripts/
+│   └── migrate.js           # schema.sql dosyasını uygular
+├── schema.sql               # Veritabanı şeması
 ├── .env.example
 └── package.json
 ```
