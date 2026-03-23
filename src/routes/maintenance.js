@@ -214,20 +214,72 @@ router.post('/gallery', requireAuth, [
 
 // POST /api/maintenance/gallery/:id/like
 router.post('/gallery/:id/like', requireAuth, async (req, res) => {
+  const photoId = parseInt(req.params.id, 10);
+  let client;
   try {
-    await db.query('INSERT INTO gallery_likes (user_id, photo_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [req.user.id, req.params.id]);
-    const { rows } = await db.query('SELECT like_count FROM gallery_photos WHERE id=$1', [req.params.id]);
+    client = await db.connect();
+    await client.query('BEGIN');
+
+    const insertResult = await client.query(
+      'INSERT INTO gallery_likes (user_id, photo_id) VALUES ($1,$2) ON CONFLICT DO NOTHING RETURNING 1',
+      [req.user.id, photoId]
+    );
+
+    if (insertResult.rowCount > 0) {
+      await client.query(
+        'UPDATE gallery_photos SET like_count = like_count + 1 WHERE id = $1',
+        [photoId]
+      );
+    }
+
+    const { rows } = await client.query(
+      'SELECT like_count FROM gallery_photos WHERE id = $1',
+      [photoId]
+    );
+
+    await client.query('COMMIT');
     res.json({ like_count: rows[0]?.like_count ?? 0 });
-  } catch (err) { res.status(500).json({ error: 'Sunucu hatasi.' }); }
+  } catch (err) {
+    if (client) await client.query('ROLLBACK');
+    res.status(500).json({ error: 'Sunucu hatasi.' });
+  } finally {
+    client?.release();
+  }
 });
 
 // DELETE /api/maintenance/gallery/:id/like
 router.delete('/gallery/:id/like', requireAuth, async (req, res) => {
+  const photoId = parseInt(req.params.id, 10);
+  let client;
   try {
-    await db.query('DELETE FROM gallery_likes WHERE user_id=$1 AND photo_id=$2', [req.user.id, req.params.id]);
-    const { rows } = await db.query('SELECT like_count FROM gallery_photos WHERE id=$1', [req.params.id]);
+    client = await db.connect();
+    await client.query('BEGIN');
+
+    const deleteResult = await client.query(
+      'DELETE FROM gallery_likes WHERE user_id=$1 AND photo_id=$2 RETURNING 1',
+      [req.user.id, photoId]
+    );
+
+    if (deleteResult.rowCount > 0) {
+      await client.query(
+        'UPDATE gallery_photos SET like_count = GREATEST(like_count - 1, 0) WHERE id = $1',
+        [photoId]
+      );
+    }
+
+    const { rows } = await client.query(
+      'SELECT like_count FROM gallery_photos WHERE id = $1',
+      [photoId]
+    );
+
+    await client.query('COMMIT');
     res.json({ like_count: rows[0]?.like_count ?? 0 });
-  } catch (err) { res.status(500).json({ error: 'Sunucu hatasi.' }); }
+  } catch (err) {
+    if (client) await client.query('ROLLBACK');
+    res.status(500).json({ error: 'Sunucu hatasi.' });
+  } finally {
+    client?.release();
+  }
 });
 
 // DELETE /api/maintenance/gallery/:id
