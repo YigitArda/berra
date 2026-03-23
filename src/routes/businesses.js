@@ -41,6 +41,7 @@ router.get('/', optionalAuth, async (req, res) => {
 });
 
 // GET /api/businesses/admin/pending — bekleyen isletmeler (pagination)
+// requireMod req.user bekledigi icin requireAuth once calismali.
 router.get('/admin/pending', requireAuth, requireMod, async (req, res) => {
   const page   = Math.max(parseInt(req.query.page) || 1, 1);
   const limit  = 20;
@@ -110,6 +111,7 @@ router.post('/', optionalAuth, [
 });
 
 // PUT /api/businesses/:id/approve — mod/admin onaylar
+// requireMod req.user bekledigi icin requireAuth once calismali.
 router.put('/:id/approve', requireAuth, requireMod, async (req, res) => {
   try {
     await db.query(`UPDATE businesses SET status = 'approved', updated_at = NOW() WHERE id = $1`, [req.params.id]);
@@ -120,6 +122,7 @@ router.put('/:id/approve', requireAuth, requireMod, async (req, res) => {
 });
 
 // PUT /api/businesses/:id/reject
+// requireMod req.user bekledigi icin requireAuth once calismali.
 router.put('/:id/reject', requireAuth, requireMod, async (req, res) => {
   try {
     await db.query(`UPDATE businesses SET status = 'rejected', updated_at = NOW() WHERE id = $1`, [req.params.id]);
