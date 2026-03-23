@@ -40,29 +40,33 @@ router.get('/', optionalAuth, async (req, res) => {
   }
 });
 
-// GET /api/businesses/:slug
-router.get('/:slug', optionalAuth, async (req, res) => {
+// GET /api/businesses/admin/pending — bekleyen isletmeler (pagination)
+router.get('/admin/pending', requireMod, async (req, res) => {
+  const page   = Math.max(parseInt(req.query.page) || 1, 1);
+  const limit  = 20;
+  const offset = (page - 1) * limit;
   try {
     const { rows } = await db.query(
       `SELECT b.*, u.username AS owner FROM businesses b
        LEFT JOIN users u ON u.id = b.user_id
-       WHERE b.slug = $1`,
-      [req.params.slug]
+       WHERE b.status = 'pending' ORDER BY b.created_at ASC
+       LIMIT $1 OFFSET $2`,
+      [limit, offset]
     );
-    if (!rows.length) return res.status(404).json({ error: 'Isletme bulunamadi.' });
+    const total = await db.query("SELECT COUNT(*) FROM businesses WHERE status = 'pending'");
+    res.json({ businesses: rows, total: parseInt(total.rows[0].count), page, limit });
+  } catch (err) {
+    res.status(500).json({ error: 'Sunucu hatasi.' });
+  }
+});
 
-    const reviewPage   = Math.max(parseInt(req.query.review_page) || 1, 1);
-    const reviewLimit  = 20;
-    const reviewOffset = (reviewPage - 1) * reviewLimit;
-    const reviews = await db.query(
-      `SELECT r.*, u.username FROM business_reviews r
-       JOIN users u ON u.id = r.user_id
-       WHERE r.business_id = $1 ORDER BY r.created_at DESC
-       LIMIT $2 OFFSET $3`,
-      [rows[0].id, reviewLimit, reviewOffset]
+// GET /api/businesses/cities/list — sehir listesi
+router.get('/cities/list', async (req, res) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT city, COUNT(*) as count FROM businesses WHERE status = 'approved' GROUP BY city ORDER BY count DESC`
     );
-
-    res.json({ business: rows[0], reviews: reviews.rows });
+    res.json(rows);
   } catch (err) {
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
@@ -125,26 +129,6 @@ router.put('/:id/reject', requireMod, async (req, res) => {
   }
 });
 
-// GET /api/businesses/admin/pending — bekleyen isletmeler (pagination)
-router.get('/admin/pending', requireMod, async (req, res) => {
-  const page   = Math.max(parseInt(req.query.page) || 1, 1);
-  const limit  = 20;
-  const offset = (page - 1) * limit;
-  try {
-    const { rows } = await db.query(
-      `SELECT b.*, u.username AS owner FROM businesses b
-       LEFT JOIN users u ON u.id = b.user_id
-       WHERE b.status = 'pending' ORDER BY b.created_at ASC
-       LIMIT $1 OFFSET $2`,
-      [limit, offset]
-    );
-    const total = await db.query("SELECT COUNT(*) FROM businesses WHERE status = 'pending'");
-    res.json({ businesses: rows, total: parseInt(total.rows[0].count), page, limit });
-  } catch (err) {
-    res.status(500).json({ error: 'Sunucu hatasi.' });
-  }
-});
-
 // POST /api/businesses/:id/reviews — yorum ekle
 router.post('/:id/reviews', requireAuth, [
   body('rating').isInt({ min: 1, max: 5 }).withMessage('Puan 1-5 arasinda olmali.'),
@@ -178,13 +162,30 @@ router.post('/:id/reviews', requireAuth, [
   }
 });
 
-// GET /api/businesses/cities/list — sehir listesi
-router.get('/cities/list', async (req, res) => {
+// Not: Bu dinamik slug rotasi, sabit /admin/... ve /cities/... path'lerini yakalamamasi icin en sonda kalmali.
+// GET /api/businesses/:slug
+router.get('/:slug', optionalAuth, async (req, res) => {
   try {
     const { rows } = await db.query(
-      `SELECT city, COUNT(*) as count FROM businesses WHERE status = 'approved' GROUP BY city ORDER BY count DESC`
+      `SELECT b.*, u.username AS owner FROM businesses b
+       LEFT JOIN users u ON u.id = b.user_id
+       WHERE b.slug = $1`,
+      [req.params.slug]
     );
-    res.json(rows);
+    if (!rows.length) return res.status(404).json({ error: 'Isletme bulunamadi.' });
+
+    const reviewPage   = Math.max(parseInt(req.query.review_page) || 1, 1);
+    const reviewLimit  = 20;
+    const reviewOffset = (reviewPage - 1) * reviewLimit;
+    const reviews = await db.query(
+      `SELECT r.*, u.username FROM business_reviews r
+       JOIN users u ON u.id = r.user_id
+       WHERE r.business_id = $1 ORDER BY r.created_at DESC
+       LIMIT $2 OFFSET $3`,
+      [rows[0].id, reviewLimit, reviewOffset]
+    );
+
+    res.json({ business: rows[0], reviews: reviews.rows });
   } catch (err) {
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
