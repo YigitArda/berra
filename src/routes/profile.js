@@ -83,33 +83,31 @@ router.get('/:username', optionalAuth, async (req, res) => {
     if (!userRes.rows.length) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
     const u = userRes.rows[0];
 
-    // Açtığı konular
-    const threadsRes = await db.query(
-      `SELECT t.id, t.title, t.slug, t.reply_count, t.view_count, t.created_at,
-              c.name AS category_name
-       FROM threads t
-       JOIN categories c ON c.id = t.category_id
-       WHERE t.user_id = $1
-       ORDER BY t.created_at DESC LIMIT 20`,
-      [u.id]
-    );
-
-    // Yazdığı yanıtlar
-    const postsRes = await db.query(
-      `SELECT p.id, p.body, p.like_count, p.created_at,
-              t.title AS thread_title, t.slug AS thread_slug
-       FROM posts p
-       JOIN threads t ON t.id = p.thread_id
-       WHERE p.user_id = $1 AND p.is_deleted = false
-       ORDER BY p.created_at DESC LIMIT 20`,
-      [u.id]
-    );
-
-    // Araçları
-    const carsRes = await db.query(
-      `SELECT * FROM user_cars WHERE user_id = $1 ORDER BY is_current DESC, owned_from DESC NULLS LAST`,
-      [u.id]
-    );
+    // Konular, yanıtlar ve araçları paralel olarak getir (N+1 → Promise.all)
+    const [threadsRes, postsRes, carsRes] = await Promise.all([
+      db.query(
+        `SELECT t.id, t.title, t.slug, t.reply_count, t.view_count, t.created_at,
+                c.name AS category_name
+         FROM threads t
+         JOIN categories c ON c.id = t.category_id
+         WHERE t.user_id = $1
+         ORDER BY t.created_at DESC LIMIT 20`,
+        [u.id]
+      ),
+      db.query(
+        `SELECT p.id, p.body, p.like_count, p.created_at,
+                t.title AS thread_title, t.slug AS thread_slug
+         FROM posts p
+         JOIN threads t ON t.id = p.thread_id
+         WHERE p.user_id = $1 AND p.is_deleted = false
+         ORDER BY p.created_at DESC LIMIT 20`,
+        [u.id]
+      ),
+      db.query(
+        `SELECT * FROM user_cars WHERE user_id = $1 ORDER BY is_current DESC, owned_from DESC NULLS LAST`,
+        [u.id]
+      ),
+    ]);
 
     res.json({
       user:    u,

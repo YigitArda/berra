@@ -177,8 +177,8 @@ router.post('/threads/:slug/posts', requireAuth, forumWriteLimiter, [
 
     // Konu sahibine bildirim gönder
     const threadOwner = await db.query('SELECT user_id FROM threads WHERE id = $1', [thread.id]);
-    if (threadOwner.rows.length) {
-      createNotification({
+    if (threadOwner.rows.length && threadOwner.rows[0].user_id !== req.user.id) {
+      await createNotification({
         userId: threadOwner.rows[0].user_id,
         fromUserId: req.user.id,
         type: 'reply',
@@ -212,8 +212,8 @@ router.post('/posts/:id/like', requireAuth, async (req, res) => {
       await db.query('UPDATE posts SET like_count = like_count + 1 WHERE id = $1', [postId]);
       // Beğeni bildirimi
       const postOwner = await db.query('SELECT user_id FROM posts WHERE id = $1', [postId]);
-      if (postOwner.rows.length) {
-        createNotification({
+      if (postOwner.rows.length && postOwner.rows[0].user_id !== req.user.id) {
+        await createNotification({
           userId: postOwner.rows[0].user_id,
           fromUserId: req.user.id,
           type: 'like',
@@ -249,12 +249,22 @@ router.delete('/posts/:id/like', requireAuth, async (req, res) => {
 // DELETE /api/forum/posts/:id — kendi postunu sil (soft delete)
 router.delete('/posts/:id', requireAuth, async (req, res) => {
   const postId = parseInt(req.params.id);
+  const isMod  = ['mod', 'admin'].includes(req.user.role);
   try {
     const { rows } = await db.query(
-      'UPDATE posts SET is_deleted = true, body = \'[Bu yorum silindi]\', updated_at = NOW() WHERE id = $1 AND (user_id = $2 OR $3 = true) RETURNING *',
-      [postId, req.user.id, ['mod', 'admin'].includes(req.user.role)]
+      `UPDATE posts
+       SET is_deleted = true, body = '[Bu yorum silindi]',
+           deleted_at = NOW(), deleted_by = $3, updated_at = NOW()
+       WHERE id = $1 AND (user_id = $2 OR $4 = true)
+       RETURNING thread_id`,
+      [postId, req.user.id, req.user.id, isMod]
     );
     if (!rows.length) return res.status(404).json({ error: 'Yorum bulunamadı veya yetkiniz yok.' });
+    // reply_count'u düşür (ilk yorum (thread gövdesi) silinmez sayılır)
+    await db.query(
+      'UPDATE threads SET reply_count = GREATEST(reply_count - 1, 0) WHERE id = $1',
+      [rows[0].thread_id]
+    );
     res.json({ message: 'Yorum silindi.' });
   } catch (err) {
     res.status(500).json({ error: 'Sunucu hatası.' });

@@ -206,11 +206,13 @@ CREATE TABLE IF NOT EXISTS bookmarks (
   UNIQUE (user_id, thread_id)
 );
 
--- Sifre sifirlama icin users tablosuna ek sutunlar
--- (ALTER TABLE ile eklenir, CREATE TABLE'da zaten olmayabilir)
+-- Ek sütunlar (mevcut veritabanlarına güvenle eklenir)
 DO $$ BEGIN
   ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(64);
   ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMPTZ;
+  -- Soft delete audit alanları
+  ALTER TABLE posts ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+  ALTER TABLE posts ADD COLUMN IF NOT EXISTS deleted_by INTEGER REFERENCES users(id) ON DELETE SET NULL;
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
@@ -231,6 +233,12 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications (user_id, is_
 CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON bookmarks (user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_feed_created ON feed_posts (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_business_reviews ON business_reviews (business_id);
+-- Ek performans ve sorgu indeksleri
+CREATE INDEX IF NOT EXISTS idx_users_banned       ON users (is_banned) WHERE is_banned = true;
+CREATE INDEX IF NOT EXISTS idx_threads_locked     ON threads (is_locked) WHERE is_locked = true;
+CREATE INDEX IF NOT EXISTS idx_businesses_status  ON businesses (status);
+CREATE INDEX IF NOT EXISTS idx_posts_thread_live  ON posts (thread_id, created_at ASC) WHERE is_deleted = false;
+CREATE INDEX IF NOT EXISTS idx_threads_cat_pin    ON threads (category_id, is_pinned DESC, last_reply_at DESC);
 
 -- ── BAŞLANGIÇ VERİLERİ ────────────────────────────────────────
 

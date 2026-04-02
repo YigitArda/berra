@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Araç Karşılaştırma — arabalariseviyoruz.com</title>
+<meta name="description" content="İki aracı yan yana karşılaştır. Yaş, km, fiyat ve marka güvenilirliğine göre skorla hangisini alacağına karar ver.">
+<meta property="og:title" content="Araç Karşılaştırma — arabalariseviyoruz.com">
+<meta property="og:description" content="İki aracı yan yana karşılaştır. Hangisini alacağına karar ver.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://arabalariseviyoruz.com/karsilastir.html">
+<meta property="og:locale" content="tr_TR">
+<link rel="canonical" href="https://arabalariseviyoruz.com/karsilastir.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@700;800&display=swap" rel="stylesheet">
 <style>
@@ -284,7 +291,7 @@ function compare() {
   };
 
   if (!a.brand || !b.brand || !a.year || !b.year || isNaN(a.km) || isNaN(b.km) || isNaN(a.price) || isNaN(b.price)) {
-    alert('Her iki araç için de tüm alanları doldurun.'); return;
+    showToast('Her iki araç için de tüm alanları doldurun.'); return;
   }
 
   const sa = calcScore(a.brand, a.year, a.km, a.price);
@@ -342,6 +349,20 @@ function compare() {
 
   document.getElementById('resultSection').classList.add('show');
   document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function showToast(msg, type = 'error') {
+  let t = document.getElementById('_toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = '_toast';
+    t.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 20px;border-radius:8px;font-size:.9rem;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.4);transition:opacity .3s;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.background = type === 'error' ? '#c0392b' : '#27ae60';
+  t.style.opacity = '1';
+  clearTimeout(t._to);
+  t._to = setTimeout(() => { t.style.opacity = '0'; }, 3000);
 }
 function toggleTheme(){const d=document.body.classList.toggle('light');document.getElementById('themeToggle').classList.toggle('dark',!d);localStorage.setItem('theme',d?'light':'dark');}
 (function(){const s=localStorage.getItem('theme');if(s==='light'){document.body.classList.add('light');}else{document.getElementById('themeToggle').classList.add('dark');}})();
