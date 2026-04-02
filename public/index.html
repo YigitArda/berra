@@ -31,6 +31,8 @@
   --font:'Barlow',sans-serif; --fontc:'Barlow Condensed',sans-serif;
 }
 html,body { height:100%; }
+html { background:#0f1014; }
+html.light { background:#f0f2f5; }
 body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; overflow:hidden; }
 ::-webkit-scrollbar{width:5px;height:5px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
@@ -1661,6 +1663,7 @@ function showToast(msg, type) {
 function toggleTheme() {
   const isDark = !document.body.classList.contains('light');
   document.body.classList.toggle('light', isDark);
+  document.documentElement.classList.toggle('light', isDark);
   document.getElementById('themeToggle').classList.toggle('dark', !isDark);
   document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
   localStorage.setItem('theme', isDark ? 'light' : 'dark');
@@ -1670,6 +1673,7 @@ function toggleTheme() {
   const saved = localStorage.getItem('theme');
   if (saved === 'light') {
     document.body.classList.add('light');
+    document.documentElement.classList.add('light');
     document.getElementById('themeIcon').textContent = '☀️';
   } else {
     document.getElementById('themeToggle').classList.add('dark');
