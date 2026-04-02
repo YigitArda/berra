@@ -51,4 +51,15 @@ function requireMod(req, res, next) {
   next();
 }
 
-module.exports = { requireAuth, optionalAuth, requireMod };
+// Sadece admin geçebilir
+function requireAdmin(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Giriş yapmanız gerekiyor.' });
+  }
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Bu işlem sadece adminlere açık.' });
+  }
+  next();
+}
+
+module.exports = { requireAuth, optionalAuth, requireMod, requireAdmin };

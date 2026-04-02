@@ -1,14 +1,21 @@
 require('dotenv').config();
 
-const express     = require('express');
-const helmet      = require('helmet');
-const cors        = require('cors');
+const express      = require('express');
+const helmet       = require('helmet');
+const cors         = require('cors');
 const cookieParser = require('cookie-parser');
-const rateLimit   = require('express-rate-limit');
-const path        = require('path');
+const rateLimit    = require('express-rate-limit');
+const compression  = require('compression');
+const path         = require('path');
 const { sanitizeBody } = require('./middleware/sanitize');
 
 const app = express();
+
+// ── Proxy güveni (Railway / Nginx arkasında doğru IP için) ───
+app.set('trust proxy', 1);
+
+// ── Gzip sıkıştırma ──────────────────────────────────────────
+app.use(compression());
 
 // ── Güvenlik middleware ──────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false })); // CSP'yi nginx ile yönet
@@ -55,10 +62,35 @@ app.use('/api/maintenance',         require('./routes/maintenance').router);
 app.use('/api/preview',           require('./routes/preview'));
 app.use('/api/notifications',    require('./routes/notifications').router);
 app.use('/api/bookmarks',        require('./routes/bookmarks'));
+app.use('/api/admin',            require('./routes/admin'));
 
 // ── Sağlık kontrolü ──────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', ts: new Date().toISOString() });
+});
+
+// ── Sitemap ──────────────────────────────────────────────────
+app.get('/sitemap.xml', async (req, res) => {
+  const db = require('../config/db');
+  const base = process.env.APP_URL || 'https://arabalariseviyoruz.com';
+  try {
+    const { rows } = await db.query(
+      `SELECT slug, created_at FROM threads ORDER BY created_at DESC LIMIT 1000`
+    );
+    const urls = [
+      `<url><loc>${base}/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>`,
+      `<url><loc>${base}/rehber.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>`,
+      `<url><loc>${base}/sanayi.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>`,
+      `<url><loc>${base}/karsilastir.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>`,
+      ...rows.map(r =>
+        `<url><loc>${base}/thread/${r.slug}</loc><lastmod>${new Date(r.created_at).toISOString().split('T')[0]}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>`
+      ),
+    ].join('\n  ');
+    res.set('Content-Type', 'application/xml');
+    res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  ${urls}\n</urlset>`);
+  } catch (err) {
+    res.status(500).send('Sitemap oluşturulamadı.');
+  }
 });
 
 // ── 404 handler (API rotaları için) ──────────────────────────

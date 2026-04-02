@@ -36,7 +36,7 @@ router.get('/', optionalAuth, async (req, res) => {
     res.json({ businesses: rows, total: parseInt(total.rows[0].count), page: parseInt(page), limit });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Sunucu hatasi.' });
+    res.status(500).json({ error: 'Sunucu hatası.' });
   }
 });
 
@@ -56,7 +56,7 @@ router.get('/admin/pending', requireMod, async (req, res) => {
     const total = await db.query("SELECT COUNT(*) FROM businesses WHERE status = 'pending'");
     res.json({ businesses: rows, total: parseInt(total.rows[0].count), page, limit });
   } catch (err) {
-    res.status(500).json({ error: 'Sunucu hatasi.' });
+    res.status(500).json({ error: 'Sunucu hatası.' });
   }
 });
 
@@ -68,12 +68,12 @@ router.get('/cities/list', async (req, res) => {
     );
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: 'Sunucu hatasi.' });
+    res.status(500).json({ error: 'Sunucu hatası.' });
   }
 });
 
 // POST /api/businesses — yeni isletme ekle (onay bekler)
-router.post('/', optionalAuth, [
+router.post('/', requireAuth, [
   body('name').trim().isLength({ min: 3, max: 120 }).withMessage('Isletme adi 3-120 karakter olmali.'),
   body('category').trim().notEmpty().withMessage('Kategori secin.'),
   body('address').trim().notEmpty().withMessage('Adres zorunlu.'),
@@ -98,14 +98,14 @@ router.post('/', optionalAuth, [
         (user_id, name, slug, category, description, address, city, district, phone, lat, lng, price_range, open_time, close_time, open_days)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
       RETURNING id, slug, status`,
-      [req.user?.id || null, name, slug, category, description || null, address, city, district || null,
+      [req.user.id, name, slug, category, description || null, address, city, district || null,
        phone || null, lat || null, lng || null, price_range || 2,
        open_time || null, close_time || null, open_days || null]
     );
     res.status(201).json({ message: 'Isletme eklendi, onay bekleniyor.', slug: rows[0].slug });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Sunucu hatasi.' });
+    res.status(500).json({ error: 'Sunucu hatası.' });
   }
 });
 
@@ -115,7 +115,7 @@ router.put('/:id/approve', requireMod, async (req, res) => {
     await db.query(`UPDATE businesses SET status = 'approved', updated_at = NOW() WHERE id = $1`, [req.params.id]);
     res.json({ message: 'Onaylandi.' });
   } catch (err) {
-    res.status(500).json({ error: 'Sunucu hatasi.' });
+    res.status(500).json({ error: 'Sunucu hatası.' });
   }
 });
 
@@ -125,7 +125,7 @@ router.put('/:id/reject', requireMod, async (req, res) => {
     await db.query(`UPDATE businesses SET status = 'rejected', updated_at = NOW() WHERE id = $1`, [req.params.id]);
     res.json({ message: 'Reddedildi.' });
   } catch (err) {
-    res.status(500).json({ error: 'Sunucu hatasi.' });
+    res.status(500).json({ error: 'Sunucu hatası.' });
   }
 });
 
@@ -158,7 +158,7 @@ router.post('/:id/reviews', requireAuth, [
     res.status(201).json({ review: rows[0] });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Sunucu hatasi.' });
+    res.status(500).json({ error: 'Sunucu hatası.' });
   }
 });
 
@@ -187,7 +187,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
 
     res.json({ business: rows[0], reviews: reviews.rows });
   } catch (err) {
-    res.status(500).json({ error: 'Sunucu hatasi.' });
+    res.status(500).json({ error: 'Sunucu hatası.' });
   }
 });
 

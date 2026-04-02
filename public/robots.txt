@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /api/auth/
+Disallow: /api/profile/me/
+
+Sitemap: https://arabalariseviyoruz.com/sitemap.xml
