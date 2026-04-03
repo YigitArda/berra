@@ -1,8 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
-let apiFetch: <T>(path: string, init?: RequestInit) => Promise<T>;
-let apiBase: string;
-let joinApiUrl: (base: string, path: string) => string;
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ApiError, apiFetch, API_BASE } from '../api';
 
 describe('apiFetch', () => {
   beforeEach(async () => {
@@ -30,18 +27,24 @@ describe('apiFetch', () => {
       }),
     );
 
-    await expect(apiFetch<{ ok: boolean }>('/health')).resolves.toEqual({ ok: true });
+    await expect(apiFetch<{ ok: boolean }>('/health', { body: JSON.stringify({ ping: true }) })).resolves.toEqual({ ok: true });
 
-    expect(fetchSpy).toHaveBeenCalledWith(joinApiUrl(apiBase, '/health'), {
+    const [url, init] = fetchSpy.mock.calls[0] ?? [];
+    expect(url).toBe(`${API_BASE}/health`);
+    expect(init).toMatchObject({
       credentials: 'include',
-      headers: expect.any(Headers),
     });
+    expect(new Headers((init as RequestInit).headers).get('Content-Type')).toBe('application/json');
   });
 
   it('throws status fallback for non-JSON error payloads', async () => {
     vi.spyOn(global, 'fetch').mockResolvedValue(new Response('server down', { status: 502 }));
 
-    await expect(apiFetch('/health')).rejects.toThrow('HTTP 502');
+    await expect(apiFetch('/health')).rejects.toMatchObject({
+      code: 'HTTP_502',
+      message: 'HTTP 502',
+      status: 502,
+    });
   });
 
   it('returns null for 204 responses', async () => {
@@ -50,14 +53,24 @@ describe('apiFetch', () => {
     await expect(apiFetch<null>('/health')).resolves.toBeNull();
   });
 
-  it('prefers error fallback keys from JSON error payloads', async () => {
+  it('uses standardized JSON error fields', async () => {
     vi.spyOn(global, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ message: 'Unauthorized' }), {
+      new Response(JSON.stringify({ code: 'UNAUTHORIZED', message: 'Unauthorized', status: 401 }), {
         status: 401,
         headers: { 'Content-Type': 'application/json' },
       }),
     );
 
-    await expect(apiFetch('/secure')).rejects.toThrow('Unauthorized');
+    try {
+      await apiFetch('/secure');
+      throw new Error('expected apiFetch to throw');
+    } catch (error) {
+      expect(error).toBeInstanceOf(ApiError);
+      expect(error).toMatchObject({
+        code: 'UNAUTHORIZED',
+        message: 'Unauthorized',
+        status: 401,
+      });
+    }
   });
 });

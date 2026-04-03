@@ -4,12 +4,11 @@ import React from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
-import { DataState } from '../../components/data-state';
-import { EmptyState } from '../../components/empty-state';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { apiFetch } from '../../lib/api';
+import { toUserMessage } from '../../lib/error-message';
 import type { SearchResponse } from '@berra/shared';
 
 export default function SearchPage() {
@@ -23,8 +22,6 @@ export default function SearchPage() {
     enabled,
   });
 
-  const results = searchQuery.data?.results ?? [];
-
   return (
     <div className="grid gap-4">
       <Card>
@@ -36,39 +33,15 @@ export default function SearchPage() {
       </Card>
 
       <div className="grid gap-2">
-        {!submitted.trim() && (
-          <EmptyState
-            title="Arama yapmak için bir terim girin"
-            description="Sonuçları görmek için en az 2 karakterle arama başlatın."
-          />
+        {searchQuery.isError && (
+          <Card>
+            <p className="text-red-400">{toUserMessage(searchQuery.error)}</p>
+          </Card>
         )}
-
-        {submitted.trim().length === 1 && (
-          <EmptyState
-            title="Arama terimi çok kısa"
-            description="Lütfen en az 2 karakter girip tekrar deneyin."
-          />
-        )}
-
-        {enabled && (
-          <DataState
-            isLoading={searchQuery.isLoading}
-            isError={searchQuery.isError}
-            isEmpty={searchQuery.isSuccess && results.length === 0}
-            errorMessage={searchQuery.error instanceof Error ? searchQuery.error.message : 'Arama sırasında bir hata oluştu.'}
-            emptyTitle="Sonuç bulunamadı"
-            emptyDescription="Farklı anahtar kelimelerle tekrar deneyin."
-            onRetry={() => {
-              void searchQuery.refetch();
-            }}
-          >
-            {results.map((result) => (
-              <Card key={result.id}>
-                <p className="font-semibold">{result.title}</p>
-                <p className="text-sm text-slate-300">Yazar: {result.author}</p>
-              </Card>
-            ))}
-          </DataState>
+        {searchQuery.isSuccess && searchQuery.data.items.length === 0 && submitted.trim().length > 1 && (
+          <Card>
+            <p>Sonuç bulunamadı.</p>
+          </Card>
         )}
       </div>
     </div>

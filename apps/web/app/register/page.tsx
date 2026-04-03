@@ -112,6 +112,7 @@ export default function RegisterPage() {
           {registerMutation.isPending ? 'Kaydediliyor...' : 'Kayıt ol'}
         </Button>
       </form>
+      {generalError && <p className="mt-2 text-sm text-red-400">{generalError}</p>}
       {registerMutation.isSuccess && <p className="mt-2 text-sm text-emerald-400">Kayıt başarılı.</p>}
     </Card>
   );
