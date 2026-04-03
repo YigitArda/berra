@@ -2,9 +2,52 @@
 
 Türkiye'nin araba topluluk platformu — Forum + Akış + Araçlar.
 
-> **Not:** Aktif uygulama depo kökünde yer alır. `package.json`, `scripts/migrate.js` ve `schema.sql` dosyaları bu kök dizin için kanonik kaynaktır; yanlışlıkla alt klasörlerde çalışmayın.
+> **Not:** Aktif legacy uygulama depo kökünde yer alır. `package.json`, `scripts/migrate.js` ve `schema.sql` dosyaları bu kök dizin için kanonik kaynaktır; yanlışlıkla alt klasörlerde çalışmayın.
 
-## Kurulum
+## Yeni Mimari (Migration Başlangıcı)
+
+Bu repo yeni mimari geçişi için aşağıdaki başlangıç yapısını içerir:
+
+- `apps/api`: NestJS + Fastify + TypeScript (yeni API iskeleti)
+- `apps/web`: Next.js + TypeScript (yeni frontend iskeleti)
+- `packages/shared`: paylaşılan tipler (DTO/type contract)
+
+### Yeni komutlar
+
+```bash
+npm run dev:api
+npm run dev:web
+npm run build:api
+npm run build:web
+```
+
+
+### Bu adımda taşınanlar
+
+- Yeni `apps/api` tarafında gerçek veritabanı bağlantısı (`pg`) eklendi.
+- `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` endpointleri Nest tarafında çalışır hale getirildi.
+- Next.js tarafında `/login` sayfası ile yeni auth endpointlerini test edecek istemci formu eklendi.
+- Queue altyapısı için `apps/api` tarafına BullMQ + Redis tabanlı `QueueService` eklendi.
+- `POST /api/notifications/system-test` endpointi ile bildirim job'ı kuyruğa atılabilir hale geldi.
+- Ayrı worker başlangıcı için `npm run worker:api` script'i eklendi.
+- Feed modülü Nest tarafına taşındı: `GET /api/feed`, `POST /api/feed`, `POST/DELETE /api/feed/:id/like`, `GET /api/feed/:id/comments`, `POST /api/feed/:id/comment`.
+- Next.js tarafına `/feed` test sayfası eklendi.
+- Auth yanıtları cookie-odaklı hale getirildi; JWT artık response body'de dönülmüyor.
+- API'de global exception formatı ve env doğrulaması eklendi.
+- Auth tarafına `POST /api/auth/refresh` eklendi; rol bazlı yetki için `RolesGuard` altyapısı kuruldu.
+- Profil modülü eklendi: `GET /api/profile/me`, `PUT /api/profile/me`, `GET /api/profile/:username`.
+- Arama modülü eklendi: `GET /api/search?q=...` (PostgreSQL FTS).
+- Realtime bildirim altyapısı eklendi (`Socket.IO gateway`) ve bildirim yayınlama entegre edildi.
+- API için temel e2e test iskeleti eklendi (`apps/api/test/health.e2e-spec.ts`).
+
+Legacy Express uygulaması hâlâ çalışır:
+
+```bash
+npm run dev:legacy
+npm run start:legacy
+```
+
+## Legacy Kurulum
 
 ### 1. Bağımlılıkları yükle
 ```bash
@@ -31,29 +74,20 @@ npm run migrate
 node scripts/migrate.js
 ```
 
-### 4. Geliştirme sunucusunu başlat
+### 4. Legacy geliştirme sunucusunu başlat
 ```bash
-npm run dev
+npm run dev:legacy
 ```
 
-## API Rotaları
+## API Rotaları (Legacy)
 
 ### Auth
-Auth akışı **cookie tabanlıdır**. `register`, `login`, `refresh`, `reset-password` endpoint'leri
-token'ı JSON response gövdesinde döndürmez; sadece `httpOnly` cookie (`token`) set eder.
-
-Frontend isteklerinde `Authorization: Bearer ...` yerine `fetch(..., { credentials: 'include' })`
-kullanılmalıdır.
-
-| Metod | Rota                   | Açıklama |
-|------|------------------------|----------|
-| POST | /api/auth/register     | Kayıt olur, oturum cookie'si set edilir |
-| POST | /api/auth/login        | Giriş yapar, oturum cookie'si set edilir |
-| POST | /api/auth/refresh      | Geçerli cookie ile oturumu yeniler (response'ta token yok) |
-| POST | /api/auth/logout       | Oturum cookie'sini temizler |
-| POST | /api/auth/forgot-password | Şifre sıfırlama kodu oluşturur |
-| POST | /api/auth/reset-password  | Şifreyi sıfırlar, yeni oturum cookie'si set eder |
-| GET  | /api/auth/me           | Aktif kullanıcı |
+| Metod | Rota             | Açıklama        |
+|-------|------------------|-----------------|
+| POST  | /api/auth/register | Kayıt ol      |
+| POST  | /api/auth/login    | Giriş yap     |
+| POST  | /api/auth/logout   | Çıkış yap     |
+| GET   | /api/auth/me       | Aktif kullanıcı |
 
 ### Forum
 | Metod  | Rota                           | Açıklama          |
@@ -80,27 +114,28 @@ kullanılmalıdır.
 | POST  | /api/score    | Alınır mı skoru    |
 | GET   | /api/score/stats | İstatistikler   |
 
-## Klasör Yapısı
 
-```text
-.
-├── src/
-│   ├── app.js               # Express giriş noktası
-│   ├── routes/
-│   │   ├── auth.js          # Giriş / kayıt
-│   │   ├── forum.js         # Forum
-│   │   ├── feed.js          # Akış
-│   │   └── score.js         # Alınır mı skoru
-│   ├── controllers/
-│   │   └── authController.js
-│   └── middleware/
-│       └── auth.js          # JWT doğrulama
-├── config/
-│   └── db.js                # PostgreSQL bağlantısı
-├── public/                  # Frontend dosyaları
-├── scripts/
-│   └── migrate.js           # schema.sql dosyasını uygular
-├── schema.sql               # Veritabanı şeması
-├── .env.example
-└── package.json
+## Staging Altyapısı
+
+Bu repoda staging için temel deploy altyapısı eklendi:
+
+- `docker-compose.staging.yml`: Postgres + Redis + API + Worker + Web servisleri
+- `apps/api/Dockerfile`, `apps/web/Dockerfile`: üretim imajı build dosyaları
+- `deploy/k8s/*`: namespace/deployment/service/ingress manifestleri
+- `.github/workflows/staging.yml`: staging build/doğrulama workflow
+- `.env.staging.example`: staging ortam değişken örneği
+
+### Local staging smoke
+
+```bash
+docker compose -f docker-compose.staging.yml up --build
+```
+
+### K8s apply
+
+```bash
+kubectl apply -f deploy/k8s/namespace.yaml
+kubectl apply -f deploy/k8s/api-deployment.yaml
+kubectl apply -f deploy/k8s/web-deployment.yaml
+kubectl apply -f deploy/k8s/ingress.yaml
 ```
