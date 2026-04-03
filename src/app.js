@@ -8,6 +8,7 @@ const rateLimit    = require('express-rate-limit');
 const compression  = require('compression');
 const path         = require('path');
 const { sanitizeBody } = require('./middleware/sanitize');
+const { legacyRedirects } = require('./middleware/legacyRedirects');
 
 const app = express();
 
@@ -68,6 +69,7 @@ if (activeUi === 'next' && nextAppUrl) {
 }
 
 // ── Statik dosyalar ──────────────────────────────────────────
+app.use(legacyRedirects);
 app.use(express.static(path.join(__dirname, '../public')));
 
 // ── API rotaları ─────────────────────────────────────────────
