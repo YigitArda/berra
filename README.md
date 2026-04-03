@@ -58,6 +58,17 @@ Next frontend tarafında endpoint sahipliği ikiye ayrılır:
 
 Detay endpoint envanteri ve taşınma kararları: `docs/next-cutover-api-matrix.md`.
 
+## API sahiplik durumu (Next cutover)
+
+Next frontend tarafında endpoint sahipliği ikiye ayrılır:
+
+- **Nest-ready:** `auth`, `feed`, `profile`, `search`, `notifications`
+- **Nest proxied (cutover):** `forum`, `discovery`, `businesses`, `bookmarks`, `reports`
+  - Bu akışlar `apps/api` içindeki `CutoverProxyModule` ile legacy servise aktarılır.
+  - Gerekli env: `LEGACY_API_ORIGIN` (örn. `http://legacy:3000`)
+
+Detay endpoint envanteri ve taşınma kararları: `docs/next-cutover-api-matrix.md`.
+
 ## Legacy -> Next kalıcı redirect planı
 
 - Legacy Express katmanında `ACTIVE_UI=next` ve `NEXT_APP_URL` tanımlıysa kullanıcı-facing route'lar Next'e `301` ile yönlendirilir
