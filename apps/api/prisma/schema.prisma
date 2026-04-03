@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  MOD
+  ADMIN
+}
+
+enum NotificationType {
+  LIKE
+  REPLY
+  SYSTEM
+  MESSAGE
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  username     String        @unique @db.VarChar(40)
+  email        String        @unique @db.VarChar(200)
+  passwordHash String        @map("password_hash") @db.VarChar(200)
+  role         UserRole      @default(USER)
+  isBanned     Boolean       @default(false) @map("is_banned")
+  avatarUrl    String?       @map("avatar_url")
+  bio          String?       @db.VarChar(300)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  profile       Profile?
+  contents      Content[]
+  notifications Notification[] @relation("NotificationUser")
+  activities    Activity[]
+  sessions      Session[]
+
+  @@map("users")
+}
+
+model Profile {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique @map("user_id")
+  location  String?  @db.VarChar(120)
+  website   String?  @db.VarChar(200)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model Content {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @map("user_id")
+  body         String   @db.VarChar(500)
+  likeCount    Int      @default(0) @map("like_count")
+  commentCount Int      @default(0) @map("comment_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("feed_posts")
+}
+
+model Notification {
+  id         Int              @id @default(autoincrement())
+  userId     Int              @map("user_id")
+  type       NotificationType
+  message    String
+  link       String?
+  isRead     Boolean          @default(false) @map("is_read")
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  user User @relation("NotificationUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Activity {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  action    String   @db.VarChar(120)
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("activities")
+}
+
+model Session {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @map("user_id")
+  refreshTokenHash String   @map("refresh_token_hash") @db.VarChar(255)
+  userAgent        String?  @map("user_agent") @db.VarChar(255)
+  ipAddress        String?  @map("ip_address") @db.VarChar(64)
+  expiresAt        DateTime @map("expires_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+  revokedAt        DateTime? @map("revoked_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_sessions")
+}

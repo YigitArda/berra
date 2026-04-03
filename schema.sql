@@ -14,6 +14,17 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+
+-- Kullanıcı profil detayları
+CREATE TABLE IF NOT EXISTS profiles (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  location VARCHAR(120),
+  website VARCHAR(200),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- Forum kategorileri
 CREATE TABLE IF NOT EXISTS categories (
   id         SERIAL PRIMARY KEY,
@@ -197,6 +208,19 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+
+-- Oturumlar (refresh token/device takibi)
+CREATE TABLE IF NOT EXISTS user_sessions (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  refresh_token_hash VARCHAR(255) NOT NULL,
+  user_agent VARCHAR(255),
+  ip_address VARCHAR(64),
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  revoked_at TIMESTAMPTZ
+);
+
 -- Kaydedilenler (bookmark)
 CREATE TABLE IF NOT EXISTS bookmarks (
   id        SERIAL PRIMARY KEY,
@@ -213,6 +237,16 @@ CREATE TABLE IF NOT EXISTS feed_comments (
   user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   body         VARCHAR(500) NOT NULL,
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+
+-- Kullanıcı aktiviteleri (audit/activity)
+CREATE TABLE IF NOT EXISTS activities (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  action VARCHAR(120) NOT NULL,
+  metadata JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Şikayetler
@@ -238,8 +272,46 @@ DO $$ BEGIN
   ALTER TABLE posts ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT '{}';
   -- Akış yorum sayacı
   ALTER TABLE feed_posts ADD COLUMN IF NOT EXISTS comment_count INTEGER NOT NULL DEFAULT 0;
+  -- FTS kolonları
+  ALTER TABLE threads ADD COLUMN IF NOT EXISTS search_vector tsvector;
+  ALTER TABLE posts ADD COLUMN IF NOT EXISTS search_vector tsvector;
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
+
+
+
+-- FTS trigger fonksiyonları
+CREATE OR REPLACE FUNCTION threads_search_vector_update() RETURNS trigger AS $$
+BEGIN
+  NEW.search_vector := to_tsvector('simple', COALESCE(NEW.title, ''));
+  RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION posts_search_vector_update() RETURNS trigger AS $$
+BEGIN
+  NEW.search_vector := to_tsvector('simple', COALESCE(NEW.body, ''));
+  RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_threads_search_vector ON threads;
+CREATE TRIGGER trg_threads_search_vector
+BEFORE INSERT OR UPDATE OF title ON threads
+FOR EACH ROW EXECUTE FUNCTION threads_search_vector_update();
+
+DROP TRIGGER IF EXISTS trg_posts_search_vector ON posts;
+CREATE TRIGGER trg_posts_search_vector
+BEFORE INSERT OR UPDATE OF body ON posts
+FOR EACH ROW EXECUTE FUNCTION posts_search_vector_update();
+
+-- Backfill FTS kolonları
+UPDATE threads SET search_vector = to_tsvector('simple', COALESCE(title, ''))
+WHERE search_vector IS NULL;
+
+UPDATE posts SET search_vector = to_tsvector('simple', COALESCE(body, ''))
+WHERE search_vector IS NULL;
+
 
 -- ── İNDEXLER ─────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_posts_user       ON posts (user_id);
@@ -266,15 +338,18 @@ CREATE INDEX IF NOT EXISTS idx_posts_thread_live  ON posts (thread_id, created_a
 CREATE INDEX IF NOT EXISTS idx_threads_cat_pin    ON threads (category_id, is_pinned DESC, last_reply_at DESC);
 CREATE INDEX IF NOT EXISTS idx_feed_comments_post ON feed_comments (feed_post_id, created_at ASC);
 CREATE INDEX IF NOT EXISTS idx_reports_status     ON reports (status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions (user_id, expires_at DESC) WHERE revoked_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_activities_user ON activities (user_id, created_at DESC);
 
 -- Full-text search indexleri (forum araması)
 CREATE INDEX IF NOT EXISTS idx_threads_title_fts
-  ON threads USING GIN (to_tsvector('simple', COALESCE(title, '')));
+  ON threads USING GIN (search_vector);
 CREATE INDEX IF NOT EXISTS idx_posts_body_fts
-  ON posts USING GIN (to_tsvector('simple', COALESCE(body, '')))
+  ON posts USING GIN (search_vector)
   WHERE is_deleted = false;
 
 -- ── BAŞLANGIÇ VERİLERİ ────────────────────────────────────────
+
 
 -- Forum kategorileri
 INSERT INTO categories (name, slug, sort_order) VALUES

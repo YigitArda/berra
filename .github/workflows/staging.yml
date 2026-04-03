@@ -1,0 +1,42 @@
+name: staging
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["work"]
+
+jobs:
+  build-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build
+        run: pnpm build
+
+      - name: Build API image
+        run: docker build -t berra-api:staging -f apps/api/Dockerfile apps/api
+
+      - name: Build Web image
+        run: docker build -t berra-web:staging -f apps/web/Dockerfile apps/web
+
+      - name: Compose config check
+        run: docker compose -f docker-compose.staging.yml config
