@@ -283,22 +283,29 @@ async function likePost(id, btn) {
   for (const t of threads) {
     const p = t.posts?.find(x => x.id === id);
     if (p) {
-      p.liked = !p.liked;
-  syncFeedState();
-      p.likes += p.liked ? 1 : -1;
-      btn.textContent = '♥ ' + p.likes;
-      btn.classList.toggle('liked', p.liked);
-      // API'ye gönder
-      if (id < 1000000000000) {
-        try {
+      await runOptimisticInteraction({
+        item: p,
+        applyOptimistic: () => {
+          p.liked = !p.liked;
+          p.likes += p.liked ? 1 : -1;
+        },
+        onUiUpdate: ({ item }) => {
+          btn.textContent = '♥ ' + item.likes;
+          btn.classList.toggle('liked', item.liked);
+        },
+        request: async () => {
+          if (id >= 1000000000000) return;
           const method = p.liked ? 'POST' : 'DELETE';
           const data = await apiCall('/api/forum/posts/' + id + '/like', method);
           if (data.like_count !== undefined) {
             p.likes = data.like_count;
+            syncFeedState();
             btn.textContent = '♥ ' + p.likes;
           }
-        } catch(e) {}
-      }
+        },
+        errorKey: 'likePost',
+        errorMessage: 'Beğeni işlemi başarısız.',
+      });
       return;
     }
   }
@@ -478,6 +485,50 @@ function shareFeed(id, btn) {
   else showToast('Paylaşıldı!','ok');
 }
 
+const rollbackToastLocks = new Set();
+function showRollbackErrorOnce(key, msg) {
+  if (rollbackToastLocks.has(key)) return;
+  rollbackToastLocks.add(key);
+  showToast(msg, 'err');
+  setTimeout(() => rollbackToastLocks.delete(key), 2000);
+}
+
+function cloneForRollback(v) {
+  if (typeof structuredClone === 'function') return structuredClone(v);
+  return JSON.parse(JSON.stringify(v));
+}
+
+function createInteractionSnapshot(item) {
+  return {
+    likes: item?.likes,
+    liked: item?.liked,
+    comment_count: item?.comment_count,
+    comments: Array.isArray(item?.comments) ? cloneForRollback(item.comments) : undefined,
+  };
+}
+
+async function runOptimisticInteraction({ item, applyOptimistic, request, onUiUpdate, errorKey, errorMessage }) {
+  const snapshot = createInteractionSnapshot(item);
+  applyOptimistic();
+  syncFeedState();
+  if (onUiUpdate) onUiUpdate({ item, snapshot, rolledBack: false });
+  try {
+    if (request) await request();
+    return true;
+  } catch (e) {
+    if (item) {
+      if (snapshot.likes !== undefined) item.likes = snapshot.likes;
+      if (snapshot.liked !== undefined) item.liked = snapshot.liked;
+      if (snapshot.comment_count !== undefined) item.comment_count = snapshot.comment_count;
+      if (snapshot.comments !== undefined) item.comments = cloneForRollback(snapshot.comments);
+    }
+    syncFeedState();
+    if (onUiUpdate) onUiUpdate({ item, snapshot, rolledBack: true, error: e });
+    showRollbackErrorOnce(errorKey, errorMessage);
+    return false;
+  }
+}
+
 async function submitComment(id) {
   const inp = document.getElementById('fci-' + id);
   const txt = inp.value.trim();
@@ -495,22 +546,34 @@ async function submitComment(id) {
     text: txt,
     replies: [],
   };
-  p.comments.push(newComment);
-  syncFeedState();
-  // DOM'a ekle
-  const list = document.getElementById('fcl-' + id);
-  list.insertAdjacentHTML('beforeend', feedCommentHtml(newComment, id, false));
-  inp.value = '';
-  if (inp) autoResize(inp);
+  await runOptimisticInteraction({
+    item: p,
+    applyOptimistic: () => {
+      p.comments.push(newComment);
+      p.comment_count = (p.comment_count || 0) + 1;
+    },
+    onUiUpdate: ({ item, rolledBack }) => {
+      const list = document.getElementById('fcl-' + id);
+      if (list) list.innerHTML = item.comments.map(c => feedCommentHtml(c, id, false)).join('');
+      const card = document.getElementById('fi-' + id);
+      const commentBtn = card?.querySelector('.feed-actions .feed-btn:nth-child(2) span');
+      if (commentBtn) commentBtn.textContent = item.comment_count || 0;
+      if (!rolledBack) {
+        inp.value = '';
+        if (inp) autoResize(inp);
+        list?.lastElementChild?.scrollIntoView({behavior:'smooth',block:'nearest'});
+      } else {
+        inp.value = txt;
+        if (inp) autoResize(inp);
+      }
+    },
+    request: async () => {
+      await apiCall('/api/feed/' + id + '/comment', 'POST', { text: txt });
+    },
+    errorKey: 'submitComment',
+    errorMessage: 'Yorum gönderilemedi.',
+  });
   btnLoading(sendBtn, false);
-  // Yorum sayacını güncelle
-  const card = document.getElementById('fi-' + id);
-  const commentBtn = card?.querySelector('.feed-actions .feed-btn:nth-child(2) span');
-  if (commentBtn) { p.comment_count = (p.comment_count || 0) + 1; commentBtn.textContent = p.comment_count; }
-  // Scroll to new comment
-  list.lastElementChild?.scrollIntoView({behavior:'smooth',block:'nearest'});
-  // API call
-  try { await apiCall('/api/feed/' + id + '/comment', 'POST', {text: txt}); } catch(_){ showToast('Yorum gönderilemedi.', 'err'); }
 }
 
 function commentKeydown(e, id) {
@@ -521,19 +584,29 @@ async function likeFeed(id, btn) {
   if (!user) { showToast('Beğenmek için giriş yap.', 'err'); return; }
   const p = feedData.find(x => x.id === id);
   if (!p) return;
-  p.liked = !p.liked;
-  syncFeedState();
-  p.likes += p.liked ? 1 : -1;
-  btn.querySelector('span').textContent = p.likes;
-  btn.classList.toggle('liked', p.liked);
-  if (p.liked) { btn.classList.add('heart-anim'); setTimeout(() => btn.classList.remove('heart-anim'), 400); }
-  // API'ye gönder (gerçek post için)
-  if (id < 1000000000000) { // timestamp ID değilse gerçek DB ID'si
-    try {
+  await runOptimisticInteraction({
+    item: p,
+    applyOptimistic: () => {
+      p.liked = !p.liked;
+      p.likes += p.liked ? 1 : -1;
+    },
+    onUiUpdate: ({ item, rolledBack }) => {
+      const likeCountEl = btn?.querySelector('span');
+      if (likeCountEl) likeCountEl.textContent = item.likes;
+      btn.classList.toggle('liked', item.liked);
+      if (!rolledBack && item.liked) {
+        btn.classList.add('heart-anim');
+        setTimeout(() => btn.classList.remove('heart-anim'), 400);
+      }
+    },
+    request: async () => {
+      if (id >= 1000000000000) return;
       const method = p.liked ? 'POST' : 'DELETE';
       await apiCall('/api/feed/' + id + '/like', method);
-    } catch(e) { showToast('Beğeni işlemi başarısız.', 'err'); }
-  }
+    },
+    errorKey: 'likeFeed',
+    errorMessage: 'Beğeni işlemi başarısız.',
+  });
 }
 
 document.getElementById('feedInput').addEventListener('input', function() {
@@ -596,18 +669,42 @@ function doLogout() {
 
 async function apiCall(url, method, body) {
   try {
+    const hasJsonBody = body !== undefined && body !== null;
+    const headers = {};
+    if (hasJsonBody) headers['Content-Type'] = 'application/json';
     const res = await fetch(url, {
       method: method || 'GET', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: body ? JSON.stringify(body) : undefined
+      headers,
+      body: hasJsonBody ? JSON.stringify(body) : undefined
     });
-    if (res.status === 401) {
-      showToast('Oturumun sona erdi, tekrar giriş yap.', 'err');
+
+    const contentType = res.headers.get('content-type') || '';
+    let parsed = null;
+
+    if (res.status === 204) {
+      parsed = null;
+    } else if (contentType.includes('application/json')) {
+      parsed = await res.json();
+    } else {
+      const text = await res.text();
+      parsed = text ? { message: text } : null;
     }
-    return res.json();
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        showToast('Oturumun sona erdi, tekrar giriş yap.', 'err');
+      }
+      return {
+        error: parsed?.error || parsed?.message || `İstek başarısız (${res.status})`,
+        status: res.status
+      };
+    }
+
+    if (parsed === null) return { status: res.status };
+    return parsed;
   } catch(e) {
     showToast('Bağlantı hatası. İnternet bağlantını kontrol et.', 'err');
-    throw e;
+    return { error: 'Bağlantı hatası. İnternet bağlantını kontrol et.', status: 0 };
   }
 }
 
@@ -618,13 +715,15 @@ document.getElementById('doLogin').addEventListener('click', async () => {
   if (!email || !pass) { showErr(errEl, 'Email ve şifre gerekli.'); return; }
   const btn = document.getElementById('doLogin');
   btn.innerHTML = '<span class="spinner"></span>';
-  try {
-    const data = await apiCall('/api/auth/login', 'POST', { email, password: pass });
-    if (data.error) { showErr(errEl, data.error); btn.textContent = 'Giriş Yap'; return; }
-    setUser({ username: data.user.username, ava: data.user.username[0].toUpperCase(), role: data.user.role });
-    closeModal('authModal');
-    showToast('Hoş geldin, ' + data.user.username + '!', 'ok');
-  } catch(e) { showErr(errEl, 'Bağlantı hatası.'); btn.textContent = 'Giriş Yap'; }
+  const data = await apiCall('/api/auth/login', 'POST', { email, password: pass });
+  if (data.error) {
+    showErr(errEl, data.error);
+    btn.textContent = 'Giriş Yap';
+    return;
+  }
+  setUser({ username: data.user.username, ava: data.user.username[0].toUpperCase(), role: data.user.role });
+  closeModal('authModal');
+  showToast('Hoş geldin, ' + data.user.username + '!', 'ok');
 });
 
 document.getElementById('doReg').addEventListener('click', async () => {
@@ -636,14 +735,12 @@ document.getElementById('doReg').addEventListener('click', async () => {
   if (pass.length < 6) { showErr(errEl, 'Şifre en az 6 karakter olmalı.'); return; }
   const btn = document.getElementById('doReg');
   btn.innerHTML = '<span class="spinner"></span>';
-  try {
-    const data = await apiCall('/api/auth/register', 'POST', { username, email, password: pass });
-    if (data.error) { showErr(errEl, data.error); btn.textContent = 'Kayıt Ol'; return; }
-    if (data.errors) { showErr(errEl, data.errors[0].msg); btn.textContent = 'Kayıt Ol'; return; }
-    setUser({ username: data.user.username, ava: data.user.username[0].toUpperCase(), role: data.user.role });
-    closeModal('authModal');
-    showToast('Kayıt başarılı! Hoş geldin, ' + data.user.username + '!', 'ok');
-  } catch(e) { showErr(errEl, 'Bağlantı hatası.'); btn.textContent = 'Kayıt Ol'; }
+  const data = await apiCall('/api/auth/register', 'POST', { username, email, password: pass });
+  if (data.error) { showErr(errEl, data.error); btn.textContent = 'Kayıt Ol'; return; }
+  if (data.errors) { showErr(errEl, data.errors[0].msg); btn.textContent = 'Kayıt Ol'; return; }
+  setUser({ username: data.user.username, ava: data.user.username[0].toUpperCase(), role: data.user.role });
+  closeModal('authModal');
+  showToast('Kayıt başarılı! Hoş geldin, ' + data.user.username + '!', 'ok');
 });
 
 // ── YENİ KONU ────────────────────────────────────────────────
@@ -1248,6 +1345,7 @@ function renderPostDetail(id) {
   const tags = extractTags(p.text);
   const tagRow = tags.length ? `<div class="feed-tag-row" style="margin-bottom:12px">${tags.map(t=>`<span class="feed-auto-tag">#${t}</span>`).join('')}</div>` : '';
   const allComments = p.comments.map(c => feedCommentHtml(c, p.id, false)).join('');
+  const commentCount = p.comment_count ?? p.comments.length;
   el.innerHTML = `
     <div class="post-detail-header">
       <div class="post-detail-ava ${avaColor(p.author)}">${escapeHtml(p.ava)}</div>
@@ -1262,7 +1360,7 @@ function renderPostDetail(id) {
       <button class="post-detail-btn ${p.liked?'liked':''}" onclick="likeFeedDetail(${p.id},this)">♥ ${p.likes} Beğeni</button>
       <button class="post-detail-btn ${p.shared?'shared':''}" onclick="shareFeed(${p.id},this)">🔁 ${p.shares} Paylaşım</button>
     </div>
-    <div class="post-detail-comments-title">${p.comments.length} Yorum</div>
+    <div class="post-detail-comments-title">${commentCount} Yorum</div>
     <div id="pdComments-${p.id}">${allComments}</div>
     <div class="feed-comment-form" style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
       <div class="feed-comment-ava ${user?avaColor(user.username):''}">${user?escapeHtml(user.ava||user.username[0].toUpperCase()):'👤'}</div>
@@ -1282,10 +1380,20 @@ async function submitCommentDetail(id) {
   const list = document.getElementById('pdComments-' + id);
   list?.insertAdjacentHTML('beforeend', feedCommentHtml(c, id, false));
   inp.value = '';
-  // Feed kartındaki yorum sayacını da güncelle
-  const countEl = document.querySelector(`#fi-${id} .feed-btn:nth-child(2) span`);
-  if (countEl) { p.comment_count = (p.comment_count || 0) + 1; countEl.textContent = p.comment_count; }
+  incrementCommentCount(id);
   try { await apiCall('/api/feed/' + id + '/comment', 'POST', {text: txt}); } catch(_){ showToast('Yorum gönderilemedi.', 'err'); }
+}
+
+function incrementCommentCount(id) {
+  const p = feedData.find(x => x.id === id);
+  if (!p) return;
+  p.comment_count = (p.comment_count || 0) + 1;
+  syncFeedState();
+  const card = document.getElementById('fi-' + id);
+  const cardCountEl = card?.querySelector('[data-action="comments"] span');
+  if (cardCountEl) cardCountEl.textContent = p.comment_count;
+  const detailTitleEl = document.querySelector('#postDetailContent .post-detail-comments-title');
+  if (detailTitleEl) detailTitleEl.textContent = `${p.comment_count} Yorum`;
 }
 function likeFeedDetail(id, btn) {
   likeFeed(id, btn);
