@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
+import { FormField } from '../../components/ui/form-field';
 import { Input } from '../../components/ui/input';
 import { apiFetch } from '../../lib/api';
 import { sessionQueryKey } from '../../lib/auth/session';
@@ -38,34 +39,37 @@ export default function LoginPage() {
     },
   });
 
-  const isSubmitting = loginMutation.isPending;
+  const emailError = form.formState.errors.email?.message;
+  const passwordError = form.formState.errors.password?.message;
 
   return (
     <Card className="mx-auto max-w-md">
       <h1 className="mb-4 text-2xl font-bold">Giriş</h1>
-      {generalError && (
-        <div className="mb-4 rounded-md border border-red-700 bg-red-950/50 px-3 py-2 text-sm text-red-200">{generalError}</div>
-      )}
-      <form
-        onSubmit={form.handleSubmit((values) => {
-          setGeneralError(null);
-          form.clearErrors();
-          loginMutation.mutate(values);
-        })}
-        className="grid gap-3"
-      >
-        <div>
-          <Input type="email" placeholder="Email" disabled={isSubmitting} {...form.register('email')} />
-          {form.formState.errors.email && <p className="mt-1 text-xs text-red-300">{form.formState.errors.email.message}</p>}
-        </div>
-        <div>
-          <Input type="password" placeholder="Şifre" disabled={isSubmitting} {...form.register('password')} />
-          {form.formState.errors.password && (
-            <p className="mt-1 text-xs text-red-300">{form.formState.errors.password.message}</p>
-          )}
-        </div>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Giriş yapılıyor...' : 'Giriş yap'}
+      <form onSubmit={form.handleSubmit((values) => loginMutation.mutate(values))} className="grid gap-4">
+        <FormField id="email" label="Email" helperText="Hesabınızda kayıtlı email adresi." errorText={emailError}>
+          <Input
+            id="email"
+            type="email"
+            placeholder="ornek@berra.app"
+            error={Boolean(emailError)}
+            aria-describedby={emailError ? 'email-error' : 'email-hint'}
+            {...form.register('email')}
+          />
+        </FormField>
+
+        <FormField id="password" label="Şifre" helperText="En az 6 karakter girin." errorText={passwordError}>
+          <Input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            error={Boolean(passwordError)}
+            aria-describedby={passwordError ? 'password-error' : 'password-hint'}
+            {...form.register('password')}
+          />
+        </FormField>
+
+        <Button type="submit" disabled={loginMutation.isPending}>
+          {loginMutation.isPending ? 'Gönderiliyor...' : 'Giriş yap'}
         </Button>
       </form>
       {loginMutation.isSuccess && <p className="mt-2 text-sm text-emerald-400">Giriş başarılı, yönlendiriliyorsunuz...</p>}
