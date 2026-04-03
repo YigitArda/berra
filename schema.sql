@@ -272,8 +272,46 @@ DO $$ BEGIN
   ALTER TABLE posts ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT '{}';
   -- Akış yorum sayacı
   ALTER TABLE feed_posts ADD COLUMN IF NOT EXISTS comment_count INTEGER NOT NULL DEFAULT 0;
+  -- FTS kolonları
+  ALTER TABLE threads ADD COLUMN IF NOT EXISTS search_vector tsvector;
+  ALTER TABLE posts ADD COLUMN IF NOT EXISTS search_vector tsvector;
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
+
+
+
+-- FTS trigger fonksiyonları
+CREATE OR REPLACE FUNCTION threads_search_vector_update() RETURNS trigger AS $$
+BEGIN
+  NEW.search_vector := to_tsvector('simple', COALESCE(NEW.title, ''));
+  RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION posts_search_vector_update() RETURNS trigger AS $$
+BEGIN
+  NEW.search_vector := to_tsvector('simple', COALESCE(NEW.body, ''));
+  RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_threads_search_vector ON threads;
+CREATE TRIGGER trg_threads_search_vector
+BEFORE INSERT OR UPDATE OF title ON threads
+FOR EACH ROW EXECUTE FUNCTION threads_search_vector_update();
+
+DROP TRIGGER IF EXISTS trg_posts_search_vector ON posts;
+CREATE TRIGGER trg_posts_search_vector
+BEFORE INSERT OR UPDATE OF body ON posts
+FOR EACH ROW EXECUTE FUNCTION posts_search_vector_update();
+
+-- Backfill FTS kolonları
+UPDATE threads SET search_vector = to_tsvector('simple', COALESCE(title, ''))
+WHERE search_vector IS NULL;
+
+UPDATE posts SET search_vector = to_tsvector('simple', COALESCE(body, ''))
+WHERE search_vector IS NULL;
+
 
 -- ── İNDEXLER ─────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_posts_user       ON posts (user_id);
@@ -305,9 +343,9 @@ CREATE INDEX IF NOT EXISTS idx_activities_user ON activities (user_id, created_a
 
 -- Full-text search indexleri (forum araması)
 CREATE INDEX IF NOT EXISTS idx_threads_title_fts
-  ON threads USING GIN (to_tsvector('simple', COALESCE(title, '')));
+  ON threads USING GIN (search_vector);
 CREATE INDEX IF NOT EXISTS idx_posts_body_fts
-  ON posts USING GIN (to_tsvector('simple', COALESCE(body, '')))
+  ON posts USING GIN (search_vector)
   WHERE is_deleted = false;
 
 -- ── BAŞLANGIÇ VERİLERİ ────────────────────────────────────────

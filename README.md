@@ -226,3 +226,9 @@ pnpm --filter @berra/api run prisma:generate
 pnpm --filter @berra/api run prisma:migrate
 pnpm --filter @berra/api run prisma:seed
 ```
+
+
+### Nixpacks / PNPM Lockfile Notu
+
+`pnpm-lock.yaml` olmadığında CI/build tarafında `--frozen-lockfile` hatası alınmaması için
+repo kökünde `nixpacks.toml` ile install komutu `pnpm i --no-frozen-lockfile` olarak override edilmiştir.

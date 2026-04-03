@@ -1,0 +1,17 @@
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = [
+  "npm install -g corepack@0.24.1",
+  "corepack enable",
+  "pnpm i --no-frozen-lockfile"
+]
+
+[phases.build]
+cmds = [
+  "pnpm build"
+]
+
+[start]
+cmd = "node src/app.js"
