@@ -5,6 +5,7 @@ import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '../../components/ui/button';
@@ -13,6 +14,8 @@ import { FormField } from '../../components/ui/form-field';
 import { Input } from '../../components/ui/input';
 import { apiFetch } from '../../lib/api';
 import { sessionQueryKey } from '../../lib/auth/session';
+import { applyBackendErrors } from '../../lib/form-errors';
+import type { AuthResponse, LoginRequest } from '@berra/shared';
 import { loginSchema } from './schema';
 
 const loginFields = ['email', 'password'] as const;
@@ -21,6 +24,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
+  const [generalError, setGeneralError] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -34,10 +38,15 @@ export default function LoginPage() {
         body: JSON.stringify(payload satisfies LoginRequest),
       }),
     onSuccess: async () => {
+      setGeneralError(null);
       await queryClient.invalidateQueries({ queryKey: sessionQueryKey });
       const nextPath = searchParams.get('next') ?? '/dashboard';
       router.replace(nextPath);
       router.refresh();
+    },
+    onError: (error) => {
+      const message = applyBackendErrors(error, form.setError, loginFields);
+      setGeneralError(message);
     },
   });
 
@@ -74,6 +83,7 @@ export default function LoginPage() {
           {loginMutation.isPending ? 'Gönderiliyor...' : 'Giriş yap'}
         </Button>
       </form>
+      {generalError && <p className="mt-2 text-sm text-red-400">{generalError}</p>}
       {loginMutation.isSuccess && <p className="mt-2 text-sm text-emerald-400">Giriş başarılı, yönlendiriliyorsunuz...</p>}
     </Card>
   );

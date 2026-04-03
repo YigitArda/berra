@@ -8,6 +8,7 @@ import { useAppStore } from '../../store/app-store';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { apiFetch } from '../../lib/api';
+import { toUserMessage } from '../../lib/error-message';
 import { NotificationsResponse, notificationsQueryKey } from '../../lib/notifications';
 
 export default function NotificationsPage() {
@@ -60,7 +61,7 @@ export default function NotificationsPage() {
 
       {notificationsQuery.isError && (
         <Card>
-          <p className="text-red-300">{(notificationsQuery.error as Error).message}</p>
+          <p className="text-red-300">{toUserMessage(notificationsQuery.error)}</p>
         </Card>
       )}
 
