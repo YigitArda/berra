@@ -13,6 +13,8 @@ export default function SearchPage() {
   const [q, setQ] = useState('');
   const [submitted, setSubmitted] = useState('');
 
+  const enabled = useMemo(() => submitted.trim().length > 0, [submitted]);
+
   const searchQuery = useQuery({
     queryKey: ['search', submitted],
     queryFn: () => apiFetch<SearchResponse>(`/search?q=${encodeURIComponent(submitted)}&page=1`),
@@ -25,7 +27,7 @@ export default function SearchPage() {
         <h1 className="mb-3 text-2xl font-bold">Arama</h1>
         <div className="flex gap-2">
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Arama terimi..." />
-          <Button onClick={() => setSubmitted(q)} disabled={searchQuery.isPending}>
+          <Button onClick={() => setSubmitted(q)} disabled={searchQuery.isPending || q.trim().length === 0}>
             {searchQuery.isPending ? 'Aranıyor...' : 'Ara'}
           </Button>
         </div>

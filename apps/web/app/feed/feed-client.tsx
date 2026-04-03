@@ -25,13 +25,18 @@ export function FeedClient() {
     <div>
       <h1 className="mb-4 text-2xl font-bold">Liste / Feed</h1>
       <form
+        aria-busy={createMutation.isPending}
         onSubmit={(e) => {
           e.preventDefault();
           createMutation.mutate(body);
         }}
         className="mb-5 grid gap-2"
       >
+        <label htmlFor="feed-body" className="text-sm text-slate-300">
+          Yeni gönderi
+        </label>
         <textarea
+          id="feed-body"
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder="Ne düşünüyorsun?"
