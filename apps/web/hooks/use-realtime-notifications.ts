@@ -19,7 +19,7 @@ export function useRealtimeNotifications() {
     const socket = getSocket();
     let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
-    const onNotificationCreated = (payload: NotificationPayload) => {
+    const onNotificationCreated = (payload: NotificationCreatedPayload) => {
       queryClient.setQueryData<NotificationsResponse>(notificationsQueryKey, (current) => {
         if (!current) {
           return {
@@ -42,7 +42,6 @@ export function useRealtimeNotifications() {
           ...current,
           unread: current.unread + 1,
           notifications: [
-            ...current.notifications,
             {
               id: payload.notificationId ?? -Date.now(),
               type: 'SYSTEM',
@@ -51,6 +50,7 @@ export function useRealtimeNotifications() {
               is_read: false,
               created_at: new Date().toISOString(),
             },
+            ...current.notifications,
           ],
         };
       });
