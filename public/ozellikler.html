@@ -24,6 +24,8 @@
   --font:'Barlow',sans-serif;--fontc:'Barlow Condensed',sans-serif;
 }
 html,body{height:100%}
+html { background:#0f1014; }
+html.light { background:#f0f2f5; }
 body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
@@ -675,8 +677,8 @@ function showToast(msg, type) {
 document.getElementById('log_date').value = new Date().toISOString().split('T')[0];
 
 initUser();
-function toggleTheme(){const d=document.body.classList.toggle('light');document.getElementById('themeToggle').classList.toggle('dark',!d);localStorage.setItem('theme',d?'light':'dark');}
-(function(){const s=localStorage.getItem('theme');if(s==='light'){document.body.classList.add('light');}else{document.getElementById('themeToggle').classList.add('dark');}})();
+function toggleTheme(){const d=document.body.classList.toggle('light');document.documentElement.classList.toggle('light',d);document.getElementById('themeToggle').classList.toggle('dark',!d);localStorage.setItem('theme',d?'light':'dark');}
+(function(){const s=localStorage.getItem('theme');if(s==='light'){document.body.classList.add('light');document.documentElement.classList.add('light');}else{document.getElementById('themeToggle').classList.add('dark');}})();
 </script>
 </body>
 </html>
