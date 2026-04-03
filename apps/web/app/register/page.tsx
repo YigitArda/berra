@@ -13,6 +13,7 @@ import { Card } from '../../components/ui/card';
 import { FormField } from '../../components/ui/form-field';
 import { Input } from '../../components/ui/input';
 import { apiFetch } from '../../lib/api';
+import { applyBackendErrors } from '../../lib/form-errors';
 import type { AuthResponse, RegisterRequest } from '@berra/shared';
 
 const registerSchema = z.object({
@@ -91,9 +92,7 @@ export default function RegisterPage() {
           {registerMutation.isPending ? 'Kaydediliyor...' : 'Kayıt ol'}
         </Button>
       </form>
-      {registerMutation.isError && (
-        <p className="mt-2 text-sm text-red-400">{(registerMutation.error as Error).message}</p>
-      )}
+      {generalError && <p className="mt-2 text-sm text-red-400">{generalError}</p>}
       {registerMutation.isSuccess && <p className="mt-2 text-sm text-emerald-400">Kayıt başarılı.</p>}
     </Card>
   );

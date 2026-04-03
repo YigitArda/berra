@@ -14,6 +14,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const unread = useAppStore((s) => s.unreadCount);
   const toastMessage = useAppStore((s) => s.toastMessage);
   const setToastMessage = useAppStore((s) => s.setToastMessage);
+  const { isAuthenticated } = useSession();
+  const logoutMutation = useLogout();
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">

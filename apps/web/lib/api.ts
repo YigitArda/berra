@@ -1,5 +1,17 @@
 import { joinUrl } from './url';
 
+const rawApiBase = process.env.NEXT_PUBLIC_API_BASE ?? process.env.API_BASE ?? '';
+
+export const API_BASE = rawApiBase.replace(/\/+$/, '');
+
+export function getHealthEndpoint(): string | null {
+  if (!API_BASE) {
+    return null;
+  }
+
+  return joinUrl(API_BASE, '/health');
+}
+
 export class ApiError extends Error {
   status: number;
   payload: unknown;
@@ -12,14 +24,8 @@ export class ApiError extends Error {
   }
 }
 
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    public readonly status: number,
-  ) {
-    super(message);
-    this.name = 'ApiError';
-  }
+function isJsonResponse(res: Response) {
+  return res.headers.get('Content-Type')?.toLowerCase().includes('application/json') ?? false;
 }
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -32,20 +38,28 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     headers.set('Content-Type', 'application/json');
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  const targetUrl = API_BASE ? joinUrl(API_BASE, path) : path;
+  const res = await fetch(targetUrl, {
     ...init,
     credentials: 'include',
     headers,
   });
 
   if (!res.ok) {
-    const payload = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
-    throw new ApiError(payload.error ?? payload.message ?? `HTTP ${res.status}`, res.status);
+    const payload = isJsonResponse(res)
+      ? ((await res.json().catch(() => ({}))) as { error?: string; message?: string })
+      : null;
+
+    throw new ApiError(payload?.error ?? payload?.message ?? `HTTP ${res.status}`, res.status, payload);
   }
 
   if (res.status === 204) {
     return null as T;
   }
 
-  return (await res.json()) as T;
+  if (isJsonResponse(res)) {
+    return (await res.json()) as T;
+  }
+
+  return (await res.text()) as T;
 }

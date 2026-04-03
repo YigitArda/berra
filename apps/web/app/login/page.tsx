@@ -14,8 +14,7 @@ import { Input } from '../../components/ui/input';
 import { apiFetch } from '../../lib/api';
 import { sessionQueryKey } from '../../lib/auth/session';
 import { loginSchema } from './schema';
-
-const loginFields = ['email', 'password'] as const;
+import type { AuthResponse, LoginRequest } from '@berra/shared';
 
 export default function LoginPage() {
   const router = useRouter();
