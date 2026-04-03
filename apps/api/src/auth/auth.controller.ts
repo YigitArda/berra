@@ -17,14 +17,14 @@ export class AuthController {
   async register(@Body() body: RegisterDto, @Res({ passthrough: true }) res: FastifyReply) {
     const data = await this.authService.register(body.username, body.email, body.password);
     this.writeAuthCookie(res, data.token);
-    return data;
+    return { message: data.message, user: data.user };
   }
 
   @Post('login')
   async login(@Body() body: LoginDto, @Res({ passthrough: true }) res: FastifyReply) {
     const data = await this.authService.login(body.email, body.password);
     this.writeAuthCookie(res, data.token);
-    return data;
+    return { message: data.message, user: data.user };
   }
 
   @Post('logout')

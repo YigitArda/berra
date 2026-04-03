@@ -32,6 +32,8 @@ npm run build:web
 - Ayrı worker başlangıcı için `npm run worker:api` script'i eklendi.
 - Feed modülü Nest tarafına taşındı: `GET /api/feed`, `POST /api/feed`, `POST/DELETE /api/feed/:id/like`, `GET /api/feed/:id/comments`, `POST /api/feed/:id/comment`.
 - Next.js tarafına `/feed` test sayfası eklendi.
+- Auth yanıtları cookie-odaklı hale getirildi; JWT artık response body'de dönülmüyor.
+- API'de global exception formatı ve env doğrulaması eklendi.
 
 Legacy Express uygulaması hâlâ çalışır:
 

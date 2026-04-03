@@ -13,7 +13,6 @@ export type AuthUser = {
 export type AuthSuccess = {
   message: string;
   user: AuthUser;
-  token: string;
 };
 
 export type SystemNotificationJob = {
@@ -31,4 +30,13 @@ export type FeedPost = {
   created_at: string;
   username: string;
   avatar_url: string | null;
+};
+
+
+export type ApiError = {
+  statusCode: number;
+  path: string;
+  method: string;
+  message: string | string[];
+  timestamp: string;
 };

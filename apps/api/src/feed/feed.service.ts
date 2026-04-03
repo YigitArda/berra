@@ -9,26 +9,29 @@ export class FeedService {
     const limit = 30;
     const offset = (page - 1) * limit;
 
-    const { rows } = await this.db.query<{
-      id: number;
-      body: string;
-      like_count: number;
-      comment_count: number;
-      created_at: string;
-      username: string;
-      avatar_url: string | null;
-    }>(
-      `SELECT
-         f.id, f.body, f.like_count, f.comment_count, f.created_at,
-         u.username, u.avatar_url
-       FROM feed_posts f
-       JOIN users u ON u.id = f.user_id
-       ORDER BY f.created_at DESC
-       LIMIT $1 OFFSET $2`,
-      [limit, offset],
-    );
+    const [{ rows }, totalRes] = await Promise.all([
+      this.db.query<{
+        id: number;
+        body: string;
+        like_count: number;
+        comment_count: number;
+        created_at: string;
+        username: string;
+        avatar_url: string | null;
+      }>(
+        `SELECT
+           f.id, f.body, f.like_count, f.comment_count, f.created_at,
+           u.username, u.avatar_url
+         FROM feed_posts f
+         JOIN users u ON u.id = f.user_id
+         ORDER BY f.created_at DESC
+         LIMIT $1 OFFSET $2`,
+        [limit, offset],
+      ),
+      this.db.query<{ count: string }>('SELECT COUNT(*) FROM feed_posts'),
+    ]);
 
-    return { posts: rows, page, limit };
+    return { posts: rows, page, limit, total: parseInt(totalRes.rows[0].count, 10) };
   }
 
   async create(userId: number, body: string) {
