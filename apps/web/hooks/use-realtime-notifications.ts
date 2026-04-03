@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { NotificationsResponse, notificationsQueryKey } from '../lib/notifications';
-import { getSocket, releaseSocket } from '../lib/socket';
+import { getSocket, releaseSocket, SOCKET_EVENTS } from '../lib/socket';
 import { useAppStore } from '../store/app-store';
 
 type NotificationCreatedPayload = {
@@ -68,13 +68,13 @@ export function useRealtimeNotifications() {
       }, 4000);
     };
 
-    socket.on('notification.created', onNotificationCreated);
+    socket.on(SOCKET_EVENTS.notificationCreated, onNotificationCreated);
 
     return () => {
       if (toastTimer) {
         clearTimeout(toastTimer);
       }
-      socket.off('notification.created', onNotificationCreated);
+      socket.off(SOCKET_EVENTS.notificationCreated, onNotificationCreated);
       releaseSocket();
     };
   }, [queryClient, setToastMessage]);

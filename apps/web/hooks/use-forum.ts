@@ -16,6 +16,7 @@ type ForumThread = {
 };
 
 export function useForum(category: string, page: number) {
+  // LEGACY_DEPENDENCY: `/forum/*` endpoints are still served by legacy Express until Nest forum module is migrated.
   const query = category === 'all'
     ? `/forum/threads?page=${page}`
     : `/forum/threads?category=${encodeURIComponent(category)}&page=${page}`;

@@ -39,13 +39,22 @@ npm run build:web
 | `/notifications` | ⚠️ SPA panel | ✅ `app/notifications/page.tsx` | Next karşılığı hazır |
 | `/dashboard` | ❌ ayrı route yok | ✅ `app/dashboard/page.tsx` | Sadece Next |
 | `/post/:id` | ✅ SPA post detail route | ✅ `/items/:id` (`app/items/[id]/page.tsx`) | Kalıcı yönlendirme planlandı |
-| `/thread/:slug` | ✅ SPA thread route | ❌ | Legacy-only |
-| `/profile/:username` | ✅ SPA profile route | ❌ | Legacy-only |
+| `/thread/:slug` | ✅ SPA thread route | ✅ `app/thread/[slug]/page.tsx` | Next karşılığı hazır |
+| `/profile/:username` | ✅ SPA profile route | ✅ `app/profile/[username]/page.tsx` | Next karşılığı hazır |
 | `/messages` , `/messages/:username` | ✅ SPA messages route | ❌ | Legacy-only |
-| `/rehber.html` | ✅ statik sayfa | ❌ | Legacy-only |
-| `/sanayi.html` | ✅ statik sayfa | ❌ | Legacy-only |
-| `/karsilastir.html` | ✅ statik sayfa | ❌ | Legacy-only |
+| `/rehber.html` | ✅ statik sayfa | ✅ `/rehber` | Next karşılığı hazır (yeni URL) |
+| `/sanayi.html` | ✅ statik sayfa | ✅ `/sanayi` | Next karşılığı hazır (yeni URL) |
+| `/karsilastir.html` | ✅ statik sayfa | ✅ `/karsilastir` | Next karşılığı hazır (yeni URL) |
 | `/ozellikler.html` | ✅ statik sayfa | ❌ | Legacy-only |
+
+## API sahiplik durumu (Next cutover)
+
+Next frontend tarafında endpoint sahipliği ikiye ayrılır:
+
+- **Nest-ready:** `auth`, `feed`, `profile`, `search`, `notifications`
+- **Legacy dependency:** `forum`, `discovery`, `businesses`, `bookmarks`, `reports`
+
+Detay endpoint envanteri ve taşınma kararları: `docs/next-cutover-api-matrix.md`.
 
 ## Legacy -> Next kalıcı redirect planı
 
