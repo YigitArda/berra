@@ -8,6 +8,44 @@ const db      = require('../../config/db');
 const { requireAuth, optionalAuth, requireMod } = require('../middleware/auth');
 const { createNotification } = require('./notifications');
 
+function normalizeTag(rawTag) {
+  if (typeof rawTag !== 'string') return '';
+  return slugify(rawTag, { lower: true, strict: true, locale: 'tr' }).slice(0, 80);
+}
+
+async function upsertThreadTags(client, threadId, rawTags = []) {
+  const tags = Array.from(new Set(
+    rawTags
+      .map((tag) => normalizeTag(tag))
+      .filter((tag) => tag.length >= 2),
+  )).slice(0, 8);
+
+  if (!tags.length) return [];
+
+  for (const slug of tags) {
+    const name = slug.replace(/-/g, ' ');
+    await client.query(
+      `INSERT INTO tags (slug, name, usage_count)
+       VALUES ($1, $2, 1)
+       ON CONFLICT (slug)
+       DO UPDATE SET usage_count = tags.usage_count + 1`,
+      [slug, name],
+    );
+  }
+
+  const tagRows = await client.query('SELECT id, slug FROM tags WHERE slug = ANY($1::text[])', [tags]);
+  for (const tag of tagRows.rows) {
+    await client.query(
+      `INSERT INTO thread_tags (thread_id, tag_id)
+       VALUES ($1, $2)
+       ON CONFLICT DO NOTHING`,
+      [threadId, tag.id],
+    );
+  }
+
+  return tagRows.rows.map((row) => row.slug);
+}
+
 // Forum yazma işlemleri için rate limit — 5 dk'da max 10 istek
 const forumWriteLimiter = rateLimit({
   windowMs: 5 * 60 * 1000,
@@ -31,6 +69,23 @@ router.get('/categories', async (req, res) => {
   }
 });
 
+// GET /api/forum/tags
+router.get('/tags', async (req, res) => {
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 30, 1), 100);
+  try {
+    const { rows } = await db.query(
+      `SELECT id, slug, name, usage_count
+       FROM tags
+       ORDER BY usage_count DESC, slug ASC
+       LIMIT $1`,
+      [limit],
+    );
+    res.json({ tags: rows, limit });
+  } catch (err) {
+    res.status(500).json({ error: 'Sunucu hatası.' });
+  }
+});
+
 // --- KONULAR (THREADS) ---
 
 // GET /api/forum/threads?category=slug&page=1
@@ -39,6 +94,7 @@ router.get('/threads', optionalAuth, async (req, res) => {
   const limit    = 20;
   const offset   = (page - 1) * limit;
   const catSlug  = req.query.category;
+  const tagSlug  = normalizeTag(req.query.tag || '');
 
   try {
     let whereClause = '';
@@ -49,6 +105,15 @@ router.get('/threads', optionalAuth, async (req, res) => {
       if (cat.rows.length === 0) return res.status(404).json({ error: 'Kategori bulunamadı.' });
       whereClause = 'WHERE t.category_id = $3';
       params.push(cat.rows[0].id);
+    }
+
+    if (tagSlug) {
+      const tagRes = await db.query('SELECT id FROM tags WHERE slug = $1', [tagSlug]);
+      if (!tagRes.rows.length) return res.json({ threads: [], page, limit, filters: { category: catSlug || null, tag: tagSlug } });
+      const wherePrefix = whereClause ? `${whereClause} AND` : 'WHERE';
+      const tagParamIndex = params.length + 1;
+      whereClause = `${wherePrefix} t.id IN (SELECT thread_id FROM thread_tags WHERE tag_id = $${tagParamIndex})`;
+      params.push(tagRes.rows[0].id);
     }
 
     const { rows } = await db.query(`
@@ -67,7 +132,29 @@ router.get('/threads', optionalAuth, async (req, res) => {
       LIMIT $1 OFFSET $2
     `, params);
 
-    res.json({ threads: rows, page, limit });
+    const threadIds = rows.map((row) => row.id);
+    const tagsByThread = {};
+    if (threadIds.length) {
+      const tagRows = await db.query(
+        `SELECT tt.thread_id, tg.slug
+         FROM thread_tags tt
+         JOIN tags tg ON tg.id = tt.tag_id
+         WHERE tt.thread_id = ANY($1::int[])`,
+        [threadIds],
+      );
+
+      for (const row of tagRows.rows) {
+        if (!tagsByThread[row.thread_id]) tagsByThread[row.thread_id] = [];
+        tagsByThread[row.thread_id].push(row.slug);
+      }
+    }
+
+    res.json({
+      threads: rows.map((row) => ({ ...row, tags: tagsByThread[row.id] || [] })),
+      page,
+      limit,
+      filters: { category: catSlug || null, tag: tagSlug || null },
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Sunucu hatası.' });
@@ -91,6 +178,19 @@ router.get('/threads/:slug', optionalAuth, async (req, res) => {
 
     if (threadRes.rows.length === 0) return res.status(404).json({ error: 'Konu bulunamadı.' });
     const thread = threadRes.rows[0];
+    const [tagsRes, followersRes] = await Promise.all([
+      db.query(
+        `SELECT tg.slug
+         FROM thread_tags tt
+         JOIN tags tg ON tg.id = tt.tag_id
+         WHERE tt.thread_id = $1
+         ORDER BY tg.usage_count DESC, tg.slug ASC`,
+        [thread.id],
+      ),
+      db.query('SELECT COUNT(*)::int AS count FROM thread_follows WHERE thread_id = $1', [thread.id]),
+    ]);
+    thread.tags = tagsRes.rows.map((tag) => tag.slug);
+    thread.followers = followersRes.rows[0]?.count || 0;
 
     // Yorumları getir
     const postsRes = await db.query(`
@@ -116,6 +216,10 @@ router.post('/threads', requireAuth, forumWriteLimiter, [
   body('title').trim().isLength({ min: 5, max: 200 }).withMessage('Başlık 5-200 karakter olmalı.'),
   body('body').optional().isString(),
   body('category_id').isInt({ min: 1 }).withMessage('Geçerli bir kategori seçin.'),
+  body('tags').optional().isArray({ max: 8 }).withMessage('En fazla 8 etiket girebilirsiniz.'),
+  body('tags.*').optional().isString(),
+  body('model_ids').optional().isArray({ max: 3 }).withMessage('En fazla 3 model ilişkilendirilebilir.'),
+  body('model_ids.*').optional().isInt({ min: 1 }).withMessage('Model id geçersiz.'),
   body('images').optional().isArray({ max: 4 }).withMessage('En fazla 4 görsel.'),
   body('images.*').optional().isString(),
   body().custom((value) => {
@@ -131,6 +235,10 @@ router.post('/threads', requireAuth, forumWriteLimiter, [
 
   const { title, body: rawBody, category_id } = req.body;
   const postBody = typeof rawBody === 'string' ? rawBody.trim() : '';
+  const tags = Array.isArray(req.body.tags) ? req.body.tags : [];
+  const modelIds = Array.isArray(req.body.model_ids)
+    ? req.body.model_ids.map((id) => parseInt(id, 10)).filter((id) => Number.isInteger(id) && id > 0)
+    : [];
   const images = (req.body.images || []).filter((img) =>
     typeof img === 'string' && img.startsWith('data:image/')
   ).slice(0, 4);
@@ -156,6 +264,27 @@ router.post('/threads', requireAuth, forumWriteLimiter, [
       INSERT INTO posts (thread_id, user_id, body, images)
       VALUES ($1, $2, $3, $4)
     `, [thread.id, req.user.id, postBody, images]);
+
+    await upsertThreadTags(client, thread.id, tags);
+
+    if (modelIds.length > 0) {
+      const modelsRes = await client.query('SELECT id FROM car_models WHERE id = ANY($1::int[])', [modelIds.slice(0, 3)]);
+      for (const row of modelsRes.rows) {
+        await client.query(
+          `INSERT INTO thread_models (thread_id, car_model_id)
+           VALUES ($1, $2)
+           ON CONFLICT DO NOTHING`,
+          [thread.id, row.id],
+        );
+      }
+    }
+
+    await client.query(
+      `INSERT INTO thread_follows (user_id, thread_id)
+       VALUES ($1, $2)
+       ON CONFLICT DO NOTHING`,
+      [req.user.id, thread.id],
+    );
 
     await client.query('COMMIT');
     res.status(201).json({ message: 'Konu açıldı.', slug: thread.slug });
@@ -209,6 +338,23 @@ router.post('/threads/:slug/posts', requireAuth, forumWriteLimiter, [
         fromUserId: req.user.id,
         type: 'reply',
         message: req.user.username + ' konuna yanıt yazdı.',
+        link: '/thread/' + req.params.slug,
+      });
+    }
+
+    const followers = await db.query(
+      `SELECT user_id
+       FROM thread_follows
+       WHERE thread_id = $1 AND user_id <> $2`,
+      [thread.id, req.user.id],
+    );
+
+    for (const follower of followers.rows) {
+      await createNotification({
+        userId: follower.user_id,
+        fromUserId: req.user.id,
+        type: 'thread_update',
+        message: `${req.user.username} takip ettiğin bir konuda yeni yanıt yazdı.`,
         link: '/thread/' + req.params.slug,
       });
     }

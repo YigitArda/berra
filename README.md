@@ -200,11 +200,26 @@ npm run dev:legacy
 | GET    | /api/forum/categories          | Kategoriler       |
 | GET    | /api/forum/threads             | Tüm konular       |
 | GET    | /api/forum/threads?category=x  | Kategori konuları |
+| GET    | /api/forum/threads?tag=x       | Etikete göre konular |
 | GET    | /api/forum/threads/:slug       | Konu detayı       |
 | POST   | /api/forum/threads             | Konu aç           |
 | POST   | /api/forum/threads/:slug/posts | Yanıt yaz         |
 | POST   | /api/forum/posts/:id/like      | Beğen             |
 | DELETE | /api/forum/posts/:id/like      | Beğeniyi geri al  |
+| GET    | /api/forum/tags                | Popüler etiketler |
+
+### Discovery (Takip + Model Merkezi)
+| Metod  | Rota                                | Açıklama                     |
+|--------|-------------------------------------|------------------------------|
+| POST   | /api/discovery/users/:userId/follow | Kullanıcı takip et           |
+| DELETE | /api/discovery/users/:userId/follow | Kullanıcı takibini bırak     |
+| POST   | /api/discovery/threads/:threadId/follow | Thread takip et          |
+| DELETE | /api/discovery/threads/:threadId/follow | Thread takibini bırak    |
+| POST   | /api/discovery/models               | Marka/model kaydı aç         |
+| GET    | /api/discovery/models               | Model listesi                |
+| GET    | /api/discovery/models/:slug         | Model landing verisi         |
+| POST   | /api/discovery/models/:modelId/follow | Model takip et             |
+| DELETE | /api/discovery/models/:modelId/follow | Model takibini bırak      |
 
 ### Akış (Feed)
 | Metod | Rota            | Açıklama     |
