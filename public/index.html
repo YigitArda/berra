@@ -905,6 +905,33 @@ body.light .profile-header { background: var(--bg2); }
   </div>
 </div>
 
+<!-- ŞİKAYET MODAL -->
+<div class="overlay" id="reportModal">
+  <div class="modal" style="max-width:min(400px,92vw)">
+    <div class="modal-head">
+      <span class="modal-title">🚨 Şikayet Et</span>
+      <button class="modal-close" onclick="closeReportModal()">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <p style="color:var(--text2);font-size:.9rem;margin:0">Bu içeriği neden şikayet ediyorsunuz?</p>
+      <div class="fg">
+        <select id="reportReason" style="width:100%;padding:9px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text)">
+          <option value="">— Neden seçin —</option>
+          <option value="spam">Spam</option>
+          <option value="hakaret">Hakaret / Küfür</option>
+          <option value="nefret_söylemi">Nefret söylemi</option>
+          <option value="yanlış_bilgi">Yanlış bilgi</option>
+          <option value="uygunsuz_içerik">Uygunsuz içerik</option>
+          <option value="telif_hakkı">Telif hakkı ihlali</option>
+          <option value="diğer">Diğer</option>
+        </select>
+      </div>
+      <div class="auth-error" id="reportErr"></div>
+      <button class="btn btn-accent btn-full" id="btnSubmitReport" onclick="submitReport()">Gönder</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1103,7 +1130,7 @@ function renderThreadDetail(t, posts) {
             const slug = t.slug || '';
             let posted = false;
             if (slug) {
-              const data = await apiCall('/api/forum/threads/' + slug + '/posts', 'POST', { body: txt });
+              const data = await apiCall('/api/forum/threads/' + slug + '/posts', 'POST', { body: txt, images: replyImages });
               if (!data.error) posted = true;
             }
             const newPost = {
@@ -1164,6 +1191,7 @@ function renderPost(p) {
       ${imgsHtml}${prevHtml}
       <div class="post-actions">
         <button class="post-like-btn ${p.liked?'liked':''}" onclick="likePost(${p.id},this)">♥ ${escapeHtml(String(p.likes))}</button>
+        <button class="post-like-btn" style="margin-left:auto;opacity:.55" onclick="openReport('post',${p.id})">🚨 Şikayet</button>
       </div>
     </div>
   </div>`;
@@ -1237,6 +1265,7 @@ function feedCommentHtml(c, postId, isReply) {
       <div class="feed-comment-text">${escapeHtml(c.text)}</div>
       ${!isReply ? `<div class="comment-action-row">
         <button class="comment-reply-btn" onclick="event.stopPropagation();toggleCommentReply(${postId},${c.id})">↩ Yanıtla</button>
+        <button class="comment-reply-btn" style="opacity:.55" onclick="event.stopPropagation();openReport('feed_comment',${c.id})">🚨 Şikayet</button>
       </div>
       <div class="comment-reply-form" id="cr-${postId}-${c.id}">
         <div class="feed-comment-ava ${user?avaColor(user.username):''}">
@@ -1276,6 +1305,7 @@ function feedCard(p, delay) {
           <div class="post-menu-item" onclick="navigate('/profile/${escapeHtml(p.author)}');closeAllMenus()">👤 Profili gör</div>
           <div class="post-menu-item" onclick="openMessages('${escapeHtml(p.author)}');closeAllMenus()">💬 Mesaj gönder</div>
           <div class="post-menu-item danger" onclick="blockAndRefresh('${escapeHtml(p.author)}');closeAllMenus()">🚫 Engelle</div>
+          <div class="post-menu-item danger" onclick="openReport('feed_post',${p.id});closeAllMenus()">🚨 Şikayet et</div>
         </div>
       </div>
     </div>
@@ -1284,7 +1314,7 @@ function feedCard(p, delay) {
     ${tagRow}
     <div class="feed-actions" onclick="event.stopPropagation()">
       <button class="feed-btn ${p.liked?'liked':''}" id="lb-${p.id}" onclick="likeFeed(${p.id},this)">♥ <span>${p.likes}</span></button>
-      <button class="feed-btn" onclick="toggleComments(${p.id},this)">💬 <span>${p.comments.length}</span></button>
+      <button class="feed-btn" onclick="toggleComments(${p.id},this)">💬 <span>${p.comment_count || p.comments.length}</span></button>
       <button class="feed-btn ${p.shared?'shared':''}" onclick="shareFeed(${p.id},this)">🔁 <span>${p.shares}</span></button>
     </div>
     <div class="feed-comments" id="fc-${p.id}">
@@ -1364,7 +1394,7 @@ async function submitComment(id) {
   // Yorum sayacını güncelle
   const card = document.getElementById('fi-' + id);
   const commentBtn = card?.querySelector('.feed-actions .feed-btn:nth-child(2) span');
-  if (commentBtn) commentBtn.textContent = p.comments.length;
+  if (commentBtn) { p.comment_count = (p.comment_count || 0) + 1; commentBtn.textContent = p.comment_count; }
   // Scroll to new comment
   list.lastElementChild?.scrollIntoView({behavior:'smooth',block:'nearest'});
   // API call
@@ -2173,7 +2203,7 @@ async function submitCommentDetail(id) {
   inp.value = '';
   // Feed kartındaki yorum sayacını da güncelle
   const countEl = document.querySelector(`#fi-${id} .feed-btn:nth-child(2) span`);
-  if (countEl) countEl.textContent = p.comments.length;
+  if (countEl) { p.comment_count = (p.comment_count || 0) + 1; countEl.textContent = p.comment_count; }
   try { await apiCall('/api/feed/' + id + '/comment', 'POST', {text: txt}); } catch(_){ showToast('Yorum gönderilemedi.', 'err'); }
 }
 function likeFeedDetail(id, btn) {
@@ -2191,6 +2221,46 @@ function _openProfile(username) {
   document.getElementById('profileTabsEl').innerHTML = '';
   document.getElementById('profileContent').innerHTML = '';
   loadProfile(username);
+}
+
+// ══════════════════════════════════════════════════════════════
+// ŞİKAYET
+// ══════════════════════════════════════════════════════════════
+let _reportTarget = null;
+
+function openReport(type, id) {
+  if (!user) { showToast('Şikayet için giriş yap.', 'err'); return; }
+  _reportTarget = { type, id };
+  document.getElementById('reportReason').value = '';
+  document.getElementById('reportErr').textContent = '';
+  document.getElementById('reportModal').classList.add('open');
+  closeAllMenus();
+}
+
+function closeReportModal() {
+  document.getElementById('reportModal').classList.remove('open');
+  _reportTarget = null;
+}
+
+async function submitReport() {
+  if (!_reportTarget) return;
+  const reason = document.getElementById('reportReason').value;
+  if (!reason) { document.getElementById('reportErr').textContent = 'Lütfen bir neden seçin.'; return; }
+  const btn = document.getElementById('btnSubmitReport');
+  btnLoading(btn, true);
+  try {
+    const res = await apiCall('/api/reports', 'POST', {
+      target_type: _reportTarget.type,
+      target_id: _reportTarget.id,
+      reason,
+    });
+    if (res.errors) { document.getElementById('reportErr').textContent = res.errors[0]?.msg || 'Hata.'; btnLoading(btn, false); return; }
+    closeReportModal();
+    showToast('Şikayetiniz alındı.', 'ok');
+  } catch(e) {
+    document.getElementById('reportErr').textContent = 'Gönderim başarısız, tekrar dene.';
+  }
+  btnLoading(btn, false);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2466,6 +2536,7 @@ async function loadMoreFeed() {
         shares: 0,
         shared: false,
         comments: [],
+        comment_count: p.comment_count || 0,
       }));
       // Duplicate kontrolü
       const existing = new Set(feedData.map(x => x.id));

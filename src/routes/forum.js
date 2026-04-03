@@ -158,9 +158,16 @@ router.post('/threads', requireAuth, forumWriteLimiter, [
 // POST /api/forum/threads/:slug/posts — yanıt yaz
 router.post('/threads/:slug/posts', requireAuth, forumWriteLimiter, [
   body('body').trim().isLength({ min: 1 }).withMessage('Yanıt boş olamaz.'),
+  body('images').optional().isArray({ max: 4 }).withMessage('En fazla 4 görsel.'),
+  body('images.*').optional().isString(),
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+
+  // Görsel validasyonu: sadece base64 data URL'lerine izin ver
+  const images = (req.body.images || []).filter(img =>
+    typeof img === 'string' && img.startsWith('data:image/')
+  ).slice(0, 4);
 
   try {
     const threadRes = await db.query('SELECT id, is_locked FROM threads WHERE slug = $1', [req.params.slug]);
@@ -170,10 +177,10 @@ router.post('/threads/:slug/posts', requireAuth, forumWriteLimiter, [
     if (thread.is_locked) return res.status(403).json({ error: 'Bu konu kilitli.' });
 
     const { rows } = await db.query(`
-      INSERT INTO posts (thread_id, user_id, body)
-      VALUES ($1, $2, $3)
-      RETURNING id, body, created_at
-    `, [thread.id, req.user.id, req.body.body]);
+      INSERT INTO posts (thread_id, user_id, body, images)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id, body, images, created_at
+    `, [thread.id, req.user.id, req.body.body, images]);
 
     // Konu sahibine bildirim gönder
     const threadOwner = await db.query('SELECT user_id FROM threads WHERE id = $1', [thread.id]);
