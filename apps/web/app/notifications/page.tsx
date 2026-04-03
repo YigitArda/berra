@@ -38,7 +38,7 @@ export default function NotificationsPage() {
 
       {notificationsQuery.isError && (
         <Card>
-          <p className="text-red-300">{(notificationsQuery.error as Error).message}</p>
+          <p className="text-red-300">{toUserMessage(notificationsQuery.error)}</p>
         </Card>
       )}
 

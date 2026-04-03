@@ -47,6 +47,26 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(sanitizeBody);
 
+// ── Legacy -> Next kalıcı yönlendirme planı (opsiyonel) ───────
+const activeUi = (process.env.ACTIVE_UI || 'legacy').toLowerCase();
+const nextAppUrl = (process.env.NEXT_APP_URL || process.env.APP_URL || '').replace(/\/$/, '');
+
+if (activeUi === 'next' && nextAppUrl) {
+  const permanentRedirects = [
+    { from: /^\/index\.html$/, to: () => '/' },
+    { from: /^\/post\/([^/]+)\/?$/, to: ({ params }) => `/items/${params[0]}` },
+  ];
+
+  app.use((req, res, next) => {
+    const hit = permanentRedirects.find((route) => route.from.test(req.path));
+    if (!hit) return next();
+
+    const match = req.path.match(hit.from);
+    const targetPath = hit.to({ params: match?.slice(1) || [] });
+    return res.redirect(301, `${nextAppUrl}${targetPath}`);
+  });
+}
+
 // ── Statik dosyalar ──────────────────────────────────────────
 app.use(express.static(path.join(__dirname, '../public')));
 

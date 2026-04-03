@@ -19,7 +19,31 @@ export function AppShell({ children }: { children: ReactNode }) {
   const localBadgeCount = useAppStore((s) => s.localBadgeCount);
   const setLocalBadgeCount = useAppStore((s) => s.setLocalBadgeCount);
   const toastMessage = useAppStore((s) => s.toastMessage);
-  const setToastMessage = useAppStore((s) => s.setToastMessage);
+  const clearToast = useAppStore((s) => s.clearToast);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+      toastTimeoutRef.current = null;
+    }
+
+    if (!toastMessage) {
+      return;
+    }
+
+    toastTimeoutRef.current = setTimeout(() => {
+      clearToast();
+      toastTimeoutRef.current = null;
+    }, 4000);
+
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+        toastTimeoutRef.current = null;
+      }
+    };
+  }, [toastMessage, clearToast]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -60,7 +84,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <button
             type="button"
             className="rounded bg-slate-700 px-2 py-1 text-xs hover:bg-slate-600"
-            onClick={() => setToastMessage(null)}
+            onClick={clearToast}
           >
             Kapat
           </button>

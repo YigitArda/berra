@@ -37,7 +37,8 @@ export function FeedClient() {
         />
         <Button type="submit" disabled={createMutation.isPending}>Paylaş</Button>
       </form>
-      {createMutation.isError && <p className="mb-3 text-red-400">{(createMutation.error as Error).message}</p>}
+      {createMutation.isError && <p className="mb-3 text-red-400">{toUserMessage(createMutation.error)}</p>}
+      {postsQuery.isError && <p className="mb-3 text-red-400">{toUserMessage(postsQuery.error)}</p>}
       <div className="grid gap-3">
         {(postsQuery.data?.posts ?? []).map((post) => (
           <Card key={post.id}>
