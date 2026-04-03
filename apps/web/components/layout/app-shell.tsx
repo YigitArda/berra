@@ -11,6 +11,10 @@ import { useAppStore } from '../../store/app-store';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 
+function formatNotificationBadgeCount(count: number) {
+  if (count > 99) return '99+';
+  return String(count);
+}
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
