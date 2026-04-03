@@ -57,7 +57,7 @@ export type FeedCreateResponse = {
   };
 };
 
-export type SearchThreadResult = {
+export type SearchResult = {
   id: number;
   title: string;
   slug: string;
@@ -76,7 +76,7 @@ export type SearchRequest = {
 };
 
 export type SearchResponse = {
-  results: SearchThreadResult[];
+  results: SearchResult[];
   query: string;
   page: number;
   total: number;
