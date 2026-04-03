@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default async function HomePage() {
   let apiHealth: string;
 
@@ -13,6 +15,7 @@ export default async function HomePage() {
       <h1>Berra Next.js Migration</h1>
       <p>Bu uygulama, mevcut frontend&apos;in modüler TypeScript/Next.js geçiş başlangıcıdır.</p>
       <p><strong>Durum:</strong> {apiHealth}</p>
+      <p><Link href="/login">Yeni auth akışını test et</Link></p>
     </main>
   );
 }

@@ -9,3 +9,9 @@ export type AuthUser = {
   username: string;
   role: 'user' | 'mod' | 'admin';
 };
+
+export type AuthSuccess = {
+  message: string;
+  user: AuthUser;
+  token: string;
+};

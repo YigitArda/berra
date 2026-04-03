@@ -21,6 +21,13 @@ npm run build:api
 npm run build:web
 ```
 
+
+### Bu adımda taşınanlar
+
+- Yeni `apps/api` tarafında gerçek veritabanı bağlantısı (`pg`) eklendi.
+- `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` endpointleri Nest tarafında çalışır hale getirildi.
+- Next.js tarafında `/login` sayfası ile yeni auth endpointlerini test edecek istemci formu eklendi.
+
 Legacy Express uygulaması hâlâ çalışır:
 
 ```bash

@@ -13,6 +13,11 @@ async function bootstrap() {
 
   await app.register(cookie);
 
+  app.enableCors({
+    origin: process.env.APP_URL ?? 'http://localhost:3000',
+    credentials: true,
+  });
+
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
