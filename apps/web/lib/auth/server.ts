@@ -1,12 +1,18 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { API_BASE } from '../api';
+import { getApiBaseFallbackMessage } from '../env';
 import { SessionResponse } from './session';
+import { joinApiUrl } from '../url';
 
 export async function getServerSession(): Promise<SessionResponse | null> {
+  if (!API_BASE) {
+    throw new Error(getApiBaseFallbackMessage());
+  }
+
   const cookieStore = await cookies();
 
-  const res = await fetch(`${API_BASE}/auth/me`, {
+  const res = await fetch(joinApiUrl(API_BASE, '/auth/me'), {
     method: 'GET',
     headers: {
       Cookie: cookieStore.toString(),

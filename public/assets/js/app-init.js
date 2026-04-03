@@ -390,8 +390,8 @@ function feedCard(p, delay) {
       ${p.views != null ? `<span class="feed-auto-tag">👁 ${escapeHtml(String(p.views))}</span>` : ''}
     </div>
     <div class="feed-actions" onclick="event.stopPropagation()">
-      <button class="feed-btn" onclick="event.stopPropagation();openThreadFromFeed(${p.id})">💬 <span>${p.comment_count || 0}</span></button>
-      <button class="feed-btn ${p.shared?'shared':''}" onclick="shareFeed(${p.id},this)">🔗 <span>${p.shares}</span></button>
+      <button class="feed-btn" data-action="comments" onclick="event.stopPropagation();openThreadFromFeed(${p.id})">💬 <span>${p.comment_count || 0}</span></button>
+      <button class="feed-btn ${p.shared?'shared':''}" data-action="share" onclick="shareFeed(${p.id},this)">🔗 <span>${p.shares}</span></button>
     </div>
   </div>`;
 }
@@ -624,18 +624,42 @@ function doLogout() {
 
 async function apiCall(url, method, body) {
   try {
+    const hasJsonBody = body !== undefined && body !== null;
+    const headers = {};
+    if (hasJsonBody) headers['Content-Type'] = 'application/json';
     const res = await fetch(url, {
       method: method || 'GET', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: body ? JSON.stringify(body) : undefined
+      headers,
+      body: hasJsonBody ? JSON.stringify(body) : undefined
     });
-    if (res.status === 401) {
-      showToast('Oturumun sona erdi, tekrar giriş yap.', 'err');
+
+    const contentType = res.headers.get('content-type') || '';
+    let parsed = null;
+
+    if (res.status === 204) {
+      parsed = null;
+    } else if (contentType.includes('application/json')) {
+      parsed = await res.json();
+    } else {
+      const text = await res.text();
+      parsed = text ? { message: text } : null;
     }
-    return res.json();
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        showToast('Oturumun sona erdi, tekrar giriş yap.', 'err');
+      }
+      return {
+        error: parsed?.error || parsed?.message || `İstek başarısız (${res.status})`,
+        status: res.status
+      };
+    }
+
+    if (parsed === null) return { status: res.status };
+    return parsed;
   } catch(e) {
     showToast('Bağlantı hatası. İnternet bağlantını kontrol et.', 'err');
-    throw e;
+    return { error: 'Bağlantı hatası. İnternet bağlantını kontrol et.', status: 0 };
   }
 }
 
@@ -646,13 +670,15 @@ document.getElementById('doLogin').addEventListener('click', async () => {
   if (!email || !pass) { showErr(errEl, 'Email ve şifre gerekli.'); return; }
   const btn = document.getElementById('doLogin');
   btn.innerHTML = '<span class="spinner"></span>';
-  try {
-    const data = await apiCall('/api/auth/login', 'POST', { email, password: pass });
-    if (data.error) { showErr(errEl, data.error); btn.textContent = 'Giriş Yap'; return; }
-    setUser({ username: data.user.username, ava: data.user.username[0].toUpperCase(), role: data.user.role });
-    closeModal('authModal');
-    showToast('Hoş geldin, ' + data.user.username + '!', 'ok');
-  } catch(e) { showErr(errEl, 'Bağlantı hatası.'); btn.textContent = 'Giriş Yap'; }
+  const data = await apiCall('/api/auth/login', 'POST', { email, password: pass });
+  if (data.error) {
+    showErr(errEl, data.error);
+    btn.textContent = 'Giriş Yap';
+    return;
+  }
+  setUser({ username: data.user.username, ava: data.user.username[0].toUpperCase(), role: data.user.role });
+  closeModal('authModal');
+  showToast('Hoş geldin, ' + data.user.username + '!', 'ok');
 });
 
 document.getElementById('doReg').addEventListener('click', async () => {
@@ -664,14 +690,12 @@ document.getElementById('doReg').addEventListener('click', async () => {
   if (pass.length < 6) { showErr(errEl, 'Şifre en az 6 karakter olmalı.'); return; }
   const btn = document.getElementById('doReg');
   btn.innerHTML = '<span class="spinner"></span>';
-  try {
-    const data = await apiCall('/api/auth/register', 'POST', { username, email, password: pass });
-    if (data.error) { showErr(errEl, data.error); btn.textContent = 'Kayıt Ol'; return; }
-    if (data.errors) { showErr(errEl, data.errors[0].msg); btn.textContent = 'Kayıt Ol'; return; }
-    setUser({ username: data.user.username, ava: data.user.username[0].toUpperCase(), role: data.user.role });
-    closeModal('authModal');
-    showToast('Kayıt başarılı! Hoş geldin, ' + data.user.username + '!', 'ok');
-  } catch(e) { showErr(errEl, 'Bağlantı hatası.'); btn.textContent = 'Kayıt Ol'; }
+  const data = await apiCall('/api/auth/register', 'POST', { username, email, password: pass });
+  if (data.error) { showErr(errEl, data.error); btn.textContent = 'Kayıt Ol'; return; }
+  if (data.errors) { showErr(errEl, data.errors[0].msg); btn.textContent = 'Kayıt Ol'; return; }
+  setUser({ username: data.user.username, ava: data.user.username[0].toUpperCase(), role: data.user.role });
+  closeModal('authModal');
+  showToast('Kayıt başarılı! Hoş geldin, ' + data.user.username + '!', 'ok');
 });
 
 // ── YENİ KONU ────────────────────────────────────────────────
@@ -1276,6 +1300,7 @@ function renderPostDetail(id) {
   const tags = extractTags(p.text);
   const tagRow = tags.length ? `<div class="feed-tag-row" style="margin-bottom:12px">${tags.map(t=>`<span class="feed-auto-tag">#${t}</span>`).join('')}</div>` : '';
   const allComments = p.comments.map(c => feedCommentHtml(c, p.id, false)).join('');
+  const commentCount = p.comment_count ?? p.comments.length;
   el.innerHTML = `
     <div class="post-detail-header">
       <div class="post-detail-ava ${avaColor(p.author)}">${escapeHtml(p.ava)}</div>
@@ -1290,7 +1315,7 @@ function renderPostDetail(id) {
       <button class="post-detail-btn ${p.liked?'liked':''}" onclick="likeFeedDetail(${p.id},this)">♥ ${p.likes} Beğeni</button>
       <button class="post-detail-btn ${p.shared?'shared':''}" onclick="shareFeed(${p.id},this)">🔁 ${p.shares} Paylaşım</button>
     </div>
-    <div class="post-detail-comments-title">${p.comments.length} Yorum</div>
+    <div class="post-detail-comments-title">${commentCount} Yorum</div>
     <div id="pdComments-${p.id}">${allComments}</div>
     <div class="feed-comment-form" style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
       <div class="feed-comment-ava ${user?avaColor(user.username):''}">${user?escapeHtml(user.ava||user.username[0].toUpperCase()):'👤'}</div>
@@ -1310,10 +1335,20 @@ async function submitCommentDetail(id) {
   const list = document.getElementById('pdComments-' + id);
   list?.insertAdjacentHTML('beforeend', feedCommentHtml(c, id, false));
   inp.value = '';
-  // Feed kartındaki yorum sayacını da güncelle
-  const countEl = document.querySelector(`#fi-${id} .feed-btn:nth-child(2) span`);
-  if (countEl) { p.comment_count = (p.comment_count || 0) + 1; countEl.textContent = p.comment_count; }
+  incrementCommentCount(id);
   try { await apiCall('/api/feed/' + id + '/comment', 'POST', {text: txt}); } catch(_){ showToast('Yorum gönderilemedi.', 'err'); }
+}
+
+function incrementCommentCount(id) {
+  const p = feedData.find(x => x.id === id);
+  if (!p) return;
+  p.comment_count = (p.comment_count || 0) + 1;
+  syncFeedState();
+  const card = document.getElementById('fi-' + id);
+  const cardCountEl = card?.querySelector('[data-action="comments"] span');
+  if (cardCountEl) cardCountEl.textContent = p.comment_count;
+  const detailTitleEl = document.querySelector('#postDetailContent .post-detail-comments-title');
+  if (detailTitleEl) detailTitleEl.textContent = `${p.comment_count} Yorum`;
 }
 function likeFeedDetail(id, btn) {
   likeFeed(id, btn);
