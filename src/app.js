@@ -86,6 +86,7 @@ app.use('/api/notifications',    require('./routes/notifications').router);
 app.use('/api/bookmarks',        require('./routes/bookmarks'));
 app.use('/api/admin',            require('./routes/admin'));
 app.use('/api/reports',          require('./routes/reports'));
+app.use('/api/discovery',        require('./routes/discovery'));
 
 // ── Sağlık kontrolü ──────────────────────────────────────────
 app.get('/api/health', (req, res) => {

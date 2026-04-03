@@ -157,6 +157,43 @@ router.get('/', async (req, res) => {
       return res.json(payload);
     }
 
+    if (type === 'users') {
+      const { rows } = await db.query(`
+        SELECT
+          u.id,
+          u.username,
+          u.bio,
+          u.avatar_url,
+          u.created_at,
+          COUNT(t.id)::int AS thread_count,
+          COUNT(p.id)::int AS post_count,
+          COUNT(*) OVER()::int AS total_count
+        FROM users u
+        LEFT JOIN threads t ON t.user_id = u.id
+        LEFT JOIN posts p ON p.user_id = u.id AND p.is_deleted = false
+        WHERE
+          LOWER(u.username) LIKE LOWER($1)
+          OR LOWER(COALESCE(u.bio, '')) LIKE LOWER($1)
+        GROUP BY u.id
+        ORDER BY thread_count DESC, post_count DESC, u.created_at DESC
+        LIMIT $2 OFFSET $3
+      `, [`%${q}%`, limit, offset]);
+
+      const total = rows[0]?.total_count || 0;
+      const results = rows.map(({ total_count, ...row }) => row);
+      const payload = {
+        results,
+        query: q,
+        page,
+        limit,
+        total,
+        next_page: offset + results.length < total ? page + 1 : null,
+      };
+
+      setCache(cacheKey, payload);
+      return res.json(payload);
+    }
+
     const payload = { results: [], query: q, page, limit, total: 0, next_page: null };
     setCache(cacheKey, payload);
     return res.json(payload);
