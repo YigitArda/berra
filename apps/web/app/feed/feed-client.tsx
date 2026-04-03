@@ -5,6 +5,7 @@ import { DataState } from '../../components/data-state';
 import { InlineAlert } from '../../components/feedback/InlineAlert';
 import { Skeleton } from '../../components/feedback/Skeleton';
 import { resolveFeedbackErrorMessage } from '../../components/feedback/messages';
+import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { useRequireAuth } from '../../hooks/use-require-auth';
@@ -130,7 +131,18 @@ export function FeedClient() {
 
   return (
     <div>
-      <h1 className="mb-4 text-2xl font-bold">Liste / Feed</h1>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">Liste / Feed</h1>
+        <div className="flex gap-2">
+          <Button size="sm" variant={activeTab === 'following' ? 'primary' : 'ghost'} onClick={() => setActiveTab('following')}>
+            Takip ettiklerinden
+          </Button>
+          <Button size="sm" variant={activeTab === 'discover' ? 'primary' : 'ghost'} onClick={() => setActiveTab('discover')}>
+            Keşfet
+          </Button>
+        </div>
+      </div>
+
       <form
         aria-busy={createMutation.isPending}
         onSubmit={(e) => {
@@ -146,7 +158,7 @@ export function FeedClient() {
           id="feed-body"
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder="Ne düşünüyorsun?"
+          placeholder="Ne düşünüyorsun? (metin / bakım notu / foto / anket)"
           maxLength={500}
           rows={3}
           disabled={createMutation.isPending}
