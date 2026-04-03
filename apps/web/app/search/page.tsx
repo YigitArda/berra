@@ -23,7 +23,7 @@ export default function SearchPage() {
     enabled,
   });
 
-  const items = searchQuery.data?.items ?? [];
+  const results = searchQuery.data?.results ?? [];
 
   return (
     <div className="grid gap-4">
@@ -34,18 +34,42 @@ export default function SearchPage() {
           <Button onClick={() => setSubmitted(q)}>Ara</Button>
         </div>
       </Card>
+
       <div className="grid gap-2">
-        {searchQuery.isSuccess && searchQuery.data.items.length === 0 && submitted.trim().length > 1 && (
-          <Card>
-            <p>Sonuç bulunamadı.</p>
-          </Card>
+        {!submitted.trim() && (
+          <EmptyState
+            title="Arama yapmak için bir terim girin"
+            description="Sonuçları görmek için en az 2 karakterle arama başlatın."
+          />
         )}
-        {(searchQuery.data?.items ?? []).map((item) => (
-          <Card key={item.id}>
-            <p className="font-semibold">#{item.id}</p>
-            <p>{item.body}</p>
-          </Card>
-        ))}
+
+        {submitted.trim().length === 1 && (
+          <EmptyState
+            title="Arama terimi çok kısa"
+            description="Lütfen en az 2 karakter girip tekrar deneyin."
+          />
+        )}
+
+        {enabled && (
+          <DataState
+            isLoading={searchQuery.isLoading}
+            isError={searchQuery.isError}
+            isEmpty={searchQuery.isSuccess && results.length === 0}
+            errorMessage={searchQuery.error instanceof Error ? searchQuery.error.message : 'Arama sırasında bir hata oluştu.'}
+            emptyTitle="Sonuç bulunamadı"
+            emptyDescription="Farklı anahtar kelimelerle tekrar deneyin."
+            onRetry={() => {
+              void searchQuery.refetch();
+            }}
+          >
+            {results.map((result) => (
+              <Card key={result.id}>
+                <p className="font-semibold">{result.title}</p>
+                <p className="text-sm text-slate-300">Yazar: {result.author}</p>
+              </Card>
+            ))}
+          </DataState>
+        )}
       </div>
     </div>
   );
