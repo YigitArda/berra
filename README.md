@@ -47,6 +47,45 @@ npm run dev:legacy
 npm run start:legacy
 ```
 
+
+## Monorepo Yapısı (pnpm + Turbo)
+
+Repo, `pnpm-workspace.yaml` + `turbo.json` ile monorepo düzenine taşındı:
+
+- `apps/api` (NestJS + Fastify)
+- `apps/web` (Next.js App Router)
+- `packages/shared` (types + zod şemaları + utils)
+
+### Temel komutlar
+
+```bash
+pnpm install
+pnpm dev
+pnpm build
+pnpm lint
+pnpm test
+```
+
+## Ortak Standartlar
+
+- ESLint + Prettier
+- Husky + lint-staged
+- Conventional Commits (commitlint)
+- `.env.example` + runtime env validation
+
+## Local Docker Compose
+
+`docker-compose.local.yml` ile aşağıdaki servisler birlikte ayağa kalkar:
+
+- postgres
+- redis
+- api
+- web
+
+```bash
+docker compose -f docker-compose.local.yml up --build
+```
+
 ## Legacy Kurulum
 
 ### 1. Bağımlılıkları yükle
