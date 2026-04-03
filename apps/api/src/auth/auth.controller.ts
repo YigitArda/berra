@@ -5,6 +5,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { AuthService } from './auth.service';
+import { ACCESS_COOKIE_MAX_AGE_SECONDS, ACCESS_COOKIE_NAME, REFRESH_COOKIE_MAX_AGE_SECONDS, REFRESH_COOKIE_NAME, cookieOptions } from './auth-cookie';
 
 @Controller('auth')
 export class AuthController {
@@ -35,7 +36,7 @@ export class AuthController {
 
   @Post('refresh')
   async refresh(@Req() req: FastifyRequest, @Res({ passthrough: true }) res: FastifyReply) {
-    const raw = req.cookies?.refresh_token;
+    const raw = req.cookies?.[REFRESH_COOKIE_NAME];
     if (!raw) throw new UnauthorizedException('Refresh token bulunamadı.');
 
     const data = await this.authService.refresh(raw);
@@ -47,9 +48,10 @@ export class AuthController {
 
   @Post('logout')
   async logout(@Req() req: FastifyRequest, @Res({ passthrough: true }) res: FastifyReply) {
-    await this.authService.logout(req.cookies?.refresh_token);
-    res.clearCookie('token');
-    res.clearCookie('refresh_token');
+    await this.authService.logout(req.cookies?.[REFRESH_COOKIE_NAME]);
+    const isProd = this.configService.get<string>('NODE_ENV') === 'production';
+    res.clearCookie(ACCESS_COOKIE_NAME, cookieOptions(isProd));
+    res.clearCookie(REFRESH_COOKIE_NAME, cookieOptions(isProd));
     return { message: 'Çıkış yapıldı.' };
   }
 
@@ -60,22 +62,12 @@ export class AuthController {
   }
 
   private writeAccessCookie(res: FastifyReply, token: string) {
-    res.setCookie('token', token, {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: this.configService.get<string>('NODE_ENV') === 'production',
-      path: '/',
-      maxAge: 60 * 15,
-    });
+    const isProd = this.configService.get<string>('NODE_ENV') === 'production';
+    res.setCookie(ACCESS_COOKIE_NAME, token, cookieOptions(isProd, ACCESS_COOKIE_MAX_AGE_SECONDS));
   }
 
   private writeRefreshCookie(res: FastifyReply, token: string) {
-    res.setCookie('refresh_token', token, {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: this.configService.get<string>('NODE_ENV') === 'production',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 14,
-    });
+    const isProd = this.configService.get<string>('NODE_ENV') === 'production';
+    res.setCookie(REFRESH_COOKIE_NAME, token, cookieOptions(isProd, REFRESH_COOKIE_MAX_AGE_SECONDS));
   }
 }

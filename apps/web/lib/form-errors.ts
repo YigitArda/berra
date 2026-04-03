@@ -1,5 +1,6 @@
 import { FieldValues, Path, UseFormSetError } from 'react-hook-form';
 import { ApiError } from './api';
+import { toUserMessage } from './error-message';
 
 type ErrorRecord = Record<string, string[]>;
 
@@ -61,18 +62,7 @@ function parseFieldErrors(payload: unknown): ErrorRecord {
 }
 
 function parseGeneralMessage(error: unknown): string {
-  if (error instanceof ApiError) {
-    if (error.message) {
-      return error.message;
-    }
-    return `İstek başarısız (${error.status}).`;
-  }
-
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
+  return toUserMessage(error);
 }
 
 export function applyBackendErrors<TFieldValues extends FieldValues>(

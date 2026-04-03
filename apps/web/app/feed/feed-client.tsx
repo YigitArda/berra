@@ -1,43 +1,17 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useRequireAuth } from '../../hooks/use-require-auth';
+import { useCreateFeedPost, useFeed } from '../../hooks/use-feed';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
-import { apiFetch } from '../../lib/api';
-
-type FeedPost = {
-  id: number;
-  body: string;
-  like_count: number;
-  comment_count: number;
-  created_at: string;
-  username: string;
-};
 
 export function FeedClient() {
   const [body, setBody] = useState('');
-  const queryClient = useQueryClient();
   const { isLoading: isSessionLoading, isAuthenticated } = useRequireAuth();
 
-  const postsQuery = useQuery({
-    queryKey: ['feed', 1],
-    queryFn: () => apiFetch<{ posts: FeedPost[] }>('/feed?page=1'),
-    enabled: isAuthenticated,
-  });
-
-  const createMutation = useMutation({
-    mutationFn: () =>
-      apiFetch('/feed', {
-        method: 'POST',
-        body: JSON.stringify({ body }),
-      }),
-    onSuccess: async () => {
-      setBody('');
-      await queryClient.invalidateQueries({ queryKey: ['feed', 1] });
-    },
-  });
+  const postsQuery = useFeed(isAuthenticated);
+  const createMutation = useCreateFeedPost(() => setBody(''));
 
   if (isSessionLoading) {
     return <p>Oturum doğrulanıyor...</p>;
@@ -49,7 +23,7 @@ export function FeedClient() {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          createMutation.mutate();
+          createMutation.mutate(body);
         }}
         className="mb-5 grid gap-2"
       >
@@ -63,7 +37,8 @@ export function FeedClient() {
         />
         <Button type="submit" disabled={createMutation.isPending}>Paylaş</Button>
       </form>
-      {createMutation.isError && <p className="mb-3 text-red-400">{(createMutation.error as Error).message}</p>}
+      {createMutation.isError && <p className="mb-3 text-red-400">{toUserMessage(createMutation.error)}</p>}
+      {postsQuery.isError && <p className="mb-3 text-red-400">{toUserMessage(postsQuery.error)}</p>}
       <div className="grid gap-3">
         {(postsQuery.data?.posts ?? []).map((post) => (
           <Card key={post.id}>

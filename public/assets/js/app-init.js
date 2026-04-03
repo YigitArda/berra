@@ -9,6 +9,10 @@ import { feedListEl } from './ui/feed-card.js';
 import { profileEls } from './ui/profile.js';
 import { messageEls } from './ui/messages.js';
 import { notificationEls } from './ui/notifications.js';
+import { initFeedEvents } from './modules/feed-events.js';
+import { initAuthEvents } from './modules/auth-events.js';
+import { initThreadEvents } from './modules/thread-events.js';
+import { createTemplateHelpers } from './modules/template-helpers.js';
 
 // ── XSS KORUMASI ───────────────────────────────────────────────
 function escapeHtml(s) {
@@ -19,6 +23,7 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#x27;');
 }
+const tpl = createTemplateHelpers(escapeHtml);
 
 // ── STATE ──────────────────────────────────────────────────────
 let user = getUser();
@@ -80,13 +85,50 @@ syncFeedState();
 
 // UI modüllerini erken bağla
 navbarEls(); threadListEl(); feedListEl(); profileEls(); messageEls(); notificationEls();
+initThreadEvents({
+  threadListEl: document.getElementById('threadList'),
+  threadDetailEl: document.getElementById('threadDetailContent'),
+  onThreadNavigate: (target) => navigate(target),
+  onOpenProfile: (username) => openProfile(username),
+  onLikePost: (postId, btn) => likePost(postId, btn),
+  onReportPost: (postId) => openReport('post', postId),
+  onOpenImage: (src) => openImg(src),
+  onReply: () => submitThreadReply(),
+});
+initFeedEvents({
+  feedListEl: document.getElementById('feedList'),
+  onOpenPost: (event, postId) => openFeedPost(event, postId),
+  onOpenThread: (postId) => openThreadFromFeed(postId),
+  onOpenProfile: (username) => navigate('/profile/' + username),
+  onToggleMenu: (menuId) => togglePostMenu(menuId),
+  onMenuAction: (action, data) => {
+    if (action === 'menu-profile') navigate('/profile/' + data.user);
+    if (action === 'menu-message') openMessages(data.user);
+    if (action === 'menu-block') blockAndRefresh(data.user);
+    if (action === 'menu-report-feed') openReport('feed_post', Number(data.postId));
+    if (action === 'menu-report-comment') openReport('feed_comment', Number(data.commentId));
+  },
+  onShare: (postId, btn) => shareFeed(postId, btn),
+  onToggleCommentReply: (postId, commentId) => toggleCommentReply(postId, commentId),
+  onSubmitReply: (postId, commentId) => submitReply(postId, commentId),
+  onReplyKeydown: (event, postId, commentId) => replyKeydown(event, postId, commentId),
+  onCloseMenus: () => closeAllMenus(),
+});
+initAuthEvents({
+  navRightEl: document.getElementById('navRight'),
+  onNavigate: (path) => navigate(path),
+  onLogout: () => doLogout(),
+  onOpenNotif: () => openNotifPanel(),
+  onOpenMessages: () => navigate('/messages'),
+  onOpenAuth: () => openModal('authModal'),
+  onSwitchAuth: (tab) => switchAuth(tab),
+});
 
 // ── THREAD RENDER ──────────────────────────────────────────────
 function renderThreads(list) {
   renderThreadsModule({
     list,
     escapeHtml,
-    onNavigate: navigate,
   });
 }
 
@@ -169,7 +211,7 @@ function renderThreadDetail(t, posts) {
   el.innerHTML =
     '<div class="thread-detail-title">' + escapeHtml(t.title) + '</div>'
     + '<div class="thread-detail-meta">'
-    + '<span data-u="' + escapeHtml(t.author) + '" onclick="openProfile(this.dataset.u)" style="cursor:pointer">👤 ' + escapeHtml(t.author) + '</span>'
+    + '<span data-action="open-profile" data-user="' + escapeHtml(t.author) + '" style="cursor:pointer">👤 ' + escapeHtml(t.author) + '</span>'
     + '<span>📂 ' + escapeHtml(t.cat) + '</span>'
     + '<span>👁 ' + escapeHtml(String(t.views)) + ' görüntülenme</span>'
     + '<span>💬 ' + escapeHtml(String(t.replies)) + ' yanıt</span>'
@@ -180,50 +222,15 @@ function renderThreadDetail(t, posts) {
       ? '<div class="reply-box" id="replyBox">'
         + '<textarea id="replyInput" placeholder="' + (user ? 'Yanıtını yaz...' : 'Yanıtlamak için giriş yap.') + '"></textarea>'
         + '<div class="img-upload-area" id="replyImgArea" style="margin-top:8px">'
-        + '<label class="img-upload-btn">📷 Fotoğraf<input type="file" id="replyImgInput" accept="image/*" multiple style="display:none" onchange="addReplyImages(this)"></label>'
+        + '<label class="img-upload-btn">📷 Fotoğraf<input type="file" id="replyImgInput" accept="image/*" multiple style="display:none"></label>'
         + '</div>'
-        + '<div class="reply-box-foot"><button class="btn btn-accent btn-sm" id="btnReply">Yanıtla</button></div>'
+        + '<div class="reply-box-foot"><button class="btn btn-accent btn-sm" id="btnReply" data-action="submit-reply">Yanıtla</button></div>'
         + '</div>'
       : '');
 
-  if (!t.locked) {
-    setTimeout(() => {
-      const replyBtn = document.getElementById('btnReply');
-      if (replyBtn) {
-        replyBtn.onclick = async () => {
-          const txt = document.getElementById('replyInput').value.trim();
-          if (!txt) return;
-          if (!user) { showToast('Yanıtlamak için giriş yap.', 'err'); return; }
-          replyBtn.innerHTML = '<span class="spinner"></span>';
-          try {
-            const slug = t.slug || '';
-            let posted = false;
-            if (slug) {
-              const data = await apiCall('/api/forum/threads/' + slug + '/posts', 'POST', { body: txt, images: replyImages });
-              if (!data.error) posted = true;
-            }
-            const newPost = {
-              id: Date.now(), ava: user.ava, author: user.username,
-              time: 'Az önce', text: txt, likes: 0, liked: false,
-              images: [...replyImages]
-            };
-            replyImages = [];
-            document.getElementById('postsList').innerHTML += renderPost(newPost);
-            document.getElementById('replyInput').value = '';
-            replyBtn.textContent = 'Yanıtla';
-            // Sayacı güncelle
-            t.replies++;
-            const localT = threads.find(x => x.id === t.id || x.slug === t.slug);
-            if (localT) { localT.replies = t.replies; syncFeedState(); }
-            renderThreads(getFiltered());
-            showToast(posted ? 'Yanıtın kaydedildi!' : 'Yanıtın eklendi!', 'ok');
-          } catch(e) {
-            replyBtn.textContent = 'Yanıtla';
-            showToast('Hata oluştu.', 'err');
-          }
-        };
-      }
-    }, 50);
+  const replyInput = document.getElementById('replyImgInput');
+  if (replyInput) {
+    replyInput.addEventListener('change', (e) => addReplyImages(e.target));
   }
 }
 
@@ -237,12 +244,18 @@ function timeAgo(dateStr) {
 
 function renderPost(p) {
   const imgsHtml = p.images && p.images.length
-    ? '<div class="post-images">' + p.images.map(img => `<img class="post-img" src="${img}" onclick="openImg('${img}')">`).join('') + '</div>'
+    ? '<div class="post-images">' + p.images.map((img) => {
+      const safeSrc = tpl.sanitizeUrl(img);
+      if (!safeSrc) return '';
+      return `<img class="post-img" src="${safeSrc}" data-action="open-image" data-src="${escapeHtml(safeSrc)}">`;
+    }).join('') + '</div>'
     : '';
-  const prevHtml = p.preview
-    ? `<a href="${p.preview.url}" target="_blank" style="text-decoration:none">
+  const previewUrl = tpl.sanitizeUrl(p.preview?.url);
+  const previewImage = tpl.sanitizeUrl(p.preview?.image);
+  const prevHtml = p.preview && previewUrl
+    ? `<a href="${previewUrl}" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
         <div class="preview-card">
-          ${p.preview.image ? `<img class="preview-img" src="${p.preview.image}" onerror="this.style.display='none'">` : ''}
+          ${previewImage ? `<img class="preview-img" src="${previewImage}" onerror="this.style.display='none'">` : ''}
           <div class="preview-body">
             <div class="preview-site">${p.preview.site}</div>
             <div class="preview-title">${p.preview.title || ''}</div>
@@ -254,13 +267,13 @@ function renderPost(p) {
   return `<div class="post-item">
     <div class="post-ava">${escapeHtml(p.ava)}</div>
     <div class="post-body">
-      <span class="post-author" onclick="openProfile('${escapeHtml(p.author)}')" style="cursor:pointer">${escapeHtml(p.author)}</span>
+      <span class="post-author" data-action="open-profile" data-user="${escapeHtml(p.author)}" style="cursor:pointer">${escapeHtml(p.author)}</span>
       <span class="post-time">${escapeHtml(p.time)}</span>
       <div class="post-text">${escapeHtml(p.text)}</div>
       ${imgsHtml}${prevHtml}
       <div class="post-actions">
-        <button class="post-like-btn ${p.liked?'liked':''}" onclick="likePost(${p.id},this)">♥ ${escapeHtml(String(p.likes))}</button>
-        <button class="post-like-btn" style="margin-left:auto;opacity:.55" onclick="openReport('post',${p.id})">🚨 Şikayet</button>
+        <button class="post-like-btn ${p.liked?'liked':''}" data-action="like-post" data-post-id="${p.id}">♥ ${escapeHtml(String(p.likes))}</button>
+        <button class="post-like-btn" style="margin-left:auto;opacity:.55" data-action="report-post" data-post-id="${p.id}">🚨 Şikayet</button>
       </div>
     </div>
   </div>`;
@@ -270,24 +283,65 @@ async function likePost(id, btn) {
   for (const t of threads) {
     const p = t.posts?.find(x => x.id === id);
     if (p) {
-      p.liked = !p.liked;
-  syncFeedState();
-      p.likes += p.liked ? 1 : -1;
-      btn.textContent = '♥ ' + p.likes;
-      btn.classList.toggle('liked', p.liked);
-      // API'ye gönder
-      if (id < 1000000000000) {
-        try {
+      await runOptimisticInteraction({
+        item: p,
+        applyOptimistic: () => {
+          p.liked = !p.liked;
+          p.likes += p.liked ? 1 : -1;
+        },
+        onUiUpdate: ({ item }) => {
+          btn.textContent = '♥ ' + item.likes;
+          btn.classList.toggle('liked', item.liked);
+        },
+        request: async () => {
+          if (id >= 1000000000000) return;
           const method = p.liked ? 'POST' : 'DELETE';
           const data = await apiCall('/api/forum/posts/' + id + '/like', method);
           if (data.like_count !== undefined) {
             p.likes = data.like_count;
+            syncFeedState();
             btn.textContent = '♥ ' + p.likes;
           }
-        } catch(e) {}
-      }
+        },
+        errorKey: 'likePost',
+        errorMessage: 'Beğeni işlemi başarısız.',
+      });
       return;
     }
+  }
+}
+
+async function submitThreadReply() {
+  const replyBtn = document.getElementById('btnReply');
+  const txt = document.getElementById('replyInput')?.value.trim();
+  if (!replyBtn || !txt || !currentThread) return;
+  if (!user) { showToast('Yanıtlamak için giriş yap.', 'err'); return; }
+
+  replyBtn.innerHTML = '<span class="spinner"></span>';
+  try {
+    const slug = currentThread.slug || '';
+    let posted = false;
+    if (slug) {
+      const data = await apiCall('/api/forum/threads/' + slug + '/posts', 'POST', { body: txt, images: replyImages });
+      if (!data.error) posted = true;
+    }
+    const newPost = {
+      id: Date.now(), ava: user.ava, author: user.username,
+      time: 'Az önce', text: txt, likes: 0, liked: false,
+      images: [...replyImages]
+    };
+    replyImages = [];
+    document.getElementById('postsList').innerHTML += renderPost(newPost);
+    document.getElementById('replyInput').value = '';
+    replyBtn.textContent = 'Yanıtla';
+    currentThread.replies++;
+    const localT = threads.find(x => x.id === currentThread.id || x.slug === currentThread.slug);
+    if (localT) { localT.replies = currentThread.replies; syncFeedState(); }
+    renderThreads(getFiltered());
+    showToast(posted ? 'Yanıtın kaydedildi!' : 'Yanıtın eklendi!', 'ok');
+  } catch(e) {
+    replyBtn.textContent = 'Yanıtla';
+    showToast('Hata oluştu.', 'err');
   }
 }
 
@@ -335,16 +389,16 @@ function feedCommentHtml(c, postId, isReply) {
       <span class="feed-comment-time">${escapeHtml(c.time)}</span>
       <div class="feed-comment-text">${escapeHtml(c.text)}</div>
       ${!isReply ? `<div class="comment-action-row">
-        <button class="comment-reply-btn" onclick="event.stopPropagation();toggleCommentReply(${postId},${c.id})">↩ Yanıtla</button>
-        <button class="comment-reply-btn" style="opacity:.55" onclick="event.stopPropagation();openReport('feed_comment',${c.id})">🚨 Şikayet</button>
+        <button class="comment-reply-btn" data-action="toggle-comment-reply" data-post-id="${postId}" data-comment-id="${c.id}">↩ Yanıtla</button>
+        <button class="comment-reply-btn" style="opacity:.55" data-action="menu-report-comment" data-comment-id="${c.id}">🚨 Şikayet</button>
       </div>
       <div class="comment-reply-form" id="cr-${postId}-${c.id}">
         <div class="feed-comment-ava ${user?avaColor(user.username):''}">
           ${user?escapeHtml(user.ava||user.username[0].toUpperCase()):'👤'}
         </div>
         <textarea class="comment-reply-input" id="cri-${postId}-${c.id}" rows="1"
-          placeholder="Yanıtla..." onkeydown="replyKeydown(event,${postId},${c.id})"></textarea>
-        <button class="comment-reply-send" onclick="submitReply(${postId},${c.id})">➤</button>
+          placeholder="Yanıtla..." data-action="reply-keydown" data-post-id="${postId}" data-comment-id="${c.id}"></textarea>
+        <button class="comment-reply-send" data-action="submit-comment-reply" data-post-id="${postId}" data-comment-id="${c.id}">➤</button>
       </div>
       <div class="comment-replies" id="crp-${postId}-${c.id}">${repliesHtml}</div>` : ''}
     </div>
@@ -358,20 +412,20 @@ function feedCard(p, delay) {
   const cardClass = isPinned ? ' is-announce' : '';
   const badge = isPinned ? '<div class="feed-item-badge badge-trend">📌 Sabit Konu</div>' : '';
   const menuId = 'pm-' + p.id;
-  return `<div class="feed-item${cardClass}" id="fi-${p.id}" style="animation-delay:${delay}s" onclick="openFeedPost(event,${p.id})">
+  return `<div class="feed-item${cardClass}" id="fi-${p.id}" data-post-id="${p.id}" style="animation-delay:${delay}s">
     <div class="feed-item-top">
       <div class="feed-ava ${avaColor(p.author)}">${escapeHtml(p.ava)}</div>
       <div class="feed-meta">
-        <span class="feed-author" onclick="event.stopPropagation();navigate('/profile/${escapeHtml(p.author)}')">${escapeHtml(p.author)}</span>
+        <span class="feed-author" data-action="open-profile" data-user="${escapeHtml(p.author)}">${escapeHtml(p.author)}</span>
         <span class="feed-time">${escapeHtml(p.time)}</span>
       </div>
-      <div class="post-menu-wrap" onclick="event.stopPropagation()">
-        <button class="post-menu-btn" onclick="togglePostMenu('${menuId}')">···</button>
+      <div class="post-menu-wrap">
+        <button class="post-menu-btn" data-action="toggle-post-menu" data-menu-id="${menuId}">···</button>
         <div class="post-menu-dropdown" id="${menuId}">
-          <div class="post-menu-item" onclick="navigate('/profile/${escapeHtml(p.author)}');closeAllMenus()">👤 Profili gör</div>
-          <div class="post-menu-item" onclick="openMessages('${escapeHtml(p.author)}');closeAllMenus()">💬 Mesaj gönder</div>
-          <div class="post-menu-item danger" onclick="blockAndRefresh('${escapeHtml(p.author)}');closeAllMenus()">🚫 Engelle</div>
-          <div class="post-menu-item danger" onclick="openReport('feed_post',${p.id});closeAllMenus()">🚨 Şikayet et</div>
+          <div class="post-menu-item" data-action="menu-profile" data-user="${escapeHtml(p.author)}">👤 Profili gör</div>
+          <div class="post-menu-item" data-action="menu-message" data-user="${escapeHtml(p.author)}">💬 Mesaj gönder</div>
+          <div class="post-menu-item danger" data-action="menu-block" data-user="${escapeHtml(p.author)}">🚫 Engelle</div>
+          <div class="post-menu-item danger" data-action="menu-report-feed" data-post-id="${p.id}">🚨 Şikayet et</div>
         </div>
       </div>
     </div>
@@ -382,9 +436,9 @@ function feedCard(p, delay) {
       ${isLocked ? '<span class="feed-auto-tag">#kilitli</span>' : ''}
       ${p.views != null ? `<span class="feed-auto-tag">👁 ${escapeHtml(String(p.views))}</span>` : ''}
     </div>
-    <div class="feed-actions" onclick="event.stopPropagation()">
-      <button class="feed-btn" onclick="event.stopPropagation();openThreadFromFeed(${p.id})">💬 <span>${p.comment_count || 0}</span></button>
-      <button class="feed-btn ${p.shared?'shared':''}" onclick="shareFeed(${p.id},this)">🔗 <span>${p.shares}</span></button>
+    <div class="feed-actions">
+      <button class="feed-btn" data-action="open-thread" data-post-id="${p.id}">💬 <span>${p.comment_count || 0}</span></button>
+      <button class="feed-btn ${p.shared?'shared':''}" data-action="share-feed" data-post-id="${p.id}">🔗 <span>${p.shares}</span></button>
     </div>
   </div>`;
 }
@@ -431,6 +485,50 @@ function shareFeed(id, btn) {
   else showToast('Paylaşıldı!','ok');
 }
 
+const rollbackToastLocks = new Set();
+function showRollbackErrorOnce(key, msg) {
+  if (rollbackToastLocks.has(key)) return;
+  rollbackToastLocks.add(key);
+  showToast(msg, 'err');
+  setTimeout(() => rollbackToastLocks.delete(key), 2000);
+}
+
+function cloneForRollback(v) {
+  if (typeof structuredClone === 'function') return structuredClone(v);
+  return JSON.parse(JSON.stringify(v));
+}
+
+function createInteractionSnapshot(item) {
+  return {
+    likes: item?.likes,
+    liked: item?.liked,
+    comment_count: item?.comment_count,
+    comments: Array.isArray(item?.comments) ? cloneForRollback(item.comments) : undefined,
+  };
+}
+
+async function runOptimisticInteraction({ item, applyOptimistic, request, onUiUpdate, errorKey, errorMessage }) {
+  const snapshot = createInteractionSnapshot(item);
+  applyOptimistic();
+  syncFeedState();
+  if (onUiUpdate) onUiUpdate({ item, snapshot, rolledBack: false });
+  try {
+    if (request) await request();
+    return true;
+  } catch (e) {
+    if (item) {
+      if (snapshot.likes !== undefined) item.likes = snapshot.likes;
+      if (snapshot.liked !== undefined) item.liked = snapshot.liked;
+      if (snapshot.comment_count !== undefined) item.comment_count = snapshot.comment_count;
+      if (snapshot.comments !== undefined) item.comments = cloneForRollback(snapshot.comments);
+    }
+    syncFeedState();
+    if (onUiUpdate) onUiUpdate({ item, snapshot, rolledBack: true, error: e });
+    showRollbackErrorOnce(errorKey, errorMessage);
+    return false;
+  }
+}
+
 async function submitComment(id) {
   const inp = document.getElementById('fci-' + id);
   const txt = inp.value.trim();
@@ -448,22 +546,34 @@ async function submitComment(id) {
     text: txt,
     replies: [],
   };
-  p.comments.push(newComment);
-  syncFeedState();
-  // DOM'a ekle
-  const list = document.getElementById('fcl-' + id);
-  list.insertAdjacentHTML('beforeend', feedCommentHtml(newComment, id, false));
-  inp.value = '';
-  if (inp) autoResize(inp);
+  await runOptimisticInteraction({
+    item: p,
+    applyOptimistic: () => {
+      p.comments.push(newComment);
+      p.comment_count = (p.comment_count || 0) + 1;
+    },
+    onUiUpdate: ({ item, rolledBack }) => {
+      const list = document.getElementById('fcl-' + id);
+      if (list) list.innerHTML = item.comments.map(c => feedCommentHtml(c, id, false)).join('');
+      const card = document.getElementById('fi-' + id);
+      const commentBtn = card?.querySelector('.feed-actions .feed-btn:nth-child(2) span');
+      if (commentBtn) commentBtn.textContent = item.comment_count || 0;
+      if (!rolledBack) {
+        inp.value = '';
+        if (inp) autoResize(inp);
+        list?.lastElementChild?.scrollIntoView({behavior:'smooth',block:'nearest'});
+      } else {
+        inp.value = txt;
+        if (inp) autoResize(inp);
+      }
+    },
+    request: async () => {
+      await apiCall('/api/feed/' + id + '/comment', 'POST', { text: txt });
+    },
+    errorKey: 'submitComment',
+    errorMessage: 'Yorum gönderilemedi.',
+  });
   btnLoading(sendBtn, false);
-  // Yorum sayacını güncelle
-  const card = document.getElementById('fi-' + id);
-  const commentBtn = card?.querySelector('.feed-actions .feed-btn:nth-child(2) span');
-  if (commentBtn) { p.comment_count = (p.comment_count || 0) + 1; commentBtn.textContent = p.comment_count; }
-  // Scroll to new comment
-  list.lastElementChild?.scrollIntoView({behavior:'smooth',block:'nearest'});
-  // API call
-  try { await apiCall('/api/feed/' + id + '/comment', 'POST', {text: txt}); } catch(_){ showToast('Yorum gönderilemedi.', 'err'); }
 }
 
 function commentKeydown(e, id) {
@@ -474,19 +584,29 @@ async function likeFeed(id, btn) {
   if (!user) { showToast('Beğenmek için giriş yap.', 'err'); return; }
   const p = feedData.find(x => x.id === id);
   if (!p) return;
-  p.liked = !p.liked;
-  syncFeedState();
-  p.likes += p.liked ? 1 : -1;
-  btn.querySelector('span').textContent = p.likes;
-  btn.classList.toggle('liked', p.liked);
-  if (p.liked) { btn.classList.add('heart-anim'); setTimeout(() => btn.classList.remove('heart-anim'), 400); }
-  // API'ye gönder (gerçek post için)
-  if (id < 1000000000000) { // timestamp ID değilse gerçek DB ID'si
-    try {
+  await runOptimisticInteraction({
+    item: p,
+    applyOptimistic: () => {
+      p.liked = !p.liked;
+      p.likes += p.liked ? 1 : -1;
+    },
+    onUiUpdate: ({ item, rolledBack }) => {
+      const likeCountEl = btn?.querySelector('span');
+      if (likeCountEl) likeCountEl.textContent = item.likes;
+      btn.classList.toggle('liked', item.liked);
+      if (!rolledBack && item.liked) {
+        btn.classList.add('heart-anim');
+        setTimeout(() => btn.classList.remove('heart-anim'), 400);
+      }
+    },
+    request: async () => {
+      if (id >= 1000000000000) return;
       const method = p.liked ? 'POST' : 'DELETE';
       await apiCall('/api/feed/' + id + '/like', method);
-    } catch(e) { showToast('Beğeni işlemi başarısız.', 'err'); }
-  }
+    },
+    errorKey: 'likeFeed',
+    errorMessage: 'Beğeni işlemi başarısız.',
+  });
 }
 
 document.getElementById('feedInput').addEventListener('input', function() {
@@ -509,18 +629,18 @@ function setUser(u) {
   const avaClass = avaColor(u.username);
   const unreadCount = notifData.filter(n => !n.read).length;
   const msgCount = Object.values(conversations).reduce((a,msgs) => a + msgs.filter(m => !m.read && m.from !== u.username).length, 0);
-  document.getElementById('navRight').innerHTML = `
-    <button class="nav-msg-btn" title="Mesajlar" onclick="navigate('/messages')">
-      💬${msgCount > 0 ? `<span class="msg-badge">${msgCount}</span>` : ''}
+  document.getElementById('navRight').innerHTML = tpl.html`
+    <button class="nav-msg-btn" title="Mesajlar" data-auth-action="messages">
+      💬${tpl.raw(msgCount > 0 ? `<span class="msg-badge">${msgCount}</span>` : '')}
     </button>
-    <button class="nav-notif-btn" title="Bildirimler" onclick="openNotifPanel()">
-      🔔${unreadCount > 0 ? `<span class="notif-badge">${unreadCount}</span>` : ''}
+    <button class="nav-notif-btn" title="Bildirimler" data-auth-action="notifications">
+      🔔${tpl.raw(unreadCount > 0 ? `<span class="notif-badge">${unreadCount}</span>` : '')}
     </button>
-    <div class="nav-user-chip" onclick="navigate('/profile/${escapeHtml(u.username)}')">
-      <div class="nav-user-ava ${avaClass}">${escapeHtml(u.ava || u.username[0].toUpperCase())}</div>
-      <span class="nav-user-name">${escapeHtml(u.username)}</span>
+    <div class="nav-user-chip" data-auth-action="profile" data-user="${u.username}">
+      <div class="nav-user-ava ${avaClass}">${u.ava || u.username[0].toUpperCase()}</div>
+      <span class="nav-user-name">${u.username}</span>
     </div>
-    <button class="btn btn-ghost btn-sm" onclick="doLogout()">Çıkış</button>`;
+    <button class="btn btn-ghost btn-sm" data-auth-action="logout">Çıkış</button>`;
   const ca2 = document.getElementById('composeAva');
   if (ca2) { ca2.textContent = u.ava || u.username[0].toUpperCase(); ca2.className = 'compose-ava ' + avaClass; }
   setTimeout(renderNavBadges, 0); // async olarak çalıştır
@@ -539,11 +659,9 @@ function doLogout() {
     clearInterval(window._tokenRefreshInterval);
     window._tokenRefreshInterval = null;
   }
-  document.getElementById('navRight').innerHTML = `
-    <button class="btn btn-ghost" id="btnLogin">Giriş Yap</button>
-    <button class="btn btn-accent" id="btnRegBtn">Kayıt Ol</button>`;
-  document.getElementById('btnLogin').onclick = () => openModal('authModal');
-  document.getElementById('btnRegBtn').onclick = () => { openModal('authModal'); switchAuth('register'); };
+  document.getElementById('navRight').innerHTML = tpl.html`
+    <button class="btn btn-ghost" data-auth-action="login">Giriş Yap</button>
+    <button class="btn btn-accent" data-auth-action="register">Kayıt Ol</button>`;
   const ca = document.getElementById('composeAva');
   if (ca) { ca.textContent = '👤'; ca.className = 'compose-ava'; }
   showToast('Çıkış yapıldı.', 'ok');
@@ -551,18 +669,42 @@ function doLogout() {
 
 async function apiCall(url, method, body) {
   try {
+    const hasJsonBody = body !== undefined && body !== null;
+    const headers = {};
+    if (hasJsonBody) headers['Content-Type'] = 'application/json';
     const res = await fetch(url, {
       method: method || 'GET', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: body ? JSON.stringify(body) : undefined
+      headers,
+      body: hasJsonBody ? JSON.stringify(body) : undefined
     });
-    if (res.status === 401) {
-      showToast('Oturumun sona erdi, tekrar giriş yap.', 'err');
+
+    const contentType = res.headers.get('content-type') || '';
+    let parsed = null;
+
+    if (res.status === 204) {
+      parsed = null;
+    } else if (contentType.includes('application/json')) {
+      parsed = await res.json();
+    } else {
+      const text = await res.text();
+      parsed = text ? { message: text } : null;
     }
-    return res.json();
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        showToast('Oturumun sona erdi, tekrar giriş yap.', 'err');
+      }
+      return {
+        error: parsed?.error || parsed?.message || `İstek başarısız (${res.status})`,
+        status: res.status
+      };
+    }
+
+    if (parsed === null) return { status: res.status };
+    return parsed;
   } catch(e) {
     showToast('Bağlantı hatası. İnternet bağlantını kontrol et.', 'err');
-    throw e;
+    return { error: 'Bağlantı hatası. İnternet bağlantını kontrol et.', status: 0 };
   }
 }
 
@@ -573,13 +715,15 @@ document.getElementById('doLogin').addEventListener('click', async () => {
   if (!email || !pass) { showErr(errEl, 'Email ve şifre gerekli.'); return; }
   const btn = document.getElementById('doLogin');
   btn.innerHTML = '<span class="spinner"></span>';
-  try {
-    const data = await apiCall('/api/auth/login', 'POST', { email, password: pass });
-    if (data.error) { showErr(errEl, data.error); btn.textContent = 'Giriş Yap'; return; }
-    setUser({ username: data.user.username, ava: data.user.username[0].toUpperCase(), role: data.user.role });
-    closeModal('authModal');
-    showToast('Hoş geldin, ' + data.user.username + '!', 'ok');
-  } catch(e) { showErr(errEl, 'Bağlantı hatası.'); btn.textContent = 'Giriş Yap'; }
+  const data = await apiCall('/api/auth/login', 'POST', { email, password: pass });
+  if (data.error) {
+    showErr(errEl, data.error);
+    btn.textContent = 'Giriş Yap';
+    return;
+  }
+  setUser({ username: data.user.username, ava: data.user.username[0].toUpperCase(), role: data.user.role });
+  closeModal('authModal');
+  showToast('Hoş geldin, ' + data.user.username + '!', 'ok');
 });
 
 document.getElementById('doReg').addEventListener('click', async () => {
@@ -591,14 +735,12 @@ document.getElementById('doReg').addEventListener('click', async () => {
   if (pass.length < 6) { showErr(errEl, 'Şifre en az 6 karakter olmalı.'); return; }
   const btn = document.getElementById('doReg');
   btn.innerHTML = '<span class="spinner"></span>';
-  try {
-    const data = await apiCall('/api/auth/register', 'POST', { username, email, password: pass });
-    if (data.error) { showErr(errEl, data.error); btn.textContent = 'Kayıt Ol'; return; }
-    if (data.errors) { showErr(errEl, data.errors[0].msg); btn.textContent = 'Kayıt Ol'; return; }
-    setUser({ username: data.user.username, ava: data.user.username[0].toUpperCase(), role: data.user.role });
-    closeModal('authModal');
-    showToast('Kayıt başarılı! Hoş geldin, ' + data.user.username + '!', 'ok');
-  } catch(e) { showErr(errEl, 'Bağlantı hatası.'); btn.textContent = 'Kayıt Ol'; }
+  const data = await apiCall('/api/auth/register', 'POST', { username, email, password: pass });
+  if (data.error) { showErr(errEl, data.error); btn.textContent = 'Kayıt Ol'; return; }
+  if (data.errors) { showErr(errEl, data.errors[0].msg); btn.textContent = 'Kayıt Ol'; return; }
+  setUser({ username: data.user.username, ava: data.user.username[0].toUpperCase(), role: data.user.role });
+  closeModal('authModal');
+  showToast('Kayıt başarılı! Hoş geldin, ' + data.user.username + '!', 'ok');
 });
 
 // ── YENİ KONU ────────────────────────────────────────────────
@@ -1203,6 +1345,7 @@ function renderPostDetail(id) {
   const tags = extractTags(p.text);
   const tagRow = tags.length ? `<div class="feed-tag-row" style="margin-bottom:12px">${tags.map(t=>`<span class="feed-auto-tag">#${t}</span>`).join('')}</div>` : '';
   const allComments = p.comments.map(c => feedCommentHtml(c, p.id, false)).join('');
+  const commentCount = p.comment_count ?? p.comments.length;
   el.innerHTML = `
     <div class="post-detail-header">
       <div class="post-detail-ava ${avaColor(p.author)}">${escapeHtml(p.ava)}</div>
@@ -1217,7 +1360,7 @@ function renderPostDetail(id) {
       <button class="post-detail-btn ${p.liked?'liked':''}" onclick="likeFeedDetail(${p.id},this)">♥ ${p.likes} Beğeni</button>
       <button class="post-detail-btn ${p.shared?'shared':''}" onclick="shareFeed(${p.id},this)">🔁 ${p.shares} Paylaşım</button>
     </div>
-    <div class="post-detail-comments-title">${p.comments.length} Yorum</div>
+    <div class="post-detail-comments-title">${commentCount} Yorum</div>
     <div id="pdComments-${p.id}">${allComments}</div>
     <div class="feed-comment-form" style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
       <div class="feed-comment-ava ${user?avaColor(user.username):''}">${user?escapeHtml(user.ava||user.username[0].toUpperCase()):'👤'}</div>
@@ -1237,10 +1380,20 @@ async function submitCommentDetail(id) {
   const list = document.getElementById('pdComments-' + id);
   list?.insertAdjacentHTML('beforeend', feedCommentHtml(c, id, false));
   inp.value = '';
-  // Feed kartındaki yorum sayacını da güncelle
-  const countEl = document.querySelector(`#fi-${id} .feed-btn:nth-child(2) span`);
-  if (countEl) { p.comment_count = (p.comment_count || 0) + 1; countEl.textContent = p.comment_count; }
+  incrementCommentCount(id);
   try { await apiCall('/api/feed/' + id + '/comment', 'POST', {text: txt}); } catch(_){ showToast('Yorum gönderilemedi.', 'err'); }
+}
+
+function incrementCommentCount(id) {
+  const p = feedData.find(x => x.id === id);
+  if (!p) return;
+  p.comment_count = (p.comment_count || 0) + 1;
+  syncFeedState();
+  const card = document.getElementById('fi-' + id);
+  const cardCountEl = card?.querySelector('[data-action="comments"] span');
+  if (cardCountEl) cardCountEl.textContent = p.comment_count;
+  const detailTitleEl = document.querySelector('#postDetailContent .post-detail-comments-title');
+  if (detailTitleEl) detailTitleEl.textContent = `${p.comment_count} Yorum`;
 }
 function likeFeedDetail(id, btn) {
   likeFeed(id, btn);
