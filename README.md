@@ -7,8 +7,8 @@ Türkiye'nin araba topluluk platformu — Forum + Akış + Araçlar.
 
 ## Aktif kullanıcı arayüzü
 
-- **Production'da aktif arayüz:** Legacy (`public/` + `src/app.js`).
-- **Yeni arayüz:** Next.js (`apps/web`) — geçiş aşamasında, sayfa bazlı devreye alınır.
+- **Production hedefi:** Next.js (`apps/web`) tam geçiş.
+- **Legacy arayüz:** `ACTIVE_UI=legacy` verilirse geri dönüş (rollback) amaçlı kullanılabilir (varsayılan artık `next`).
 
 ### Geliştirme komutları (arayüze göre)
 
@@ -39,22 +39,28 @@ npm run build:web
 | `/notifications` | ⚠️ SPA panel | ✅ `app/notifications/page.tsx` | Next karşılığı hazır |
 | `/dashboard` | ❌ ayrı route yok | ✅ `app/dashboard/page.tsx` | Sadece Next |
 | `/post/:id` | ✅ SPA post detail route | ✅ `/items/:id` (`app/items/[id]/page.tsx`) | Kalıcı yönlendirme planlandı |
-| `/thread/:slug` | ✅ SPA thread route | ❌ | Legacy-only |
-| `/profile/:username` | ✅ SPA profile route | ❌ | Legacy-only |
-| `/messages` , `/messages/:username` | ✅ SPA messages route | ❌ | Legacy-only |
-| `/rehber.html` | ✅ statik sayfa | ❌ | Legacy-only |
-| `/sanayi.html` | ✅ statik sayfa | ❌ | Legacy-only |
-| `/karsilastir.html` | ✅ statik sayfa | ❌ | Legacy-only |
-| `/ozellikler.html` | ✅ statik sayfa | ❌ | Legacy-only |
+| `/thread/:slug` | ✅ SPA thread route | ✅ `app/thread/[slug]/page.tsx` | Next karşılığı hazır |
+| `/profile/:username` | ✅ SPA profile route | ✅ `app/profile/[username]/page.tsx` | Next karşılığı hazır |
+| `/messages` , `/messages/:username` | ✅ SPA messages route | ✅ `app/messages/*` | Next karşılığı hazır |
+| `/rehber.html` | ✅ statik sayfa | ✅ `/rehber` | Next karşılığı hazır (yeni URL) |
+| `/sanayi.html` | ✅ statik sayfa | ✅ `/sanayi` | Next karşılığı hazır (yeni URL) |
+| `/karsilastir.html` | ✅ statik sayfa | ✅ `/karsilastir` | Next karşılığı hazır (yeni URL) |
+| `/ozellikler.html` | ✅ statik sayfa | ✅ `/ozellikler` | Next karşılığı hazır (yeni URL) |
+
+## API sahiplik durumu (Next cutover)
+
+Next frontend tarafında kullanılan endpointler Nest API üzerinde çalışır:
+
+- `auth`, `feed`, `profile`, `search`, `notifications`
+- `forum`, `discovery`, `businesses`, `bookmarks`, `reports`
+
+Detay endpoint envanteri ve taşınma kararları: `docs/next-cutover-api-matrix.md`.
 
 ## Legacy -> Next kalıcı redirect planı
 
-- Next uygulaması içinde aşağıdaki kalıcı (`301`) yönlendirmeler tanımlandı:
-  - `/index.html` -> `/`
-  - `/post/:id` -> `/items/:id`
-- Legacy Express için de kontrollü plan eklendi:
-  - `ACTIVE_UI=next` ve `NEXT_APP_URL` tanımlıysa aynı redirect'ler legacy katmanda da `301` döner.
-  - Varsayılan (`ACTIVE_UI=legacy`) durumda mevcut davranış korunur.
+- Legacy Express katmanında `ACTIVE_UI=next` ve `NEXT_APP_URL` tanımlıysa kullanıcı-facing route'lar Next'e `301` ile yönlendirilir
+  (örn: `/`, `/feed`, `/search`, `/notifications`, `/forum`, `/thread/:slug`, `/profile/:username`, `/models`, `/rehber.html`, `/sanayi.html`, `/karsilastir.html`, `/post/:id`).
+- Rollback için `ACTIVE_UI=legacy` kullanılabilir.
 
 ## Auth/session cookie kuralları (Legacy + Next için sabit)
 

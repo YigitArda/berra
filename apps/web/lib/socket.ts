@@ -5,7 +5,6 @@ import { REALTIME_EVENT, type RealtimeEventName } from '@berra/shared';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL ?? 'http://localhost:4000';
 const IS_DEV = process.env.NODE_ENV !== 'production';
-const AUTH_TOKEN_STORAGE_KEY = 'token';
 
 let socketInstance: Socket | null = null;
 let consumerCount = 0;
@@ -27,22 +26,6 @@ function logError(message: string, ...rest: unknown[]) {
 
   // eslint-disable-next-line no-console
   console.error(`[socket] ${message}`, ...rest);
-}
-
-function getAuthToken() {
-  if (typeof window === 'undefined') {
-    return undefined;
-  }
-
-  return window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) ?? undefined;
-}
-
-function buildAuthHandshake() {
-  const token = getAuthToken();
-  return {
-    token,
-    ts: Date.now(),
-  };
 }
 
 function telemetry(event: string, payload: Record<string, unknown>) {
@@ -98,7 +81,6 @@ export function getSocket() {
   if (!socketInstance) {
     socketInstance = io(SOCKET_URL, {
       withCredentials: true,
-      auth: buildAuthHandshake,
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1_000,

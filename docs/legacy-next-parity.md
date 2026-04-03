@@ -17,24 +17,41 @@ Bu doküman legacy SPA (`public/index.html` + `public/assets/js/app-init.js`) il
 
 | Legacy ekran | Legacy davranış özeti | Next route | Parity durumu | Checklist |
 |---|---|---|---|---|
-| Feed | Listeleme, paylaşım, yorum/like sayaçları | `/feed` | ⚠️ Kısmi | ✅ Listeleme, ✅ paylaşım, ⚠️ legacy kart davranışlarının tamamı yok |
-| Thread | Konu detayı, post listesi, kilitli/sabit etiketleri, yanıt | `/thread/[slug]` | ✅ Yeterli (MVP) | ✅ Detay, ✅ post listesi, ✅ yanıt ekleme, ✅ kilitli/sabit görünümü |
+| Feed | Listeleme, paylaşım, yorum/like sayaçları | `/feed` | ✅ | ✅ Listeleme, ✅ paylaşım, ✅ yorum/like etkileşimleri |
+| Thread | Konu detayı, post listesi, kilitli/sabit etiketleri, yanıt | `/thread/[slug]` | ✅ (MVP+) | ✅ Detay, ✅ post listesi, ✅ yanıt ekleme, ✅ kilitli/sabit görünümü |
 | Auth | Login/register akışı (legacy modal), oturum bazlı koruma | `/login`, `/register` | ✅ | ✅ form validasyonu, ✅ backend hataları, ✅ yönlendirme |
 | Notifications | Bildirim listeleme, okunmamış sayısı, hepsini okundu | `/notifications` | ✅ | ✅ listeleme, ✅ unread state, ✅ mark-all-read |
+| Profile | Public profil + düzenleme | `/profile/[username]`, `/profile/me/edit` | ✅ | ✅ profil görüntüleme, ✅ bio güncelleme (`PUT /profile/me`) |
+| Model merkezi | Model listesi + model detay + takip | `/models`, `/models/[slug]` | ✅ | ✅ ekranlar var, ✅ API discovery endpointleri Nest tarafında |
+| Mesajlar | Liste + kullanıcı bazlı sohbet | `/messages`, `/messages/[username]` | ✅ (UI) | ✅ route taşındı, ⏳ gerçek chat bileşenleri |
 
 ## 3) Redirect politikası (legacy → Next)
 
 `NEXT_APP_URL` tanımlıysa legacy sunucu aşağıdaki route'ları Next'e yönlendirir:
 
+- `301`: `/` → `${NEXT_APP_URL}/`
+- `301`: `/search` → `${NEXT_APP_URL}/search`
 - `301`: `/feed` → `${NEXT_APP_URL}/feed`
 - `301`: `/notifications` → `${NEXT_APP_URL}/notifications`
 - `301`: `/login` → `${NEXT_APP_URL}/login`
 - `301`: `/register` → `${NEXT_APP_URL}/register`
-- `302`: `/thread/:slug` → `${NEXT_APP_URL}/thread/:slug`
+- `301`: `/thread/:slug` → `${NEXT_APP_URL}/thread/:slug`
+- `301`: `/profile/:username` → `${NEXT_APP_URL}/profile/:username`
+- `301`: `/models` ve `/models/:slug` → `${NEXT_APP_URL}/models*`
+- `301`: `/messages` ve `/messages/:username` → `${NEXT_APP_URL}/messages*`
+- `301`: `/rehber.html`, `/sanayi.html`, `/karsilastir.html` → Next route karşılıkları
+- `301`: `/ozellikler.html` → `${NEXT_APP_URL}/ozellikler`
 
-`/thread/:slug` için başlangıçta `302` seçildi; canlı parity gözlemlerinden sonra `301`e yükseltilebilir.
+## 4) Backend bağımlılık görünürlüğü
 
-## 4) Legacy emeklilik planı (`public/assets/js/app-init.js`)
+Next ekran parity'si ve backend endpoint sahipliği Nest tarafında tamamlanmıştır:
+
+- Nest-ready akışlar: auth, feed, profile, search, notifications.
+- Nest-ready akışlar: forum, discovery, businesses, bookmarks, reports.
+
+Detaylı envanter için: `docs/next-cutover-api-matrix.md`.
+
+## 5) Legacy emeklilik planı (`public/assets/js/app-init.js`)
 
 Aşama aşama emeklilik:
 

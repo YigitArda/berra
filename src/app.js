@@ -49,7 +49,7 @@ app.use(cookieParser());
 app.use(sanitizeBody);
 
 // ── Legacy -> Next kalıcı yönlendirme planı (opsiyonel) ───────
-const activeUi = (process.env.ACTIVE_UI || 'legacy').toLowerCase();
+const activeUi = (process.env.ACTIVE_UI || 'next').toLowerCase();
 const nextAppUrl = (process.env.NEXT_APP_URL || process.env.APP_URL || '').replace(/\/$/, '');
 
 if (activeUi === 'next' && nextAppUrl) {
