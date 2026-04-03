@@ -7,15 +7,7 @@ import { ErrorState } from '../../components/error-state';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { apiFetch } from '../../lib/api';
-
-type FeedPost = {
-  id: number;
-  body: string;
-  like_count: number;
-  comment_count: number;
-  created_at: string;
-  username: string;
-};
+import type { CreateFeedRequest, FeedListResponse } from '@berra/shared';
 
 export default function FeedPage() {
   const [body, setBody] = useState('');
@@ -23,14 +15,14 @@ export default function FeedPage() {
 
   const postsQuery = useQuery({
     queryKey: ['feed', 1],
-    queryFn: () => apiFetch<{ posts: FeedPost[] }>('/feed?page=1'),
+    queryFn: () => apiFetch<FeedListResponse>('/feed?page=1'),
   });
 
   const createMutation = useMutation({
     mutationFn: () =>
       apiFetch('/feed', {
         method: 'POST',
-        body: JSON.stringify({ body }),
+        body: JSON.stringify({ body } satisfies CreateFeedRequest),
       }),
     onSuccess: async () => {
       setBody('');

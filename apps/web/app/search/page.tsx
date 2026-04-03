@@ -8,11 +8,7 @@ import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { apiFetch } from '../../lib/api';
-
-type SearchResult = {
-  id: number;
-  body: string;
-};
+import type { SearchResponse } from '@berra/shared';
 
 export default function SearchPage() {
   const [q, setQ] = useState('');
@@ -21,7 +17,7 @@ export default function SearchPage() {
 
   const searchQuery = useQuery({
     queryKey: ['search', submitted],
-    queryFn: () => apiFetch<{ items: SearchResult[] }>(`/search?q=${encodeURIComponent(submitted)}&page=1`),
+    queryFn: () => apiFetch<SearchResponse>(`/search?q=${encodeURIComponent(submitted)}&page=1`),
     enabled,
   });
 
