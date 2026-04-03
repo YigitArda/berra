@@ -83,6 +83,7 @@ export function ThreadClient({ slug }: { slug: string }) {
     mutationFn: () => {
       const threadId = threadQuery.data?.thread.id;
       if (!threadId) return Promise.reject(new Error('Thread bulunamadı'));
+      // LEGACY_DEPENDENCY: `/discovery/*` endpoints are still served by legacy Express until Nest discovery module is migrated.
       return apiFetch(`/discovery/threads/${threadId}/follow`, {
         method: isFollowing ? 'DELETE' : 'POST',
       });

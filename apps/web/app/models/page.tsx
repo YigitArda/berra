@@ -21,6 +21,7 @@ type ModelsResponse = {
 export default function ModelsPage() {
   const modelsQuery = useQuery({
     queryKey: ['models', 'list'],
+    // LEGACY_DEPENDENCY: `/discovery/*` endpoints are still served by legacy Express until Nest discovery module is migrated.
     queryFn: () => apiFetch<ModelsResponse>('/discovery/models?page=1&limit=40'),
   });
 
