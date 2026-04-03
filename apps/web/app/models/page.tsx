@@ -21,6 +21,7 @@ type ModelsResponse = {
 export default function ModelsPage() {
   const modelsQuery = useQuery({
     queryKey: ['models', 'list'],
+    // CUTOVER_PROXY: `/discovery/*` requests go through Nest API and are proxied during migration.
     queryFn: () => apiFetch<ModelsResponse>('/discovery/models?page=1&limit=40'),
   });
 
