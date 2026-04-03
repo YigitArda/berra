@@ -1,4 +1,4 @@
-export function renderThreadsModule({ list, escapeHtml, onNavigate }) {
+export function renderThreadsModule({ list, escapeHtml }) {
   const el = document.getElementById('threadList');
   el.innerHTML = '';
   list.forEach((t) => {
@@ -14,13 +14,13 @@ export function renderThreadsModule({ list, escapeHtml, onNavigate }) {
             <span class="thread-title">${escapeHtml(t.title)}</span>
             <span class="tag tag-cat">${escapeHtml(t.cat)}</span>
           </div>
-          <div class="thread-meta2"><span data-u="${escapeHtml(t.author)}" onclick="openProfile(this.dataset.u)" style="cursor:pointer;color:var(--text2)">${escapeHtml(t.author)}</span> · ${escapeHtml(t.sub)}</div>
+          <div class="thread-meta2"><span data-action="open-profile" data-user="${escapeHtml(t.author)}" style="cursor:pointer;color:var(--text2)">${escapeHtml(t.author)}</span> · ${escapeHtml(t.sub)}</div>
         </div>
       </div>
       <div class="thread-stat">${escapeHtml(String(t.replies))}<small>yanıt</small></div>
       <div class="thread-stat">${escapeHtml(String(t.views))}<small>görüntü</small></div>
       <div class="thread-time-col">${escapeHtml(t.time)}<br><span style="font-size:.67rem">${escapeHtml(t.author)}</span></div>`;
-    row.addEventListener('click', () => onNavigate('/thread/' + (t.slug || t.id)));
+    row.dataset.threadTarget = '/thread/' + (t.slug || t.id);
     el.appendChild(row);
   });
 }

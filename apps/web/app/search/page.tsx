@@ -4,12 +4,11 @@ import React from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
-import { DataState } from '../../components/data-state';
-import { EmptyState } from '../../components/empty-state';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { apiFetch } from '../../lib/api';
+import { toUserMessage } from '../../lib/error-message';
 import type { SearchResponse } from '@berra/shared';
 
 export default function SearchPage() {
@@ -23,8 +22,6 @@ export default function SearchPage() {
     enabled,
   });
 
-  const items = searchQuery.data?.items ?? [];
-
   return (
     <div className="grid gap-4">
       <Card>
@@ -34,18 +31,18 @@ export default function SearchPage() {
           <Button onClick={() => setSubmitted(q)}>Ara</Button>
         </div>
       </Card>
+
       <div className="grid gap-2">
+        {searchQuery.isError && (
+          <Card>
+            <p className="text-red-400">{toUserMessage(searchQuery.error)}</p>
+          </Card>
+        )}
         {searchQuery.isSuccess && searchQuery.data.items.length === 0 && submitted.trim().length > 1 && (
           <Card>
             <p>Sonuç bulunamadı.</p>
           </Card>
         )}
-        {(searchQuery.data?.items ?? []).map((item) => (
-          <Card key={item.id}>
-            <p className="font-semibold">#{item.id}</p>
-            <p>{item.body}</p>
-          </Card>
-        ))}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
-import { joinUrl } from './url';
+import { API_BASE, getApiBaseFallbackMessage, hasApiBase } from './env';
+import { joinApiUrl } from './url';
 
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ?? process.env.API_BASE ?? 'http://localhost:4000/api';
@@ -16,9 +17,31 @@ export class ApiError extends Error {
     super(message);
     this.name = 'ApiError';
   }
+
+  const data = payload as {
+    code?: unknown;
+    message?: unknown;
+    error?: unknown;
+    status?: unknown;
+  };
+
+  return {
+    code: typeof data.code === 'string' && data.code.trim().length > 0 ? data.code : fallback.code,
+    message:
+      typeof data.message === 'string' && data.message.trim().length > 0
+        ? data.message
+        : typeof data.error === 'string' && data.error.trim().length > 0
+          ? data.error
+          : fallback.message,
+    status: typeof data.status === 'number' ? data.status : status,
+  };
 }
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  if (!hasApiBase()) {
+    throw new Error(getApiBaseFallbackMessage());
+  }
+
   const headers = new Headers(init?.headers);
   const body = init?.body;
   const isJsonBody =
@@ -40,6 +63,10 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   }
 
   if (res.status === 204) {
+    return null as T;
+  }
+
+  if (!isJsonResponse(res)) {
     return null as T;
   }
 
