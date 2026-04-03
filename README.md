@@ -41,11 +41,22 @@ npm run build:web
 | `/post/:id` | ✅ SPA post detail route | ✅ `/items/:id` (`app/items/[id]/page.tsx`) | Kalıcı yönlendirme planlandı |
 | `/thread/:slug` | ✅ SPA thread route | ✅ `app/thread/[slug]/page.tsx` | Next karşılığı hazır |
 | `/profile/:username` | ✅ SPA profile route | ✅ `app/profile/[username]/page.tsx` | Next karşılığı hazır |
-| `/messages` , `/messages/:username` | ✅ SPA messages route | ❌ | Legacy-only |
+| `/messages` , `/messages/:username` | ✅ SPA messages route | ✅ `app/messages/*` | Next karşılığı hazır |
 | `/rehber.html` | ✅ statik sayfa | ✅ `/rehber` | Next karşılığı hazır (yeni URL) |
 | `/sanayi.html` | ✅ statik sayfa | ✅ `/sanayi` | Next karşılığı hazır (yeni URL) |
 | `/karsilastir.html` | ✅ statik sayfa | ✅ `/karsilastir` | Next karşılığı hazır (yeni URL) |
-| `/ozellikler.html` | ✅ statik sayfa | ❌ | Legacy-only |
+| `/ozellikler.html` | ✅ statik sayfa | ✅ `/ozellikler` | Next karşılığı hazır (yeni URL) |
+
+## API sahiplik durumu (Next cutover)
+
+Next frontend tarafında endpoint sahipliği ikiye ayrılır:
+
+- **Nest-ready:** `auth`, `feed`, `profile`, `search`, `notifications`
+- **Nest proxied (cutover):** `forum`, `discovery`, `businesses`, `bookmarks`, `reports`
+  - Bu akışlar `apps/api` içindeki `CutoverProxyModule` ile legacy servise aktarılır.
+  - Gerekli env: `LEGACY_API_ORIGIN` (örn. `http://legacy:3000`)
+
+Detay endpoint envanteri ve taşınma kararları: `docs/next-cutover-api-matrix.md`.
 
 ## API sahiplik durumu (Next cutover)
 

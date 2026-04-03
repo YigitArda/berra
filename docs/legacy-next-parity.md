@@ -23,6 +23,7 @@ Bu doküman legacy SPA (`public/index.html` + `public/assets/js/app-init.js`) il
 | Notifications | Bildirim listeleme, okunmamış sayısı, hepsini okundu | `/notifications` | ✅ | ✅ listeleme, ✅ unread state, ✅ mark-all-read |
 | Profile | Public profil + düzenleme | `/profile/[username]`, `/profile/me/edit` | ✅ | ✅ profil görüntüleme, ✅ bio güncelleme (`PUT /profile/me`) |
 | Model merkezi | Model listesi + model detay + takip | `/models`, `/models/[slug]` | ⚠️ Kısmi | ✅ ekranlar var, ⚠️ API hâlâ legacy `discovery` bağımlı |
+| Mesajlar | Liste + kullanıcı bazlı sohbet | `/messages`, `/messages/[username]` | ✅ (UI) | ✅ route taşındı, ⏳ gerçek chat bileşenleri |
 
 ## 3) Redirect politikası (legacy → Next)
 
@@ -37,7 +38,9 @@ Bu doküman legacy SPA (`public/index.html` + `public/assets/js/app-init.js`) il
 - `301`: `/thread/:slug` → `${NEXT_APP_URL}/thread/:slug`
 - `301`: `/profile/:username` → `${NEXT_APP_URL}/profile/:username`
 - `301`: `/models` ve `/models/:slug` → `${NEXT_APP_URL}/models*`
+- `301`: `/messages` ve `/messages/:username` → `${NEXT_APP_URL}/messages*`
 - `301`: `/rehber.html`, `/sanayi.html`, `/karsilastir.html` → Next route karşılıkları
+- `301`: `/ozellikler.html` → `${NEXT_APP_URL}/ozellikler`
 
 ## 4) Backend bağımlılık görünürlüğü
 

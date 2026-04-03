@@ -10,6 +10,8 @@ const LEGACY_REDIRECT_ROUTES = [
   { pattern: /^\/dashboard\/?$/, target: '/dashboard', status: 301 },
   { pattern: /^\/bookmarks\/?$/, target: '/bookmarks', status: 301 },
   { pattern: /^\/following\/?$/, target: '/following', status: 301 },
+  { pattern: /^\/messages\/?$/, target: '/messages', status: 301 },
+  { pattern: /^\/messages\/([^/?#]+)\/?$/, target: '/messages/:username', status: 301 },
 
   // Forum + thread
   { pattern: /^\/forum\/?$/, target: '/forum', status: 301 },
@@ -29,6 +31,7 @@ const LEGACY_REDIRECT_ROUTES = [
   { pattern: /^\/rehber\.html$/, target: '/rehber', status: 301 },
   { pattern: /^\/sanayi\.html$/, target: '/sanayi', status: 301 },
   { pattern: /^\/karsilastir\.html$/, target: '/karsilastir', status: 301 },
+  { pattern: /^\/ozellikler\.html$/, target: '/ozellikler', status: 301 },
 
   // Legacy post detail -> Next item route
   { pattern: /^\/post\/([^/?#]+)\/?$/, target: '/items/:id', status: 301 },
@@ -41,6 +44,7 @@ function mapTargetPath(target, reqPath) {
     { regex: /^\/models\/([^/?#]+)\/?$/, param: ':slug' },
     { regex: /^\/tag\/([^/?#]+)\/?$/, param: ':slug' },
     { regex: /^\/post\/([^/?#]+)\/?$/, param: ':id' },
+    { regex: /^\/messages\/([^/?#]+)\/?$/, param: ':username' },
   ];
 
   let mapped = target;
