@@ -3,7 +3,7 @@ const db  = require('../../config/db');
 
 // JWT doğrulama — zorunlu (ban kontrolü dahil)
 async function requireAuth(req, res, next) {
-  const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
+  const token = req.cookies?.token;
 
   if (!token) {
     return res.status(401).json({ error: 'Giriş yapmanız gerekiyor.' });
@@ -26,7 +26,7 @@ async function requireAuth(req, res, next) {
 
 // JWT doğrulama — opsiyonel (misafir de geçebilir)
 function optionalAuth(req, res, next) {
-  const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
+  const token = req.cookies?.token;
 
   if (token) {
     try {

@@ -3,21 +3,31 @@ const jwt    = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const db     = require('../../config/db');
 
-// Token oluştur ve cookie'ye yaz
+function getAuthCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 gün (ms)
+  };
+}
+
+function getAuthCookieClearOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+  };
+}
+
+// Token oluştur ve sadece httpOnly cookie'ye yaz
 function issueToken(res, user) {
   const payload = { id: user.id, username: user.username, role: user.role };
   const token   = jwt.sign(payload, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   });
 
-  res.cookie('token', token, {
-    httpOnly: true,
-    secure:   process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge:   7 * 24 * 60 * 60 * 1000, // 7 gün (ms)
-  });
-
-  return token;
+  res.cookie('token', token, getAuthCookieOptions());
 }
 
 // POST /api/auth/register
@@ -49,12 +59,11 @@ async function register(req, res) {
     );
 
     const user  = rows[0];
-    const token = issueToken(res, user);
+    issueToken(res, user);
 
     return res.status(201).json({
       message: 'Kayıt başarılı.',
       user: { id: user.id, username: user.username, role: user.role },
-      token,
     });
   } catch (err) {
     console.error('register error:', err);
@@ -92,12 +101,11 @@ async function login(req, res) {
       return res.status(401).json({ error: 'Email veya şifre hatalı.' });
     }
 
-    const token = issueToken(res, user);
+    issueToken(res, user);
 
     return res.json({
       message: 'Giriş başarılı.',
       user: { id: user.id, username: user.username, role: user.role },
-      token,
     });
   } catch (err) {
     console.error('login error:', err);
@@ -107,14 +115,14 @@ async function login(req, res) {
 
 // POST /api/auth/logout
 function logout(req, res) {
-  res.clearCookie('token');
+  res.clearCookie('token', getAuthCookieClearOptions());
   return res.json({ message: 'Çıkış yapıldı.' });
 }
 
 // POST /api/auth/refresh — mevcut token geçerliyse yeni token ver
 async function refresh(req, res) {
-  const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Token bulunamadı.' });
+  const token = req.cookies?.token;
+  if (!token) return res.status(401).json({ error: 'Oturum çerezi bulunamadı.' });
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -128,10 +136,10 @@ async function refresh(req, res) {
       return res.status(401).json({ error: 'Geçersiz oturum.' });
     }
 
-    const newToken = issueToken(res, rows[0]);
-    return res.json({ message: 'Token yenilendi.', token: newToken });
+    issueToken(res, rows[0]);
+    return res.json({ message: 'Oturum yenilendi.' });
   } catch (err) {
-    return res.status(401).json({ error: 'Geçersiz veya süresi dolmuş token.' });
+    return res.status(401).json({ error: 'Geçersiz veya süresi dolmuş oturum.' });
   }
 }
 
@@ -201,8 +209,8 @@ async function resetPassword(req, res) {
       [hash, rows[0].id]
     );
 
-    const newToken = issueToken(res, rows[0]);
-    return res.json({ message: 'Şifre değiştirildi. Otomatik giriş yapıldı.', token: newToken });
+    issueToken(res, rows[0]);
+    return res.json({ message: 'Şifre değiştirildi. Otomatik giriş yapıldı.' });
   } catch (err) {
     console.error('resetPassword error:', err);
     return res.status(500).json({ error: 'Sunucu hatası.' });
