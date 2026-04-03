@@ -934,15 +934,32 @@ body.light .profile-header { background: var(--bg2); }
 
 <div class="toast" id="toast"></div>
 
+<script src="js/sanitize-helpers.js"></script>
 <script>
 // ── XSS KORUMASI ───────────────────────────────────────────────
+const TRUSTED_HOSTS = [window.location.hostname, 'arabalariseviyoruz.com', 'www.arabalariseviyoruz.com'];
+
+function escapeText(s) {
+  return window.SafeRender.escapeText(s);
+}
+
+function sanitizeUrl(url) {
+  return window.SafeRender.sanitizeUrl(url, { allowedProtocols: ['https:'], allowedHosts: TRUSTED_HOSTS });
+}
+
+function safeUrl(url) {
+  return sanitizeUrl(url) || '#';
+}
+
 function escapeHtml(s) {
-  return String(s ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;');
+  return escapeText(s);
+}
+
+function createEl(tag, className, text) {
+  const el = document.createElement(tag);
+  if (className) el.className = className;
+  if (text !== undefined && text !== null) el.textContent = String(text);
+  return el;
 }
 
 // ── STATE ──────────────────────────────────────────────────────
@@ -997,24 +1014,56 @@ function renderThreads(list) {
   const el = document.getElementById('threadList');
   el.innerHTML = '';
   list.forEach(t => {
-    const row = document.createElement('div');
-    row.className = 'thread-row' + (t.pinned ? ' pinned' : '');
-    row.innerHTML = `
-      <div class="thread-main">
-        <div class="thread-ava">${escapeHtml(t.ava)}</div>
-        <div class="thread-info">
-          <div class="thread-title-row">
-            ${t.pinned?'<span class="tag tag-pin">📌</span>':''}
-            ${t.locked?'<span class="tag tag-lock">🔒</span>':''}
-            <span class="thread-title">${escapeHtml(t.title)}</span>
-            <span class="tag tag-cat">${escapeHtml(t.cat)}</span>
-          </div>
-          <div class="thread-meta2"><span data-u="${escapeHtml(t.author)}" onclick="openProfile(this.dataset.u)" style="cursor:pointer;color:var(--text2)">${escapeHtml(t.author)}</span> · ${escapeHtml(t.sub)}</div>
-        </div>
-      </div>
-      <div class="thread-stat">${escapeHtml(String(t.replies))}<small>yanıt</small></div>
-      <div class="thread-stat">${escapeHtml(String(t.views))}<small>görüntü</small></div>
-      <div class="thread-time-col">${escapeHtml(t.time)}<br><span style="font-size:.67rem">${escapeHtml(t.author)}</span></div>`;
+    const row = createEl('div', 'thread-row' + (t.pinned ? ' pinned' : ''));
+
+    const main = createEl('div', 'thread-main');
+    main.appendChild(createEl('div', 'thread-ava', t.ava));
+
+    const info = createEl('div', 'thread-info');
+    const titleRow = createEl('div', 'thread-title-row');
+
+    if (t.pinned) titleRow.appendChild(createEl('span', 'tag tag-pin', '📌'));
+    if (t.locked) titleRow.appendChild(createEl('span', 'tag tag-lock', '🔒'));
+
+    titleRow.appendChild(createEl('span', 'thread-title', t.title));
+    const cat = createEl('span', 'tag tag-cat', t.cat);
+    titleRow.appendChild(cat);
+
+    const meta = createEl('div', 'thread-meta2');
+    const authorBtn = createEl('span', '', t.author);
+    authorBtn.style.cursor = 'pointer';
+    authorBtn.style.color = 'var(--text2)';
+    authorBtn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      openProfile(t.author);
+    });
+    meta.appendChild(authorBtn);
+    meta.append(' · ' + String(t.sub ?? ''));
+
+    info.appendChild(titleRow);
+    info.appendChild(meta);
+    main.appendChild(info);
+
+    row.appendChild(main);
+
+    const replies = createEl('div', 'thread-stat');
+    replies.appendChild(document.createTextNode(String(t.replies ?? 0)));
+    replies.appendChild(createEl('small', '', 'yanıt'));
+
+    const views = createEl('div', 'thread-stat');
+    views.appendChild(document.createTextNode(String(t.views ?? 0)));
+    views.appendChild(createEl('small', '', 'görüntü'));
+
+    const timeCol = createEl('div', 'thread-time-col', t.time);
+    timeCol.appendChild(document.createElement('br'));
+    const by = createEl('span', '', t.author);
+    by.style.fontSize = '.67rem';
+    timeCol.appendChild(by);
+
+    row.appendChild(replies);
+    row.appendChild(views);
+    row.appendChild(timeCol);
+
     row.addEventListener('click', () => navigate('/thread/' + (t.slug || t.id)));
     el.appendChild(row);
   });
@@ -1105,7 +1154,7 @@ function renderThreadDetail(t, posts) {
     + '<span>💬 ' + escapeHtml(String(t.replies)) + ' yanıt</span>'
     + (t.locked ? '<span class="tag tag-lock">🔒 Kilitli</span>' : '')
     + '</div>'
-    + '<div id="postsList">' + posts.map(p => renderPost(p)).join('') + '</div>'
+    + '<div id="postsList"></div>'
     + (!t.locked
       ? '<div class="reply-box" id="replyBox">'
         + '<textarea id="replyInput" placeholder="' + (user ? 'Yanıtını yaz...' : 'Yanıtlamak için giriş yap.') + '"></textarea>'
@@ -1115,6 +1164,9 @@ function renderThreadDetail(t, posts) {
         + '<div class="reply-box-foot"><button class="btn btn-accent btn-sm" id="btnReply">Yanıtla</button></div>'
         + '</div>'
       : '');
+
+  const postsListEl = document.getElementById('postsList');
+  posts.forEach(post => postsListEl.appendChild(renderPost(post)));
 
   if (!t.locked) {
     setTimeout(() => {
@@ -1138,7 +1190,7 @@ function renderThreadDetail(t, posts) {
               images: [...replyImages]
             };
             replyImages = [];
-            document.getElementById('postsList').innerHTML += renderPost(newPost);
+            document.getElementById('postsList').appendChild(renderPost(newPost));
             document.getElementById('replyInput').value = '';
             replyBtn.textContent = 'Yanıtla';
             // Sayacı güncelle
@@ -1166,34 +1218,76 @@ function timeAgo(dateStr) {
 }
 
 function renderPost(p) {
-  const imgsHtml = p.images && p.images.length
-    ? '<div class="post-images">' + p.images.map(img => `<img class="post-img" src="${img}" onclick="openImg('${img}')">`).join('') + '</div>'
-    : '';
-  const prevHtml = p.preview
-    ? `<a href="${p.preview.url}" target="_blank" style="text-decoration:none">
-        <div class="preview-card">
-          ${p.preview.image ? `<img class="preview-img" src="${p.preview.image}" onerror="this.style.display='none'">` : ''}
-          <div class="preview-body">
-            <div class="preview-site">${p.preview.site}</div>
-            <div class="preview-title">${p.preview.title || ''}</div>
-            ${p.preview.price ? `<div class="preview-price">${p.preview.price}</div>` : ''}
-            <div class="preview-desc">${p.preview.description || ''}</div>
-          </div>
-        </div>
-      </a>` : '';
-  return `<div class="post-item">
-    <div class="post-ava">${escapeHtml(p.ava)}</div>
-    <div class="post-body">
-      <span class="post-author" onclick="openProfile('${escapeHtml(p.author)}')" style="cursor:pointer">${escapeHtml(p.author)}</span>
-      <span class="post-time">${escapeHtml(p.time)}</span>
-      <div class="post-text">${escapeHtml(p.text)}</div>
-      ${imgsHtml}${prevHtml}
-      <div class="post-actions">
-        <button class="post-like-btn ${p.liked?'liked':''}" onclick="likePost(${p.id},this)">♥ ${escapeHtml(String(p.likes))}</button>
-        <button class="post-like-btn" style="margin-left:auto;opacity:.55" onclick="openReport('post',${p.id})">🚨 Şikayet</button>
-      </div>
-    </div>
-  </div>`;
+  const wrapper = createEl('div', 'post-item');
+
+  wrapper.appendChild(createEl('div', 'post-ava', p.ava));
+  const body = createEl('div', 'post-body');
+
+  const author = createEl('span', 'post-author', p.author);
+  author.style.cursor = 'pointer';
+  author.addEventListener('click', () => openProfile(p.author));
+  body.appendChild(author);
+
+  body.appendChild(createEl('span', 'post-time', p.time));
+  body.appendChild(createEl('div', 'post-text', p.text));
+
+  if (Array.isArray(p.images) && p.images.length) {
+    const images = createEl('div', 'post-images');
+    p.images.forEach((img) => {
+      const src = safeUrl(img);
+      if (src === '#') return;
+      const imgEl = createEl('img', 'post-img');
+      imgEl.setAttribute('src', src);
+      imgEl.addEventListener('click', () => openImg(src));
+      images.appendChild(imgEl);
+    });
+    body.appendChild(images);
+  }
+
+  if (p.preview) {
+    const previewUrl = safeUrl(p.preview.url);
+    if (previewUrl !== '#') {
+      const link = createEl('a');
+      link.style.textDecoration = 'none';
+      link.setAttribute('href', previewUrl);
+      link.setAttribute('target', '_blank');
+      link.setAttribute('rel', 'noopener noreferrer');
+
+      const card = createEl('div', 'preview-card');
+      if (p.preview.image) {
+        const imgSrc = safeUrl(p.preview.image);
+        if (imgSrc !== '#') {
+          const img = createEl('img', 'preview-img');
+          img.setAttribute('src', imgSrc);
+          img.addEventListener('error', () => img.remove());
+          card.appendChild(img);
+        }
+      }
+      const pb = createEl('div', 'preview-body');
+      pb.appendChild(createEl('div', 'preview-site', p.preview.site));
+      pb.appendChild(createEl('div', 'preview-title', p.preview.title || ''));
+      if (p.preview.price) pb.appendChild(createEl('div', 'preview-price', p.preview.price));
+      pb.appendChild(createEl('div', 'preview-desc', p.preview.description || ''));
+      card.appendChild(pb);
+      link.appendChild(card);
+      body.appendChild(link);
+    }
+  }
+
+  const actions = createEl('div', 'post-actions');
+  const likeBtn = createEl('button', 'post-like-btn' + (p.liked ? ' liked' : ''), `♥ ${p.likes || 0}`);
+  likeBtn.addEventListener('click', () => likePost(p.id, likeBtn));
+  actions.appendChild(likeBtn);
+
+  const reportBtn = createEl('button', 'post-like-btn', '🚨 Şikayet');
+  reportBtn.style.marginLeft = 'auto';
+  reportBtn.style.opacity = '.55';
+  reportBtn.addEventListener('click', () => openReport('post', p.id));
+  actions.appendChild(reportBtn);
+
+  body.appendChild(actions);
+  wrapper.appendChild(body);
+  return wrapper;
 }
 
 async function likePost(id, btn) {
@@ -1280,46 +1374,88 @@ function feedCommentHtml(c, postId, isReply) {
 }
 
 function feedCard(p, delay) {
-  if (isBlocked(p.author)) return '';
+  if (isBlocked(p.author)) return null;
   const isPinned = !!p.pinned;
   const isLocked = !!p.locked;
-  const cardClass = isPinned ? ' is-announce' : '';
-  const badge = isPinned ? '<div class="feed-item-badge badge-trend">📌 Sabit Konu</div>' : '';
   const menuId = 'pm-' + p.id;
-  return `<div class="feed-item${cardClass}" id="fi-${p.id}" style="animation-delay:${delay}s" onclick="openFeedPost(event,${p.id})">
-    <div class="feed-item-top">
-      <div class="feed-ava ${avaColor(p.author)}">${escapeHtml(p.ava)}</div>
-      <div class="feed-meta">
-        <span class="feed-author" onclick="event.stopPropagation();navigate('/profile/${escapeHtml(p.author)}')">${escapeHtml(p.author)}</span>
-        <span class="feed-time">${escapeHtml(p.time)}</span>
-      </div>
-      <div class="post-menu-wrap" onclick="event.stopPropagation()">
-        <button class="post-menu-btn" onclick="togglePostMenu('${menuId}')">···</button>
-        <div class="post-menu-dropdown" id="${menuId}">
-          <div class="post-menu-item" onclick="navigate('/profile/${escapeHtml(p.author)}');closeAllMenus()">👤 Profili gör</div>
-          <div class="post-menu-item" onclick="openMessages('${escapeHtml(p.author)}');closeAllMenus()">💬 Mesaj gönder</div>
-          <div class="post-menu-item danger" onclick="blockAndRefresh('${escapeHtml(p.author)}');closeAllMenus()">🚫 Engelle</div>
-          <div class="post-menu-item danger" onclick="openReport('feed_post',${p.id});closeAllMenus()">🚨 Şikayet et</div>
-        </div>
-      </div>
-    </div>
-    ${badge}
-    <div class="feed-text">${escapeHtml(p.text)}</div>
-    <div class="feed-tag-row">
-      ${p.cat ? `<span class="feed-auto-tag">#${escapeHtml(p.cat)}</span>` : ''}
-      ${isLocked ? '<span class="feed-auto-tag">#kilitli</span>' : ''}
-      ${p.views != null ? `<span class="feed-auto-tag">👁 ${escapeHtml(String(p.views))}</span>` : ''}
-    </div>
-    <div class="feed-actions" onclick="event.stopPropagation()">
-      <button class="feed-btn" onclick="event.stopPropagation();openThreadFromFeed(${p.id})">💬 <span>${p.comment_count || 0}</span></button>
-      <button class="feed-btn ${p.shared?'shared':''}" onclick="shareFeed(${p.id},this)">🔗 <span>${p.shares}</span></button>
-    </div>
-  </div>`;
+
+  const card = createEl('div', 'feed-item' + (isPinned ? ' is-announce' : ''));
+  card.id = 'fi-' + p.id;
+  card.style.animationDelay = `${delay}s`;
+  card.addEventListener('click', (event) => openFeedPost(event, p.id));
+
+  const top = createEl('div', 'feed-item-top');
+  const ava = createEl('div', `feed-ava ${avaColor(p.author)}`, p.ava);
+  top.appendChild(ava);
+
+  const meta = createEl('div', 'feed-meta');
+  const author = createEl('span', 'feed-author', p.author);
+  author.addEventListener('click', (event) => {
+    event.stopPropagation();
+    navigate('/profile/' + encodeURIComponent(String(p.author || '')));
+  });
+  meta.appendChild(author);
+  meta.appendChild(createEl('span', 'feed-time', p.time));
+  top.appendChild(meta);
+
+  const menuWrap = createEl('div', 'post-menu-wrap');
+  menuWrap.addEventListener('click', (e) => e.stopPropagation());
+  const menuBtn = createEl('button', 'post-menu-btn', '···');
+  menuBtn.addEventListener('click', () => togglePostMenu(menuId));
+  menuWrap.appendChild(menuBtn);
+
+  const menuDrop = createEl('div', 'post-menu-dropdown');
+  menuDrop.id = menuId;
+  const mkItem = (label, onClick, danger) => {
+    const item = createEl('div', 'post-menu-item' + (danger ? ' danger' : ''), label);
+    item.addEventListener('click', onClick);
+    return item;
+  };
+  menuDrop.appendChild(mkItem('👤 Profili gör', () => { navigate('/profile/' + encodeURIComponent(String(p.author || ''))); closeAllMenus(); }));
+  menuDrop.appendChild(mkItem('💬 Mesaj gönder', () => { openMessages(p.author); closeAllMenus(); }));
+  menuDrop.appendChild(mkItem('🚫 Engelle', () => { blockAndRefresh(p.author); closeAllMenus(); }, true));
+  menuDrop.appendChild(mkItem('🚨 Şikayet et', () => { openReport('feed_post', p.id); closeAllMenus(); }, true));
+  menuWrap.appendChild(menuDrop);
+  top.appendChild(menuWrap);
+
+  card.appendChild(top);
+
+  if (isPinned) card.appendChild(createEl('div', 'feed-item-badge badge-trend', '📌 Sabit Konu'));
+  card.appendChild(createEl('div', 'feed-text', p.text));
+
+  const tagRow = createEl('div', 'feed-tag-row');
+  if (p.cat) tagRow.appendChild(createEl('span', 'feed-auto-tag', `#${p.cat}`));
+  if (isLocked) tagRow.appendChild(createEl('span', 'feed-auto-tag', '#kilitli'));
+  if (p.views != null) tagRow.appendChild(createEl('span', 'feed-auto-tag', `👁 ${p.views}`));
+  card.appendChild(tagRow);
+
+  const actions = createEl('div', 'feed-actions');
+  actions.addEventListener('click', (e) => e.stopPropagation());
+
+  const commentBtn = createEl('button', 'feed-btn', '💬 ');
+  const commentCount = createEl('span', '', p.comment_count || 0);
+  commentBtn.appendChild(commentCount);
+  commentBtn.addEventListener('click', (e) => { e.stopPropagation(); openThreadFromFeed(p.id); });
+
+  const shareBtn = createEl('button', 'feed-btn' + (p.shared ? ' shared' : ''), '🔗 ');
+  const shareCount = createEl('span', '', p.shares || 0);
+  shareBtn.appendChild(shareCount);
+  shareBtn.addEventListener('click', () => shareFeed(p.id, shareBtn));
+
+  actions.appendChild(commentBtn);
+  actions.appendChild(shareBtn);
+  card.appendChild(actions);
+
+  return card;
 }
 
 function renderFeed(posts) {
   const el = document.getElementById('feedList');
-  el.innerHTML = posts.map((p, i) => feedCard(p, i * 0.04)).join('');
+  el.innerHTML = '';
+  posts.forEach((p, i) => {
+    const card = feedCard(p, i * 0.04);
+    if (card) el.appendChild(card);
+  });
 }
 
 function openFeedPost(e, id) {
@@ -2085,9 +2221,17 @@ function removeReplyImg(i) { replyImages.splice(i, 1); renderReplyImages(); }
 
 // Resim tam ekran
 function openImg(src) {
+  const safeSrc = safeUrl(src);
+  if (safeSrc === '#') {
+    showToast('Güvensiz görsel adresi engellendi.', 'err');
+    return;
+  }
   const ov = document.createElement('div');
   ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:500;display:grid;place-items:center;cursor:pointer';
-  ov.innerHTML = `<img src="${src}" style="max-width:90vw;max-height:90vh;border-radius:8px">`;
+  const image = document.createElement('img');
+  image.style.cssText = 'max-width:90vw;max-height:90vh;border-radius:8px';
+  image.setAttribute('src', safeSrc);
+  ov.appendChild(image);
   ov.onclick = () => ov.remove();
   document.body.appendChild(ov);
 }
@@ -2108,17 +2252,40 @@ document.addEventListener('click', async function(e) {
     currentPreview = data;
     const pc = document.getElementById('previewCard');
     if (pc) {
-      const img = data.image ? '<img class="preview-img" src="' + data.image + '" onerror="this.remove()">' : '';
-      const price = data.price ? '<div class="preview-price">' + data.price + '</div>' : '';
-      pc.innerHTML = '<a href="' + data.url + '" target="_blank" style="text-decoration:none">'
-        + '<div class="preview-card" style="max-height:none;margin-top:8px">'
-        + img
-        + '<div class="preview-body">'
-        + '<div class="preview-site">' + data.site + '</div>'
-        + '<div class="preview-title">' + (data.title || 'Başlık yok') + '</div>'
-        + price
-        + '<div class="preview-desc">' + (data.description || '') + '</div>'
-        + '</div></div></a>';
+      pc.innerHTML = '';
+      const url = safeUrl(data.url);
+      if (url === '#') {
+        showToast('Önizleme URL güvenli değil.', 'err');
+        return;
+      }
+      const link = createEl('a');
+      link.style.textDecoration = 'none';
+      link.setAttribute('href', url);
+      link.setAttribute('target', '_blank');
+      link.setAttribute('rel', 'noopener noreferrer');
+
+      const card = createEl('div', 'preview-card');
+      card.style.maxHeight = 'none';
+      card.style.marginTop = '8px';
+
+      if (data.image) {
+        const imageUrl = safeUrl(data.image);
+        if (imageUrl !== '#') {
+          const img = createEl('img', 'preview-img');
+          img.setAttribute('src', imageUrl);
+          img.addEventListener('error', () => img.remove());
+          card.appendChild(img);
+        }
+      }
+
+      const body = createEl('div', 'preview-body');
+      body.appendChild(createEl('div', 'preview-site', data.site));
+      body.appendChild(createEl('div', 'preview-title', data.title || 'Başlık yok'));
+      if (data.price) body.appendChild(createEl('div', 'preview-price', data.price));
+      body.appendChild(createEl('div', 'preview-desc', data.description || ''));
+      card.appendChild(body);
+      link.appendChild(card);
+      pc.appendChild(link);
     }
   } catch(e2) { btn.textContent = 'Önizle'; showToast('Önizleme alınamadı.', 'err'); }
 });
@@ -2515,7 +2682,10 @@ let feedHasMore = true;
 
 function appendFeedPosts(posts) {
   const el = document.getElementById('feedList');
-  el.insertAdjacentHTML('beforeend', posts.map((p, i) => feedCard(p, i * 0.04)).join(''));
+  posts.forEach((p, i) => {
+    const card = feedCard(p, i * 0.04);
+    if (card) el.appendChild(card);
+  });
 }
 
 async function loadMoreFeed() {
