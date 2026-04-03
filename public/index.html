@@ -673,15 +673,15 @@ body.light .profile-header { background: var(--bg2); }
           <div class="compose-inner">
             <div class="compose-ava" id="composeAva">👤</div>
             <div class="compose-area">
-              <textarea class="compose-input" id="feedInput" rows="2" placeholder="Ne düşünüyorsun? Paylaş..."></textarea>
+              <textarea class="compose-input" id="feedInput" rows="2" placeholder="Ne hakkında konu açmak istiyorsun?"></textarea>
               <div class="compose-foot">
-                <span class="char-count" id="charCount">0/500</span>
-                <button class="btn btn-accent btn-sm" id="btnPost">Paylaş</button>
+                <span class="char-count" id="charCount">0/200</span>
+                <button class="btn btn-accent btn-sm" id="btnPost">+ Konu Aç</button>
               </div>
             </div>
           </div>
         </div>
-        <div class="feed-divider">⚡ SON PAYLAŞIMLAR</div>
+        <div class="feed-divider">💬 SON KONULAR</div>
         <div id="feedList"></div>
         <div id="feedLoadMore" class="feed-load-more" style="display:none">Yükleniyor...</div>
       </div>
@@ -949,26 +949,7 @@ function escapeHtml(s) {
 let user = null;
 let currentCat = 'all';
 let threads = [];
-let feedData = [
-  {id:1,ava:'T',author:'Turbo_Berk',time:'5 dk',text:'Sabah Ankara çıkışında E90 M3 gördüm. O egzoz sesi başka bir şey.',likes:12,liked:false,shares:3,shared:false,comments:[
-    {id:1,ava:'K',author:'kamil_oto',time:'3 dk',text:'Evet o nesil M3\'ün sesi inanılmaz, V8 sesi gerçekten eşsiz.',replies:[]},
-  ]},
-  {id:2,ava:'D',author:'dizel_ahmet',time:'18 dk',text:'Benzin fiyatı yine arttı. LPG\'ye geçmeyi ciddi düşünüyorum. Kim geçti, memnun mu?',likes:7,liked:false,shares:2,shared:false,comments:[
-    {id:2,ava:'S',author:'sahin_62',time:'15 dk',text:'Ben 2 yıl önce geçtim, çok memnunum. İlk dolum biraz pahalı ama sonrası kazanç.',replies:[]},
-    {id:3,ava:'E',author:'elif_yilmaz',time:'10 dk',text:'Şehir içinde sık trafik giriyorsan kesinlikle değer. Ama uzun yolda performans biraz düşüyor.',replies:[]},
-  ]},
-  {id:3,ava:'E',author:'elif_yilmaz',time:'42 dk',text:'"İlk arabam ne olsun" sorusuna cevabım: 4-5 yaşında düşük km Corolla veya Clio. Pişman olmayacaksınız.',likes:34,liked:true,shares:11,shared:false,comments:[
-    {id:4,ava:'M',author:'Murat_K',time:'38 dk',text:'Corolla +1. Bakım maliyeti çok düşük, güvenilirliği tartışılmaz.',replies:[]},
-  ]},
-  {id:4,ava:'M',author:'Murat_K',time:'1 saat',text:'Alınır mı skoru aracını denedim. 2018 Passat için 7.8 verdi. Mantıklı hesaplama.',likes:5,liked:false,shares:1,shared:false,comments:[]},
-  {id:5,ava:'K',author:'kamil_oto',time:'2 saat',text:'Oto fuarında Togg\'un yeni modelini test ettim. İç mekan iyileşmiş ama fiyat hâlâ zor.',likes:18,liked:false,shares:7,shared:false,comments:[
-    {id:5,ava:'T',author:'Turbo_Berk',time:'1 saat 45 dk',text:'Fiyat konusunda haklısın. Yerli üretim ama uluslararası fiyat etiketiyle rekabet zor.',replies:[]},
-  ]},
-  {id:6,ava:'S',author:'sahin_62',time:'3 saat',text:'Passat\'ı aldım. Forum\'daki yorumlar çok yardımcı oldu. Teşekkürler!',likes:22,liked:false,shares:4,shared:false,comments:[
-    {id:6,ava:'D',author:'dizel_ahmet',time:'2 saat',text:'Hayırlı olsun! Hangi motor aldın?',replies:[]},
-    {id:7,ava:'S',author:'sahin_62',time:'1 saat 50 dk',text:'1.6 TDI 115hp aldım. Yakıt tüketimi harikaymış, ilk sürüşlerde 5.2L gördüm.',replies:[]},
-  ]},
-];
+let feedData = [];
 
 const STATIC_THREADS = [
   {id:1,ava:'M',author:'Murat_K',cat:'İlk Araba',title:'2019 Corolla mı, Clio mı? Bütçem 750k',sub:'Her ikisini test ettim, farklı deneyimler...',replies:23,views:412,time:'14 dk',pinned:false,locked:false,slug:'ilk',
@@ -992,6 +973,24 @@ const STATIC_THREADS = [
 ];
 
 threads = [...STATIC_THREADS];
+feedData = STATIC_THREADS.map(t => ({
+  id: t.id,
+  slug: t.slug,
+  ava: t.ava,
+  author: t.author,
+  time: t.time || 'önce',
+  text: t.title,
+  cat: t.cat,
+  likes: 0,
+  liked: false,
+  shares: 0,
+  shared: false,
+  comments: [],
+  comment_count: t.replies || 0,
+  views: t.views || 0,
+  pinned: t.pinned || false,
+  locked: t.locked || false,
+}));
 
 // ── THREAD RENDER ──────────────────────────────────────────────
 function renderThreads(list) {
@@ -1282,15 +1281,10 @@ function feedCommentHtml(c, postId, isReply) {
 
 function feedCard(p, delay) {
   if (isBlocked(p.author)) return '';
-  const tags = extractTags(p.text);
-  const isTrend = p.likes >= 20;
-  const isQ = p.text.includes('?');
-  const isAnn = false; // gelecekte admin check
-  let cardClass = isTrend ? ' is-trend' : (isQ ? ' is-question' : (isAnn ? ' is-announce' : ''));
-  let badge = isTrend ? '<div class="feed-item-badge badge-trend">🔥 Trend</div>' :
-              (isQ ? '<div class="feed-item-badge badge-question">❓ Soru</div>' : '');
-  const tagRow = tags.length ? `<div class="feed-tag-row">${tags.map(t=>`<span class="feed-auto-tag">#${t}</span>`).join('')}</div>` : '';
-  const commentsHtml = p.comments.map(c => feedCommentHtml(c, p.id, false)).join('');
+  const isPinned = !!p.pinned;
+  const isLocked = !!p.locked;
+  const cardClass = isPinned ? ' is-announce' : '';
+  const badge = isPinned ? '<div class="feed-item-badge badge-trend">📌 Sabit Konu</div>' : '';
   const menuId = 'pm-' + p.id;
   return `<div class="feed-item${cardClass}" id="fi-${p.id}" style="animation-delay:${delay}s" onclick="openFeedPost(event,${p.id})">
     <div class="feed-item-top">
@@ -1311,21 +1305,14 @@ function feedCard(p, delay) {
     </div>
     ${badge}
     <div class="feed-text">${escapeHtml(p.text)}</div>
-    ${tagRow}
-    <div class="feed-actions" onclick="event.stopPropagation()">
-      <button class="feed-btn ${p.liked?'liked':''}" id="lb-${p.id}" onclick="likeFeed(${p.id},this)">♥ <span>${p.likes}</span></button>
-      <button class="feed-btn" onclick="toggleComments(${p.id},this)">💬 <span>${p.comment_count || p.comments.length}</span></button>
-      <button class="feed-btn ${p.shared?'shared':''}" onclick="shareFeed(${p.id},this)">🔁 <span>${p.shares}</span></button>
+    <div class="feed-tag-row">
+      ${p.cat ? `<span class="feed-auto-tag">#${escapeHtml(p.cat)}</span>` : ''}
+      ${isLocked ? '<span class="feed-auto-tag">#kilitli</span>' : ''}
+      ${p.views != null ? `<span class="feed-auto-tag">👁 ${escapeHtml(String(p.views))}</span>` : ''}
     </div>
-    <div class="feed-comments" id="fc-${p.id}">
-      <div class="feed-comments-inner">
-        <div id="fcl-${p.id}">${commentsHtml}</div>
-        <div class="feed-comment-form">
-          <div class="feed-comment-ava ${user?avaColor(user.username):''}">${user?escapeHtml(user.ava||user.username[0].toUpperCase()):'👤'}</div>
-          <textarea class="feed-comment-input" id="fci-${p.id}" rows="1" placeholder="Yorum yaz..." onkeydown="commentKeydown(event,${p.id})"></textarea>
-          <button class="feed-comment-send" onclick="submitComment(${p.id})">➤</button>
-        </div>
-      </div>
+    <div class="feed-actions" onclick="event.stopPropagation()">
+      <button class="feed-btn" onclick="event.stopPropagation();openThreadFromFeed(${p.id})">💬 <span>${p.comment_count || 0}</span></button>
+      <button class="feed-btn ${p.shared?'shared':''}" onclick="shareFeed(${p.id},this)">🔗 <span>${p.shares}</span></button>
     </div>
   </div>`;
 }
@@ -1336,8 +1323,14 @@ function renderFeed(posts) {
 }
 
 function openFeedPost(e, id) {
-  if (e.target.closest('.feed-actions') || e.target.closest('.feed-comments') || e.target.closest('.feed-author') || e.target.closest('.post-menu-wrap')) return;
-  navigate('/post/' + id);
+  if (e.target.closest('.feed-actions') || e.target.closest('.feed-author') || e.target.closest('.post-menu-wrap')) return;
+  const p = feedData.find(x => x.id === id);
+  navigate('/thread/' + (p?.slug || id));
+}
+
+function openThreadFromFeed(id) {
+  const p = feedData.find(x => x.id === id);
+  navigate('/thread/' + (p?.slug || id));
 }
 
 function toggleComments(id, btn, forceOpen) {
@@ -1362,7 +1355,7 @@ function shareFeed(id, btn) {
     btn.classList.add('shared');
     btn.querySelector('span').textContent = p.shares;
   }
-  const url = window.location.origin + '?post=' + id;
+  const url = window.location.origin + '/thread/' + (p.slug || id);
   if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => showToast('Bağlantı kopyalandı!','ok'));
   else showToast('Paylaşıldı!','ok');
 }
@@ -1424,24 +1417,16 @@ async function likeFeed(id, btn) {
 }
 
 document.getElementById('feedInput').addEventListener('input', function() {
-  document.getElementById('charCount').textContent = this.value.length + '/500';
+  document.getElementById('charCount').textContent = this.value.length + '/200';
 });
-document.getElementById('btnPost').addEventListener('click', async () => {
-  const txt = document.getElementById('feedInput').value.trim();
-  if (!txt) return;
-  if (!user) { showToast('Paylaşmak için giriş yap.', 'err'); return; }
-  const btn = document.getElementById('btnPost');
-  btnLoading(btn, true);
-  try {
-    const data = await apiCall('/api/feed', 'POST', { body: txt });
-    if (data.error) { showToast(data.error, 'err'); btnLoading(btn, false); return; }
-    feedData.unshift({ id: data.post?.id || Date.now(), ava: user.ava||user.username[0].toUpperCase(), author: user.username, time: 'Az önce', text: txt, likes: 0, liked: false, shares: 0, shared: false, comments: [] });
-    renderFeed(feedData);
-    document.getElementById('feedInput').value = '';
-    document.getElementById('charCount').textContent = '0/500';
-    showToast('Paylaşıldı! 🚗', 'ok');
-  } catch(e) { showToast('Hata oluştu.', 'err'); }
-  btnLoading(btn, false);
+document.getElementById('btnPost').addEventListener('click', () => {
+  if (!user) { showToast('Konu açmak için giriş yap.', 'err'); return; }
+  const title = document.getElementById('feedInput').value.trim();
+  openModal('newThreadModal');
+  if (title) {
+    const ntTitle = document.getElementById('nt_title');
+    if (ntTitle) ntTitle.value = title;
+  }
 });
 
 // ── AUTH ──────────────────────────────────────────────────────
@@ -1574,6 +1559,27 @@ document.getElementById('doNewThread').addEventListener('click', async () => {
     };
     threads.unshift(newThread);
     renderThreads(getFiltered());
+    feedData.unshift({
+      id: newThread.id,
+      slug: newThread.slug,
+      ava: newThread.ava,
+      author: newThread.author,
+      time: 'Az önce',
+      text: newThread.title,
+      cat: newThread.cat,
+      likes: 0,
+      liked: false,
+      shares: 0,
+      shared: false,
+      comments: [],
+      comment_count: 0,
+      views: 0,
+      pinned: false,
+      locked: false
+    });
+    renderFeed(feedData);
+    document.getElementById('feedInput').value = '';
+    document.getElementById('charCount').textContent = '0/200';
     closeModal('newThreadModal');
     document.getElementById('nt_title').value = '';
     document.getElementById('nt_body').value = '';
@@ -2493,18 +2499,13 @@ document.addEventListener('keydown', e => {
     }
   }
 });
-// Double-click beğen (feed + post detay)
+// Double-click ile konuya git
 document.addEventListener('dblclick', e => {
   const card = e.target.closest('.feed-item');
-  if (!card || e.target.closest('.feed-actions') || e.target.closest('.feed-comments')) return;
+  if (!card || e.target.closest('.feed-actions')) return;
   const id = parseInt(card.id.replace('fi-', ''));
   if (!id) return;
-  const btn = card.querySelector('.feed-btn:first-child');
-  if (btn) {
-    btn.classList.add('heart-anim');
-    setTimeout(() => btn.classList.remove('heart-anim'), 400);
-    likeFeed(id, btn);
-  }
+  openThreadFromFeed(id);
 });
 
 // ── FEED INFINITE SCROLL ──────────────────────────────────────
@@ -2523,20 +2524,25 @@ async function loadMoreFeed() {
   const indicator = document.getElementById('feedLoadMore');
   if (indicator) indicator.style.display = 'block';
   try {
-    const data = await apiCall('/api/feed?page=' + feedPage, 'GET');
-    if (data.posts && data.posts.length > 0) {
-      const newPosts = data.posts.map(p => ({
+    const data = await apiCall('/api/forum/threads?page=' + feedPage + '&limit=10', 'GET');
+    if (data.threads && data.threads.length > 0) {
+      const newPosts = data.threads.map(p => ({
         id: p.id,
+        slug: p.slug,
         ava: p.username ? p.username[0].toUpperCase() : '?',
-        author: p.username,
-        time: timeAgo ? timeAgo(p.created_at) : 'önce',
-        text: p.body,
-        likes: p.like_count,
+        author: p.username || 'anonim',
+        time: timeAgo ? timeAgo(p.last_post_at || p.created_at) : 'önce',
+        text: p.title,
+        cat: p.category_name || 'Genel',
+        likes: 0,
         liked: false,
         shares: 0,
         shared: false,
         comments: [],
-        comment_count: p.comment_count || 0,
+        comment_count: p.reply_count || 0,
+        views: p.view_count || 0,
+        pinned: !!p.is_pinned,
+        locked: !!p.is_locked,
       }));
       // Duplicate kontrolü
       const existing = new Set(feedData.map(x => x.id));
@@ -2548,7 +2554,7 @@ async function loadMoreFeed() {
         appendFeedPosts(fresh);
       }
       feedPage++;
-      if (data.posts.length < data.limit) feedHasMore = false;
+      if (data.threads.length < (data.limit || 10)) feedHasMore = false;
     } else {
       feedHasMore = false;
     }
