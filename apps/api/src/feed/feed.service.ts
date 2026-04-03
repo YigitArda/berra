@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { sanitizeText } from '../common/utils/sanitize';
 import { DatabaseService } from '../database/database.service';
+import { NotificationsGateway } from '../realtime/notifications.gateway';
 
 @Injectable()
 export class FeedService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly gateway: NotificationsGateway,
+  ) {}
 
   async list(page = 1) {
     const limit = 30;
@@ -47,6 +51,8 @@ export class FeedService {
        RETURNING id, body, created_at`,
       [userId, cleanBody],
     );
+
+    this.gateway.emitContentUpdated({ contentId: rows[0].id, action: 'created' });
 
     return { post: rows[0] };
   }
