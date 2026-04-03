@@ -1,14 +1,20 @@
 import Link from 'next/link';
 import { Card } from '../components/ui/card';
+import { getHealthEndpoint } from '../lib/api';
 
 export default async function HomePage() {
   let apiHealth: string;
+  const healthEndpoint = getHealthEndpoint();
 
-  try {
-    const res = await fetch('http://localhost:4000/api/health', { cache: 'no-store' });
-    apiHealth = res.ok ? 'API erişilebilir' : 'API yanıtı başarısız';
-  } catch {
-    apiHealth = 'API erişimi yok (lokalde api çalışmıyor olabilir).';
+  if (!healthEndpoint) {
+    apiHealth = 'API URL tanımlı değil. API_BASE veya NEXT_PUBLIC_API_BASE ayarlayın.';
+  } else {
+    try {
+      const res = await fetch(healthEndpoint, { cache: 'no-store' });
+      apiHealth = res.ok ? 'API erişilebilir' : 'API yanıtı başarısız';
+    } catch {
+      apiHealth = 'API erişimi yok (api servisi çalışmıyor olabilir).';
+    }
   }
 
   return (

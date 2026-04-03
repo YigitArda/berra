@@ -1,4 +1,26 @@
-export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000/api';
+import { joinUrl } from './url';
+
+const DEFAULT_API_BASE = 'http://localhost:4000/api';
+
+function normalizeBaseUrl(value?: string): string | null {
+  if (!value) return null;
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+export function getApiBase(): string {
+  return normalizeBaseUrl(process.env.NEXT_PUBLIC_API_BASE) ?? DEFAULT_API_BASE;
+}
+
+export function getServerApiBase(): string | null {
+  return normalizeBaseUrl(process.env.API_BASE) ?? normalizeBaseUrl(process.env.NEXT_PUBLIC_API_BASE);
+}
+
+export function getHealthEndpoint(): string | null {
+  const apiBase = getServerApiBase();
+  return apiBase ? joinUrl(apiBase, '/health') : null;
+}
 
 const toSnippet = (value: string, maxLength = 200): string => {
   const normalized = value.trim().replace(/\s+/g, ' ');
