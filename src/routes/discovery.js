@@ -32,22 +32,25 @@ router.post('/users/:userId/follow', requireAuth, [param('userId').isInt({ min: 
     const userRes = await db.query('SELECT id, username FROM users WHERE id = $1', [targetUserId]);
     if (!userRes.rows.length) return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
 
-    await db.query(
+    const followInsert = await db.query(
       `INSERT INTO user_follows (follower_id, following_id)
        VALUES ($1, $2)
-       ON CONFLICT DO NOTHING`,
+       ON CONFLICT DO NOTHING
+       RETURNING follower_id`,
       [req.user.id, targetUserId]
     );
 
-    await createNotification({
-      userId: targetUserId,
-      fromUserId: req.user.id,
-      type: 'follow_user',
-      message: `${req.user.username} seni takip etmeye başladı.`,
-      link: `/profile/${req.user.username}`,
-    });
+    if (followInsert.rowCount > 0) {
+      await createNotification({
+        userId: targetUserId,
+        fromUserId: req.user.id,
+        type: 'follow_user',
+        message: `${req.user.username} seni takip etmeye başladı.`,
+        link: `/profile/${req.user.username}`,
+      });
+    }
 
-    return res.status(201).json({ ok: true });
+    return res.status(201).json({ ok: true, created: followInsert.rowCount > 0 });
   } catch (err) {
     return res.status(500).json({ error: 'Sunucu hatası.' });
   }
@@ -77,22 +80,25 @@ router.post('/threads/:threadId/follow', requireAuth, [param('threadId').isInt({
     const thread = await db.query('SELECT id, user_id, slug, title FROM threads WHERE id = $1', [threadId]);
     if (!thread.rows.length) return res.status(404).json({ error: 'Konu bulunamadı.' });
 
-    await db.query(
+    const followInsert = await db.query(
       `INSERT INTO thread_follows (user_id, thread_id)
        VALUES ($1, $2)
-       ON CONFLICT DO NOTHING`,
+       ON CONFLICT DO NOTHING
+       RETURNING user_id`,
       [req.user.id, threadId]
     );
 
-    await createNotification({
-      userId: thread.rows[0].user_id,
-      fromUserId: req.user.id,
-      type: 'follow_thread',
-      message: `${req.user.username} "${thread.rows[0].title}" konunu takip ediyor.`,
-      link: `/thread/${thread.rows[0].slug}`,
-    });
+    if (followInsert.rowCount > 0 && thread.rows[0].user_id !== req.user.id) {
+      await createNotification({
+        userId: thread.rows[0].user_id,
+        fromUserId: req.user.id,
+        type: 'follow_thread',
+        message: `${req.user.username} "${thread.rows[0].title}" konunu takip ediyor.`,
+        link: `/thread/${thread.rows[0].slug}`,
+      });
+    }
 
-    return res.status(201).json({ ok: true });
+    return res.status(201).json({ ok: true, created: followInsert.rowCount > 0 });
   } catch (err) {
     return res.status(500).json({ error: 'Sunucu hatası.' });
   }
@@ -135,9 +141,18 @@ router.post(
       const created = await db.query(
         `INSERT INTO car_models (brand, model, slug, generation, description)
          VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (slug) DO NOTHING
          RETURNING id, brand, model, slug, generation, description`,
         [brand, model, slug, generation, req.body.description || null],
       );
+
+      if (!created.rows.length) {
+        const conflict = await db.query(
+          'SELECT id, brand, model, slug, generation, description FROM car_models WHERE slug = $1',
+          [slug],
+        );
+        return res.json({ model: conflict.rows[0], existing: true });
+      }
 
       return res.status(201).json({ model: created.rows[0] });
     } catch (err) {
@@ -256,14 +271,15 @@ router.post('/models/:modelId/follow', requireAuth, [param('modelId').isInt({ mi
     const model = await db.query('SELECT id, brand, model, slug FROM car_models WHERE id = $1', [modelId]);
     if (!model.rows.length) return res.status(404).json({ error: 'Model bulunamadı.' });
 
-    await db.query(
+    const followInsert = await db.query(
       `INSERT INTO car_model_follows (user_id, car_model_id)
        VALUES ($1, $2)
-       ON CONFLICT DO NOTHING`,
+       ON CONFLICT DO NOTHING
+       RETURNING user_id`,
       [req.user.id, modelId],
     );
 
-    return res.status(201).json({ ok: true, link: `/models/${model.rows[0].slug}` });
+    return res.status(201).json({ ok: true, created: followInsert.rowCount > 0, link: `/models/${model.rows[0].slug}` });
   } catch (err) {
     return res.status(500).json({ error: 'Sunucu hatası.' });
   }
