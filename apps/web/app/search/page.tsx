@@ -1,29 +1,16 @@
 'use client';
 
-import React from 'react';
-
-import { useQuery } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
-import { DataState } from '../../components/data-state';
-import { EmptyState } from '../../components/empty-state';
-import { Button } from '../../components/ui/button';
+import { useState } from 'react';
 import { Card } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
-import { apiFetch } from '../../lib/api';
-import type { SearchResponse } from '@berra/shared';
+import { Button } from '../../components/ui/button';
+import { useSearch } from '../../hooks/use-search';
 
 export default function SearchPage() {
   const [q, setQ] = useState('');
   const [submitted, setSubmitted] = useState('');
-  const enabled = useMemo(() => submitted.trim().length > 1, [submitted]);
 
-  const searchQuery = useQuery({
-    queryKey: ['search', submitted],
-    queryFn: () => apiFetch<SearchResponse>(`/search?q=${encodeURIComponent(submitted)}&page=1`),
-    enabled,
-  });
-
-  const items = searchQuery.data?.items ?? [];
+  const searchQuery = useSearch(submitted);
 
   return (
     <div className="grid gap-4">
