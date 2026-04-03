@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { ContentModule } from './content/content.module';
+import { CutoverProxyModule } from './cutover/cutover-proxy.module';
 import { DatabaseModule } from './database/database.module';
 import { FeedModule } from './feed/feed.module';
 import { HealthModule } from './health/health.module';
@@ -31,6 +32,7 @@ import { UsersModule } from './users/users.module';
     SearchModule,
     NotificationsModule,
     JobsModule,
+    CutoverProxyModule,
   ],
 })
 export class AppModule {}

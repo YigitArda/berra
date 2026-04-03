@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { NotificationsResponse, notificationsQueryKey } from '../lib/notifications';
-import { getSocket, releaseSocket } from '../lib/socket';
+import { getSocket, releaseSocket, SOCKET_EVENTS } from '../lib/socket';
 import { useAppStore } from '../store/app-store';
 
 type NotificationCreatedPayload = {
@@ -19,7 +19,7 @@ export function useRealtimeNotifications() {
     const socket = getSocket();
     let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
-    const onNotificationCreated = (payload: NotificationPayload) => {
+    const onNotificationCreated = (payload: NotificationCreatedPayload) => {
       queryClient.setQueryData<NotificationsResponse>(notificationsQueryKey, (current) => {
         if (!current) {
           return {
@@ -42,7 +42,6 @@ export function useRealtimeNotifications() {
           ...current,
           unread: current.unread + 1,
           notifications: [
-            ...current.notifications,
             {
               id: payload.notificationId ?? -Date.now(),
               type: 'SYSTEM',
@@ -51,6 +50,7 @@ export function useRealtimeNotifications() {
               is_read: false,
               created_at: new Date().toISOString(),
             },
+            ...current.notifications,
           ],
         };
       });
@@ -68,13 +68,13 @@ export function useRealtimeNotifications() {
       }, 4000);
     };
 
-    socket.on('notification.created', onNotificationCreated);
+    socket.on(SOCKET_EVENTS.notificationCreated, onNotificationCreated);
 
     return () => {
       if (toastTimer) {
         clearTimeout(toastTimer);
       }
-      socket.off('notification.created', onNotificationCreated);
+      socket.off(SOCKET_EVENTS.notificationCreated, onNotificationCreated);
       releaseSocket();
     };
   }, [queryClient, setToastMessage]);
