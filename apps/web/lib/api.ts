@@ -12,6 +12,16 @@ export class ApiError extends Error {
   }
 }
 
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
   const body = init?.body;
@@ -29,8 +39,8 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   });
 
   if (!res.ok) {
-    const payload = (await res.json().catch(() => null)) as { error?: string; message?: string } | null;
-    throw new ApiError(payload?.error ?? payload?.message ?? `HTTP ${res.status}`, res.status, payload);
+    const payload = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
+    throw new ApiError(payload.error ?? payload.message ?? `HTTP ${res.status}`, res.status);
   }
 
   return (await res.text()) as T;
