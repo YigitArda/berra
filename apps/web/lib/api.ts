@@ -1,4 +1,7 @@
-import { joinUrl } from './url';
+import { API_BASE, getApiBaseFallbackMessage, hasApiBase } from './env';
+import { joinApiUrl } from './url';
+
+export { API_BASE };
 
 export class ApiError extends Error {
   status: number;
@@ -12,17 +15,23 @@ export class ApiError extends Error {
   }
 }
 
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    public readonly status: number,
-  ) {
-    super(message);
-    this.name = 'ApiError';
+export function getHealthEndpoint(): string | null {
+  if (!hasApiBase()) {
+    return null;
   }
+
+  return joinApiUrl(API_BASE, '/health');
+}
+
+export function getApiConfigFallbackMessage(): string {
+  return getApiBaseFallbackMessage();
 }
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  if (!hasApiBase()) {
+    throw new Error(getApiBaseFallbackMessage());
+  }
+
   const headers = new Headers(init?.headers);
   const body = init?.body;
   const isJsonBody =
@@ -32,7 +41,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     headers.set('Content-Type', 'application/json');
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(joinApiUrl(API_BASE, path), {
     ...init,
     credentials: 'include',
     headers,
@@ -40,7 +49,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
 
   if (!res.ok) {
     const payload = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
-    throw new ApiError(payload.error ?? payload.message ?? `HTTP ${res.status}`, res.status);
+    throw new ApiError(payload.error ?? payload.message ?? `HTTP ${res.status}`, res.status, payload);
   }
 
   if (res.status === 204) {

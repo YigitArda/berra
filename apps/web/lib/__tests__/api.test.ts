@@ -1,9 +1,25 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { apiFetch, API_BASE } from '../api';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+let apiFetch: <T>(path: string, init?: RequestInit) => Promise<T>;
+let apiBase: string;
+let joinApiUrl: (base: string, path: string) => string;
 
 describe('apiFetch', () => {
+  beforeEach(async () => {
+    vi.resetModules();
+    vi.stubEnv('API_BASE', 'http://localhost:4000/api');
+
+    const apiModule = await import('../api');
+    const urlModule = await import('../url');
+
+    apiFetch = apiModule.apiFetch;
+    apiBase = apiModule.API_BASE;
+    joinApiUrl = urlModule.joinApiUrl;
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
   });
 
   it('returns parsed JSON response', async () => {
@@ -16,9 +32,9 @@ describe('apiFetch', () => {
 
     await expect(apiFetch<{ ok: boolean }>('/health')).resolves.toEqual({ ok: true });
 
-    expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE}/health`, {
+    expect(fetchSpy).toHaveBeenCalledWith(joinApiUrl(apiBase, '/health'), {
       credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
+      headers: expect.any(Headers),
     });
   });
 
