@@ -383,8 +383,8 @@ function feedCard(p, delay) {
       ${p.views != null ? `<span class="feed-auto-tag">👁 ${escapeHtml(String(p.views))}</span>` : ''}
     </div>
     <div class="feed-actions" onclick="event.stopPropagation()">
-      <button class="feed-btn" onclick="event.stopPropagation();openThreadFromFeed(${p.id})">💬 <span>${p.comment_count || 0}</span></button>
-      <button class="feed-btn ${p.shared?'shared':''}" onclick="shareFeed(${p.id},this)">🔗 <span>${p.shares}</span></button>
+      <button class="feed-btn" data-action="comments" onclick="event.stopPropagation();openThreadFromFeed(${p.id})">💬 <span>${p.comment_count || 0}</span></button>
+      <button class="feed-btn ${p.shared?'shared':''}" data-action="share" onclick="shareFeed(${p.id},this)">🔗 <span>${p.shares}</span></button>
     </div>
   </div>`;
 }
@@ -456,10 +456,7 @@ async function submitComment(id) {
   inp.value = '';
   if (inp) autoResize(inp);
   btnLoading(sendBtn, false);
-  // Yorum sayacını güncelle
-  const card = document.getElementById('fi-' + id);
-  const commentBtn = card?.querySelector('.feed-actions .feed-btn:nth-child(2) span');
-  if (commentBtn) { p.comment_count = (p.comment_count || 0) + 1; commentBtn.textContent = p.comment_count; }
+  incrementCommentCount(id);
   // Scroll to new comment
   list.lastElementChild?.scrollIntoView({behavior:'smooth',block:'nearest'});
   // API call
@@ -1227,6 +1224,7 @@ function renderPostDetail(id) {
   const tags = extractTags(p.text);
   const tagRow = tags.length ? `<div class="feed-tag-row" style="margin-bottom:12px">${tags.map(t=>`<span class="feed-auto-tag">#${t}</span>`).join('')}</div>` : '';
   const allComments = p.comments.map(c => feedCommentHtml(c, p.id, false)).join('');
+  const commentCount = p.comment_count ?? p.comments.length;
   el.innerHTML = `
     <div class="post-detail-header">
       <div class="post-detail-ava ${avaColor(p.author)}">${escapeHtml(p.ava)}</div>
@@ -1241,7 +1239,7 @@ function renderPostDetail(id) {
       <button class="post-detail-btn ${p.liked?'liked':''}" onclick="likeFeedDetail(${p.id},this)">♥ ${p.likes} Beğeni</button>
       <button class="post-detail-btn ${p.shared?'shared':''}" onclick="shareFeed(${p.id},this)">🔁 ${p.shares} Paylaşım</button>
     </div>
-    <div class="post-detail-comments-title">${p.comments.length} Yorum</div>
+    <div class="post-detail-comments-title">${commentCount} Yorum</div>
     <div id="pdComments-${p.id}">${allComments}</div>
     <div class="feed-comment-form" style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
       <div class="feed-comment-ava ${user?avaColor(user.username):''}">${user?escapeHtml(user.ava||user.username[0].toUpperCase()):'👤'}</div>
@@ -1261,10 +1259,20 @@ async function submitCommentDetail(id) {
   const list = document.getElementById('pdComments-' + id);
   list?.insertAdjacentHTML('beforeend', feedCommentHtml(c, id, false));
   inp.value = '';
-  // Feed kartındaki yorum sayacını da güncelle
-  const countEl = document.querySelector(`#fi-${id} .feed-btn:nth-child(2) span`);
-  if (countEl) { p.comment_count = (p.comment_count || 0) + 1; countEl.textContent = p.comment_count; }
+  incrementCommentCount(id);
   try { await apiCall('/api/feed/' + id + '/comment', 'POST', {text: txt}); } catch(_){ showToast('Yorum gönderilemedi.', 'err'); }
+}
+
+function incrementCommentCount(id) {
+  const p = feedData.find(x => x.id === id);
+  if (!p) return;
+  p.comment_count = (p.comment_count || 0) + 1;
+  syncFeedState();
+  const card = document.getElementById('fi-' + id);
+  const cardCountEl = card?.querySelector('[data-action="comments"] span');
+  if (cardCountEl) cardCountEl.textContent = p.comment_count;
+  const detailTitleEl = document.querySelector('#postDetailContent .post-detail-comments-title');
+  if (detailTitleEl) detailTitleEl.textContent = `${p.comment_count} Yorum`;
 }
 function likeFeedDetail(id, btn) {
   likeFeed(id, btn);
