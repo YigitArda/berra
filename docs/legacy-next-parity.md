@@ -28,13 +28,16 @@ Bu doküman legacy SPA (`public/index.html` + `public/assets/js/app-init.js`) il
 
 `NEXT_APP_URL` tanımlıysa legacy sunucu aşağıdaki route'ları Next'e yönlendirir:
 
+- `301`: `/` → `${NEXT_APP_URL}/`
+- `301`: `/search` → `${NEXT_APP_URL}/search`
 - `301`: `/feed` → `${NEXT_APP_URL}/feed`
 - `301`: `/notifications` → `${NEXT_APP_URL}/notifications`
 - `301`: `/login` → `${NEXT_APP_URL}/login`
 - `301`: `/register` → `${NEXT_APP_URL}/register`
-- `302`: `/thread/:slug` → `${NEXT_APP_URL}/thread/:slug`
-
-`/thread/:slug` için başlangıçta `302` seçildi; canlı parity gözlemlerinden sonra `301`e yükseltilebilir.
+- `301`: `/thread/:slug` → `${NEXT_APP_URL}/thread/:slug`
+- `301`: `/profile/:username` → `${NEXT_APP_URL}/profile/:username`
+- `301`: `/models` ve `/models/:slug` → `${NEXT_APP_URL}/models*`
+- `301`: `/rehber.html`, `/sanayi.html`, `/karsilastir.html` → Next route karşılıkları
 
 ## 4) Backend bağımlılık görünürlüğü
 
