@@ -57,8 +57,8 @@ export function useRealtimeNotifications() {
 
       const nextUnread =
         queryClient.getQueryData<NotificationsResponse>(notificationsQueryKey)?.unread ??
-        useAppStore.getState().unreadCount + 1;
-      useAppStore.getState().setUnreadCount(nextUnread);
+        useAppStore.getState().localBadgeCount + 1;
+      useAppStore.getState().setLocalBadgeCount(nextUnread);
       setToastMessage(payload.message);
       if (toastTimer) {
         clearTimeout(toastTimer);

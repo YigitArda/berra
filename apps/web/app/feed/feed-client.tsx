@@ -66,6 +66,7 @@ function FeedPostCard({ post }: FeedPostCardProps) {
 
       {isCommentsOpen && (
         <div className="mt-3 rounded-md border border-slate-700 p-3">
+          {commentsQuery.isLoading && <Skeleton lines={2} />}
           <div className="grid gap-2">
             {(commentsQuery.data?.comments ?? []).map((comment) => (
               <div key={comment.id} className="rounded border border-slate-700 p-2 text-sm">
@@ -104,24 +105,26 @@ function FeedPostCard({ post }: FeedPostCardProps) {
 export function FeedClient() {
   const [body, setBody] = useState('');
   const [page, setPage] = useState(1);
+  const [activeTab, setActiveTab] = useState<'following' | 'discover'>('discover');
   const [loadedPosts, setLoadedPosts] = useState<Array<FeedPostCardProps['post']>>([]);
   const { isLoading: isSessionLoading, isAuthenticated } = useRequireAuth();
 
-  const postsQuery = useFeed(isAuthenticated, page);
+  const postsQuery = useFeed(isAuthenticated, page, activeTab);
   const createMutation = useCreateFeedPost(() => setBody(''));
+
+  useEffect(() => {
+    setLoadedPosts([]);
+    setPage(1);
+  }, [activeTab]);
 
   useEffect(() => {
     const incoming = postsQuery.data?.posts ?? [];
     if (incoming.length === 0) return;
 
     setLoadedPosts((prev) => {
-      const next = [...prev];
-      for (const post of incoming) {
-        if (!next.some((item) => item.id === post.id)) {
-          next.push(post);
-        }
-      }
-      return next;
+      const existingIds = new Set(prev.map((p) => p.id));
+      const newPosts = incoming.filter((p) => !existingIds.has(p.id));
+      return newPosts.length ? [...prev, ...newPosts] : prev;
     });
   }, [postsQuery.data?.posts]);
 
@@ -164,6 +167,7 @@ export function FeedClient() {
           disabled={createMutation.isPending}
           className="rounded-md border border-slate-700 bg-slate-900 p-3 disabled:opacity-60"
         />
+        <p className="text-right text-xs text-slate-400">{body.length}/500</p>
         <Button type="submit" disabled={createMutation.isPending || body.trim().length === 0}>
           {createMutation.isPending ? 'Paylaşılıyor...' : 'Paylaş'}
         </Button>
@@ -190,11 +194,13 @@ export function FeedClient() {
           ))}
         </div>
 
-        <div className="mt-4 flex justify-center">
-          <Button variant="ghost" onClick={() => setPage((prev) => prev + 1)}>
-            Daha fazla yükle
-          </Button>
-        </div>
+        {(postsQuery.data?.posts.length ?? 0) > 0 && (
+          <div className="mt-4 flex justify-center">
+            <Button variant="ghost" onClick={() => setPage((prev) => prev + 1)}>
+              Daha fazla yükle
+            </Button>
+          </div>
+        )}
       </DataState>
     </div>
   );

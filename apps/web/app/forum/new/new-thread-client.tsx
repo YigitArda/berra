@@ -6,6 +6,8 @@ import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
 import { FormField } from '../../../components/ui/form-field';
 import { Input } from '../../../components/ui/input';
+import { InlineAlert } from '../../../components/feedback/InlineAlert';
+import { resolveFeedbackErrorMessage } from '../../../components/feedback/messages';
 import { useCreateThread } from '../../../hooks/use-forum';
 
 export function NewThreadClient() {
@@ -39,7 +41,7 @@ export function NewThreadClient() {
         <FormField id="category" label="Kategori">
           <select
             id="category"
-            className="rounded-md border border-slate-700 bg-slate-900 px-3 py-2"
+            className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
           >
@@ -51,12 +53,15 @@ export function NewThreadClient() {
           </select>
         </FormField>
         <FormField id="body" label="İçerik">
-          <textarea id="body" rows={8} value={body} onChange={(e) => setBody(e.target.value)} className="rounded-md border border-slate-700 bg-slate-900 p-3" />
+          <textarea id="body" rows={8} value={body} onChange={(e) => setBody(e.target.value)} className="rounded-md border border-slate-700 bg-slate-900 p-3 w-full" />
         </FormField>
         <Button type="submit" disabled={!title.trim() || !body.trim() || createThread.isPending}>
           {createThread.isPending ? 'Gönderiliyor...' : 'Konu Aç'}
         </Button>
       </form>
+      {createThread.isError && (
+        <InlineAlert className="mt-3" variant="error" message={resolveFeedbackErrorMessage(createThread.error)} />
+      )}
     </Card>
   );
 }

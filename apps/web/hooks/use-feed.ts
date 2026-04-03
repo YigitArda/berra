@@ -20,12 +20,12 @@ export type FeedComment = {
   username: string;
 };
 
-export const feedQueryKey = (page: number) => ['feed', page] as const;
+export const feedQueryKey = (page: number, tab?: string) => ['feed', page, tab] as const;
 
-export function useFeed(enabled: boolean, page = 1) {
+export function useFeed(enabled: boolean, page = 1, tab: 'following' | 'discover' = 'discover') {
   return useQuery({
-    queryKey: feedQueryKey(page),
-    queryFn: () => apiFetch<{ posts: FeedPost[]; page: number; limit: number }>(`/feed?page=${page}`),
+    queryKey: feedQueryKey(page, tab),
+    queryFn: () => apiFetch<{ posts: FeedPost[]; page: number; limit: number }>(`/feed?page=${page}&tab=${tab}`),
     enabled,
   });
 }

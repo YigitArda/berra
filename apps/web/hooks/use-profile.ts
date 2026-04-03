@@ -10,10 +10,11 @@ export type PublicProfileResponse = {
   cars: Array<{ id: number; brand: string; model: string; year: number; is_current: boolean }>;
 };
 
-export function usePublicProfile(username: string) {
+export function usePublicProfile(username: string, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['profile', username],
     queryFn: () => apiFetch<PublicProfileResponse>(`/profile/${encodeURIComponent(username)}`),
+    enabled: options?.enabled ?? true,
   });
 }
 

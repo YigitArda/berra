@@ -14,8 +14,17 @@ import { useRequireAuth } from '../../hooks/use-require-auth';
 import { apiFetch } from '../../lib/api';
 import { NotificationsResponse, notificationsQueryKey } from '../../lib/notifications';
 import { useAppStore } from '../../store/app-store';
+import { formatRelativeTime } from '../../lib/format-time';
 
 type NotificationTab = 'all' | 'follow' | 'reply' | 'like' | 'model';
+
+const tabLabels: Record<NotificationTab, string> = {
+  all: 'Tümü',
+  follow: 'Takip',
+  reply: 'Yanıt',
+  like: 'Beğeni',
+  model: 'Model',
+};
 
 function mapTypeToTab(type: string): NotificationTab {
   const normalized = type.toLowerCase();
@@ -89,7 +98,7 @@ export function NotificationsClient() {
               variant={activeTab === tab ? 'primary' : 'ghost'}
               onClick={() => setActiveTab(tab)}
             >
-              {tab === 'all' ? 'Tümü' : tab}
+              {tabLabels[tab]}
             </Button>
           ))}
         </div>
@@ -127,7 +136,7 @@ export function NotificationsClient() {
                     {!item.is_read && <Badge variant="success" size="sm">Yeni</Badge>}
                   </div>
                   <p>{item.message}</p>
-                  <p className="mt-1 text-xs text-slate-400">{new Date(item.created_at).toLocaleString('tr-TR')}</p>
+                  <p className="mt-1 text-xs text-slate-400">{formatRelativeTime(item.created_at)}</p>
                 </div>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">

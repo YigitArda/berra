@@ -49,8 +49,19 @@ export function SearchClient() {
           <Button size="sm" variant={type === 'threads' ? 'primary' : 'ghost'} onClick={() => setType('threads')}>Konular</Button>
           <Button size="sm" variant={type === 'users' ? 'primary' : 'ghost'} onClick={() => setType('users')}>Kullanıcılar</Button>
         </div>
-        <div className="flex gap-2">
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Arama terimi..." />
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Arama terimi..."
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && q.trim().length > 0) {
+                setSubmitted(q);
+                setPage(1);
+                router.replace(`/search?q=${encodeURIComponent(q)}&type=${type}&page=1`);
+              }
+            }}
+          />
           <Button onClick={() => {
             setSubmitted(q);
             setPage(1);
