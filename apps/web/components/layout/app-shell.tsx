@@ -10,6 +10,10 @@ import { useAppStore } from '../../store/app-store';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 
+function formatNotificationBadgeCount(count: number) {
+  if (count > 99) return '99+';
+  return String(count);
+}
 
 export function AppShell({ children }: { children: ReactNode }) {
   useRealtimeNotifications();
@@ -30,8 +34,19 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Link href="/dashboard">Dashboard</Link>
           <Link href="/feed">Liste</Link>
           <Link href="/search">Arama</Link>
-          <Link href="/notifications" className="ml-auto flex items-center gap-2">
-            Bildirimler {localBadgeCount > 0 && <Badge>{localBadgeCount}</Badge>}
+          <Link href="/notifications" className="ml-auto">
+            <span className="inline-flex items-center gap-2">
+              <span aria-hidden="true">🔔</span>
+              <span>Bildirimler</span>
+              {localBadgeCount > 0 && (
+                <Badge
+                  className="min-w-6 justify-center whitespace-nowrap px-1.5 text-center leading-5"
+                  title={`${localBadgeCount} okunmamış bildirim`}
+                >
+                  {formatNotificationBadgeCount(localBadgeCount)}
+                </Badge>
+              )}
+            </span>
           </Link>
           {isAuthenticated ? (
             <Button
