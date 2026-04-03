@@ -10,7 +10,7 @@ import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { apiFetch } from '../../lib/api';
-import { applyBackendErrors } from '../../lib/form-errors';
+import type { AuthResponse, LoginRequest } from '@berra/shared';
 import { loginSchema } from './schema';
 
 const loginFields = ['email', 'password'] as const;
@@ -25,9 +25,9 @@ export default function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: (payload: z.infer<typeof loginSchema>) =>
-      apiFetch<{ message?: string }>('/auth/login', {
+      apiFetch<AuthResponse>('/auth/login', {
         method: 'POST',
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload satisfies LoginRequest),
       }),
     onSuccess: () => {
       setGeneralError(null);
