@@ -1,5 +1,7 @@
 'use client';
 
+import React from 'react';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -40,6 +42,10 @@ export default function RegisterPage() {
           {registerMutation.isPending ? 'Kaydediliyor...' : 'Kayıt ol'}
         </Button>
       </form>
+      {registerMutation.isError && (
+        <p className="mt-2 text-sm text-red-400">{(registerMutation.error as Error).message}</p>
+      )}
+      {registerMutation.isSuccess && <p className="mt-2 text-sm text-emerald-400">Kayıt başarılı.</p>}
     </Card>
   );
 }

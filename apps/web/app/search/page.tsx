@@ -1,5 +1,7 @@
 'use client';
 
+import React from 'react';
+
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { Button } from '../../components/ui/button';
@@ -33,6 +35,11 @@ export default function SearchPage() {
         </div>
       </Card>
       <div className="grid gap-2">
+        {searchQuery.isSuccess && searchQuery.data.items.length === 0 && submitted.trim().length > 1 && (
+          <Card>
+            <p>Sonuç bulunamadı.</p>
+          </Card>
+        )}
         {(searchQuery.data?.items ?? []).map((item) => (
           <Card key={item.id}>
             <p className="font-semibold">#{item.id}</p>

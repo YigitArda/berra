@@ -1,3 +1,4 @@
+import React from 'react';
 import { ButtonHTMLAttributes } from 'react';
 import { cn } from '../../lib/cn';
 
