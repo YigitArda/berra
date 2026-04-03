@@ -675,45 +675,12 @@ body.light .profile-header { background: var(--bg2); }
 </div>
 
 <!-- ANA LAYOUT -->
-<div class="layout">
-  <!-- SOL: KONULAR -->
-  <div class="panel-left">
-    <div class="panel-left-top">
-      <span class="panel-left-title">💬 Forum</span>
-      <button class="btn btn-accent btn-sm" id="btnNewThread">+ Yeni Konu</button>
-    </div>
-    <div class="cat-bar">
-      <button class="cat-tab active" data-cat="all" aria-label="Tüm kategoriler">Tümü <span class="cat-count" id="cnt-all">0</span></button>
-      <button class="cat-tab" data-cat="genel" aria-label="Genel kategorisi">💬 Genel <span class="cat-count" id="cnt-genel">0</span></button>
-      <button class="cat-tab" data-cat="ilk" aria-label="İlk Araba kategorisi">⭐ İlk Araba <span class="cat-count" id="cnt-ilk">0</span></button>
-      <button class="cat-tab" data-cat="modifiye" aria-label="Modifiye kategorisi">🔧 Modifiye <span class="cat-count" id="cnt-modifiye">0</span></button>
-      <button class="cat-tab" data-cat="ilan" aria-label="İlan kategorisi">👁 İlan <span class="cat-count" id="cnt-ilan">0</span></button>
-      <button class="cat-tab" data-cat="ariza" aria-label="Arıza kategorisi">🛠 Arıza <span class="cat-count" id="cnt-ariza">0</span></button>
-    </div>
-    <!-- Mobil menü -->
-    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
-      <a href="#">Forum</a>
-      <a href="sanayi.html">🏭 Sanayi</a>
-      <a href="ozellikler.html">🔧 Bakım &amp; Galeri</a>
-      <a href="rehber.html">📖 Rehber</a>
-      <a href="karsilastir.html">⚖️ Karşılaştır</a>
-      <button
-        id="btnScoreMobile"
-        onclick="
-          document.getElementById('btnScore').click();
-          toggleMobileMenu();
-        "
-      >
-        🧮 Alınır mı?
-      </button>
-    </div>
-
-    <div
-      class="mobile-primary-tabs"
-      id="mobilePrimaryTabs"
-      role="tablist"
-      aria-label="Ana görünüm seçimi"
-    >
+<div
+  class="mobile-primary-tabs"
+  id="mobilePrimaryTabs"
+  role="tablist"
+  aria-label="Ana görünüm seçimi"
+>
       <button
         class="primary-tab active"
         data-primary="forum"
@@ -2444,237 +2411,50 @@ async function loadProfile(username) {
     const data = await apiCall('/api/profile/' + username, 'GET');
     if (data.error) {
       // Kullanıcı DB'de yok — sahte verilerden göster
-      const fakeUser = STATIC_THREADS.find(t => t.author === username);
+      const fakeUser = STATIC_THREADS.find((t) => t.author === username);
       if (fakeUser) {
         profileData = {
-          user: { id: 0, username, bio: null, avatar_url: null, role: 'user', created_at: new Date().toISOString() },
-          threads: STATIC_THREADS.filter(t => t.author === username).map(t => ({
-            id: t.id, title: t.title, slug: t.slug || '', reply_count: t.replies, view_count: t.views,
-            created_at: new Date().toISOString(), category_name: t.cat
+          user: {
+            id: 0,
+            username,
+            bio: null,
+            avatar_url: null,
+            role: 'user',
+            created_at: new Date().toISOString(),
+          },
+          threads: STATIC_THREADS.filter((t) => t.author === username).map((t) => ({
+            id: t.id,
+            title: t.title,
+            slug: t.slug || '',
+            reply_count: t.replies,
+            view_count: t.views,
+            created_at: new Date().toISOString(),
+            category_name: t.cat,
           })),
           posts: [],
-          cars: []
+          cars: [],
         };
-        const n = document.getElementById('scoreNum');
-        n.textContent = tot;
-        n.className = 'score-big ' + vM[v][1];
-        document.getElementById('scoreVerdict').textContent = vM[v][0];
-        document.getElementById('scoreVerdict').className = 'score-verdict ' + vM[v][1];
-        document.getElementById('scoreSub').textContent = vM[v][2];
-        const sb = (id, val, max) => {
-          document.getElementById('b_' + id).style.width = (val / max) * 100 + '%';
-          document.getElementById('v_' + id).textContent = val;
-        };
-        sb('yas', yas, 3);
-        sb('km', kms, 3);
-        sb('fiyat', fiy, 2);
-        sb('marka', mar, 2);
-        document.getElementById('scoreResult').classList.add('show');
-      });
-
-      // ── MODAL YARDIMCILARI ────────────────────────────────────────
-      let activeModal = null;
-      let lastFocusedBeforeModal = null;
-      const focusableSelector =
-        'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])';
-      function openModal(id) {
-        const modal = document.getElementById(id);
-        if (!modal) return;
-        lastFocusedBeforeModal = document.activeElement;
-        modal.classList.add('open');
-        modal.setAttribute('aria-hidden', 'false');
-        activeModal = modal;
-        const firstFocusable = modal.querySelector(focusableSelector);
-        firstFocusable?.focus();
+        renderProfileHeader(profileData);
+        renderProfileTabs();
+        renderProfileTab('threads');
+      } else {
+        document.getElementById('profileHeader').innerHTML =
+          '<div style="padding:20px;color:var(--accent)">Kullanıcı bulunamadı.</div>';
       }
-      function closeModal(id) {
-        const modal = document.getElementById(id);
-        if (!modal) return;
-        modal.classList.remove('open');
-        modal.setAttribute('aria-hidden', 'true');
-        if (activeModal === modal) activeModal = null;
-        lastFocusedBeforeModal?.focus?.();
-      }
-      function showErr(el, msg) {
-        el.textContent = msg;
-        el.classList.add('show');
-      }
+      return;
+    }
+    profileData = data;
+    renderProfileHeader(data);
+    renderProfileTabs();
+    renderProfileTab('threads');
+  } catch (e) {
+    console.error('loadProfile error:', e);
+    document.getElementById('profileHeader').innerHTML =
+      '<div style="padding:20px;color:var(--accent)">Bağlantı hatası.</div>';
+  }
+}
 
-      document.getElementById('btnScore').onclick = () => openModal('scoreModal');
-      document.getElementById('closeScore').onclick = () => closeModal('scoreModal');
-      document.getElementById('btnLogin').onclick = () => openModal('authModal');
-      document.getElementById('btnRegBtn').onclick = () => {
-        openModal('authModal');
-        switchAuth('register');
-      };
-      document.getElementById('closeAuth').onclick = () => closeModal('authModal');
-      document.getElementById('closeNewThread').onclick = () => closeModal('newThreadModal');
-
-      document.querySelectorAll('.overlay').forEach((o) => {
-        o.addEventListener('click', (e) => {
-          if (e.target === o) closeModal(o.id);
-        });
-      });
-      document.querySelectorAll('.fg input, .fg textarea').forEach((el) => {
-        el.addEventListener('input', () => {
-          const err = el.closest('.a-form, div')?.querySelector('.auth-error');
-          if (err) err.classList.remove('show');
-        });
-      });
-
-      function switchAuth(tab) {
-        document.querySelectorAll('.a-tab').forEach((t) => {
-          const isActive = t.dataset.t === tab;
-          t.classList.toggle('active', isActive);
-          t.setAttribute('aria-selected', isActive ? 'true' : 'false');
-        });
-        document.getElementById('loginF').classList.toggle('show', tab === 'login');
-        document.getElementById('regF').classList.toggle('show', tab === 'register');
-        document.getElementById('forgotF').classList.toggle('show', tab === 'forgot');
-      }
-      document
-        .querySelectorAll('.a-tab')
-        .forEach((t) => (t.onclick = () => switchAuth(t.dataset.t)));
-
-      // Şifremi unuttum
-      document.getElementById('doForgot').addEventListener('click', async () => {
-        const email = document.getElementById('f_email').value.trim();
-        const errEl = document.getElementById('forgotErr');
-        if (!email) {
-          showErr(errEl, 'Email gerekli.');
-          return;
-        }
-        const data = await apiCall('/api/auth/forgot-password', 'POST', { email });
-        if (data.error) {
-          showErr(errEl, data.error);
-          return;
-        }
-        document.getElementById('resetForm').style.display = 'block';
-        if (data.resetToken) document.getElementById('f_token').value = data.resetToken; // Dev mode
-        showToast('Sıfırlama kodu oluşturuldu.', 'ok');
-      });
-      document.getElementById('doReset').addEventListener('click', async () => {
-        const token = document.getElementById('f_token').value.trim();
-        const password = document.getElementById('f_newpass').value;
-        const errEl = document.getElementById('forgotErr');
-        if (!token || !password) {
-          showErr(errEl, 'Kod ve yeni şifre gerekli.');
-          return;
-        }
-        if (password.length < 6) {
-          showErr(errEl, 'Şifre en az 6 karakter olmalı.');
-          return;
-        }
-        const data = await apiCall('/api/auth/reset-password', 'POST', { token, password });
-        if (data.error) {
-          showErr(errEl, data.error);
-          return;
-        }
-        showToast('Şifre değiştirildi!', 'ok');
-        closeModal('authModal');
-        // Otomatik giriş
-        const me = await apiCall('/api/auth/me', 'GET');
-        if (me.user) {
-          me.user.ava = me.user.username[0].toUpperCase();
-          setUser(me.user);
-        }
-      });
-
-      // ── TOAST ─────────────────────────────────────────────────────
-      function showToast(msg, type) {
-        const t = document.getElementById('toast');
-        t.textContent = msg;
-        t.className = 'toast ' + type + ' show';
-        setTimeout(() => t.classList.remove('show'), 2800);
-      }
-
-      // ── TEMA ─────────────────────────────────────────────────────
-      function toggleTheme() {
-        const isDark = !document.body.classList.contains('light');
-        document.body.classList.toggle('light', isDark);
-        document.documentElement.classList.toggle('light', isDark);
-        document.getElementById('themeToggle').classList.toggle('dark', !isDark);
-        document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
-        localStorage.setItem('theme', isDark ? 'light' : 'dark');
-      }
-      // Sayfa açılışında tema yükle
-      (function () {
-        const saved = localStorage.getItem('theme');
-        if (saved === 'light') {
-          document.body.classList.add('light');
-          document.documentElement.classList.add('light');
-          document.getElementById('themeIcon').textContent = '☀️';
-        } else {
-          document.getElementById('themeToggle').classList.add('dark');
-        }
-      })();
-
-      // ── ANA SAYFA ────────────────────────────────────────────────
-      function goHome(noNav) {
-        ['threadPage', 'profilePage', 'postDetailPage', 'messagesPage'].forEach((id) => {
-          document.getElementById(id)?.classList.remove('open');
-        });
-        if (!noNav) navigate('/', true);
-      }
-
-      // ── PROFİL ────────────────────────────────────────────────────
-      let profileData = null;
-      let profileTab = 'threads';
-
-      function openProfile(username) {
-        if (!username) return;
-        navigate('/profile/' + username);
-      }
-
-      async function loadProfile(username) {
-        try {
-          const data = await apiCall('/api/profile/' + username, 'GET');
-          if (data.error) {
-            // Kullanıcı DB'de yok — sahte verilerden göster
-            const fakeUser = STATIC_THREADS.find((t) => t.author === username);
-            if (fakeUser) {
-              profileData = {
-                user: {
-                  id: 0,
-                  username,
-                  bio: null,
-                  avatar_url: null,
-                  role: 'user',
-                  created_at: new Date().toISOString(),
-                },
-                threads: STATIC_THREADS.filter((t) => t.author === username).map((t) => ({
-                  id: t.id,
-                  title: t.title,
-                  slug: t.slug || '',
-                  reply_count: t.replies,
-                  view_count: t.views,
-                  created_at: new Date().toISOString(),
-                  category_name: t.cat,
-                })),
-                posts: [],
-                cars: [],
-              };
-              renderProfileHeader(profileData);
-              renderProfileTabs();
-              renderProfileTab('threads');
-            } else {
-              document.getElementById('profileHeader').innerHTML =
-                '<div style="padding:20px;color:var(--accent)">Kullanıcı bulunamadı.</div>';
-            }
-            return;
-          }
-          profileData = data;
-          renderProfileHeader(data);
-          renderProfileTabs();
-          renderProfileTab('threads');
-        } catch (e) {
-          console.error('loadProfile error:', e);
-          document.getElementById('profileHeader').innerHTML =
-            '<div style="padding:20px;color:var(--accent)">Bağlantı hatası.</div>';
-        }
-      }
-
-      function renderProfileHeader(data) {
+function renderProfileHeader(data) {
         const u = data.user;
         const isMe = user && user.username === u.username;
         // Kullanıcıya özgü cover rengi
