@@ -14,37 +14,42 @@ export class AuthController {
   ) {}
 
   @Post('register')
-  async register(@Body() body: RegisterDto, @Res({ passthrough: true }) res: FastifyReply) {
-    const data = await this.authService.register(body.username, body.email, body.password);
-    this.writeAuthCookie(res, data.token);
+  async register(@Body() body: RegisterDto, @Req() req: FastifyRequest, @Res({ passthrough: true }) res: FastifyReply) {
+    const ip = req.ip;
+    const ua = req.headers['user-agent'];
+    const data = await this.authService.register(body.username, body.email, body.password, ua, ip);
+    this.writeAccessCookie(res, data.accessToken);
+    this.writeRefreshCookie(res, data.refreshToken);
     return { message: data.message, user: data.user };
   }
 
   @Post('login')
-  async login(@Body() body: LoginDto, @Res({ passthrough: true }) res: FastifyReply) {
-    const data = await this.authService.login(body.email, body.password);
-    this.writeAuthCookie(res, data.token);
+  async login(@Body() body: LoginDto, @Req() req: FastifyRequest, @Res({ passthrough: true }) res: FastifyReply) {
+    const ip = req.ip;
+    const ua = req.headers['user-agent'];
+    const data = await this.authService.login(body.email, body.password, ua, ip);
+    this.writeAccessCookie(res, data.accessToken);
+    this.writeRefreshCookie(res, data.refreshToken);
     return { message: data.message, user: data.user };
   }
 
-
   @Post('refresh')
   async refresh(@Req() req: FastifyRequest, @Res({ passthrough: true }) res: FastifyReply) {
-    const bearer = req.headers.authorization?.startsWith('Bearer ')
-      ? req.headers.authorization.slice(7)
-      : null;
-    const token = req.cookies?.token ?? bearer;
+    const raw = req.cookies?.refresh_token;
+    if (!raw) throw new UnauthorizedException('Refresh token bulunamadı.');
 
-    if (!token) throw new UnauthorizedException('Token bulunamadı.');
+    const data = await this.authService.refresh(raw);
+    this.writeAccessCookie(res, data.accessToken);
+    this.writeRefreshCookie(res, data.refreshToken);
 
-    const data = await this.authService.refresh(token);
-    this.writeAuthCookie(res, data.token);
     return { message: data.message, user: data.user };
   }
 
   @Post('logout')
-  logout(@Res({ passthrough: true }) res: FastifyReply) {
+  async logout(@Req() req: FastifyRequest, @Res({ passthrough: true }) res: FastifyReply) {
+    await this.authService.logout(req.cookies?.refresh_token);
     res.clearCookie('token');
+    res.clearCookie('refresh_token');
     return { message: 'Çıkış yapıldı.' };
   }
 
@@ -54,13 +59,23 @@ export class AuthController {
     return this.authService.me(req.user.id);
   }
 
-  private writeAuthCookie(res: FastifyReply, token: string) {
+  private writeAccessCookie(res: FastifyReply, token: string) {
     res.setCookie('token', token, {
       httpOnly: true,
       sameSite: 'lax',
       secure: this.configService.get<string>('NODE_ENV') === 'production',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge: 60 * 15,
+    });
+  }
+
+  private writeRefreshCookie(res: FastifyReply, token: string) {
+    res.setCookie('refresh_token', token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 14,
     });
   }
 }

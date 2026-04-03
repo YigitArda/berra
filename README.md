@@ -178,3 +178,51 @@ kubectl apply -f deploy/k8s/api-deployment.yaml
 kubectl apply -f deploy/k8s/web-deployment.yaml
 kubectl apply -f deploy/k8s/ingress.yaml
 ```
+
+
+## Backend Foundation (2.x)
+
+### 2.1 Core
+
+NestJS modülleri:
+
+- auth
+- users
+- content
+- notifications
+- search
+- realtime
+- jobs
+
+Global:
+
+- ValidationPipe
+- ExceptionFilter
+- Request logging (pino-http middleware)
+- ConfigModule
+
+### 2.2 Auth
+
+- JWT access + refresh (ayrı cookie)
+- Password hashing (bcrypt)
+- RBAC (Roles decorator + RolesGuard)
+- Session/device token tablosu (`user_sessions`)
+
+### 2.3 DB (PostgreSQL + Prisma)
+
+Prisma schema (`apps/api/prisma/schema.prisma`) model kapsamı:
+
+- User
+- Profile
+- Content
+- Notification
+- Activity
+- Session
+
+Pipeline:
+
+```bash
+pnpm --filter @berra/api run prisma:generate
+pnpm --filter @berra/api run prisma:migrate
+pnpm --filter @berra/api run prisma:seed
+```

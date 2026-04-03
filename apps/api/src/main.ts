@@ -6,6 +6,7 @@ import cookie from '@fastify/cookie';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { validateEnv } from './config/env';
+import { requestLogger } from './common/middleware/request-logger';
 
 async function bootstrap() {
   validateEnv();
@@ -21,6 +22,8 @@ async function bootstrap() {
     origin: process.env.APP_URL ?? 'http://localhost:3000',
     credentials: true,
   });
+
+  app.use(requestLogger as never);
 
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
