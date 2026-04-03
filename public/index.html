@@ -1656,7 +1656,7 @@ body.light .profile-header { background: var(--bg2); }
             : '');
 
         const postsListEl = document.getElementById('postsList');
-        posts.forEach((post) => postsListEl.appendChild(renderPost(post)));
+        posts.forEach((post) => postsListEl.insertAdjacentHTML('beforeend', renderPost(post)));
 
         if (!t.locked) {
           setTimeout(() => {
@@ -1692,7 +1692,9 @@ body.light .profile-header { background: var(--bg2); }
                   };
                   replyImages = [];
                   renderReplyImages();
-                  document.getElementById('postsList').appendChild(renderPost(newPost));
+                  document
+                    .getElementById('postsList')
+                    .insertAdjacentHTML('beforeend', renderPost(newPost));
                   document.getElementById('replyInput').value = '';
                   replyBtn.textContent = 'Yanıtla';
                   // Sayacı güncelle
@@ -1921,7 +1923,7 @@ body.light .profile-header { background: var(--bg2); }
         el.innerHTML = '';
         posts.forEach((p, i) => {
           const card = feedCard(p, i * 0.04);
-          if (card) el.appendChild(card);
+          if (card) el.insertAdjacentHTML('beforeend', card);
         });
       }
 
@@ -3537,7 +3539,7 @@ function renderProfileHeader(data) {
         const el = document.getElementById('feedList');
         posts.forEach((p, i) => {
           const card = feedCard(p, i * 0.04);
-          if (card) el.appendChild(card);
+          if (card) el.insertAdjacentHTML('beforeend', card);
         });
       }
 
