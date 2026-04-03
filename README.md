@@ -34,6 +34,11 @@ npm run build:web
 - Next.js tarafına `/feed` test sayfası eklendi.
 - Auth yanıtları cookie-odaklı hale getirildi; JWT artık response body'de dönülmüyor.
 - API'de global exception formatı ve env doğrulaması eklendi.
+- Auth tarafına `POST /api/auth/refresh` eklendi; rol bazlı yetki için `RolesGuard` altyapısı kuruldu.
+- Profil modülü eklendi: `GET /api/profile/me`, `PUT /api/profile/me`, `GET /api/profile/:username`.
+- Arama modülü eklendi: `GET /api/search?q=...` (PostgreSQL FTS).
+- Realtime bildirim altyapısı eklendi (`Socket.IO gateway`) ve bildirim yayınlama entegre edildi.
+- API için temel e2e test iskeleti eklendi (`apps/api/test/health.e2e-spec.ts`).
 
 Legacy Express uygulaması hâlâ çalışır:
 

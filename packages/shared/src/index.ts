@@ -32,6 +32,26 @@ export type FeedPost = {
   avatar_url: string | null;
 };
 
+export type PublicProfile = {
+  id: number;
+  username: string;
+  bio: string | null;
+  avatar_url: string | null;
+  role: 'user' | 'mod' | 'admin';
+  created_at: string;
+};
+
+export type SearchThreadResult = {
+  id: number;
+  title: string;
+  slug: string;
+  reply_count: number;
+  view_count: number;
+  created_at: string;
+  author: string;
+  category_name: string;
+  rank: number;
+};
 
 export type ApiError = {
   statusCode: number;

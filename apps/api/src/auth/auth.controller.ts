@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -23,6 +23,21 @@ export class AuthController {
   @Post('login')
   async login(@Body() body: LoginDto, @Res({ passthrough: true }) res: FastifyReply) {
     const data = await this.authService.login(body.email, body.password);
+    this.writeAuthCookie(res, data.token);
+    return { message: data.message, user: data.user };
+  }
+
+
+  @Post('refresh')
+  async refresh(@Req() req: FastifyRequest, @Res({ passthrough: true }) res: FastifyReply) {
+    const bearer = req.headers.authorization?.startsWith('Bearer ')
+      ? req.headers.authorization.slice(7)
+      : null;
+    const token = req.cookies?.token ?? bearer;
+
+    if (!token) throw new UnauthorizedException('Token bulunamadı.');
+
+    const data = await this.authService.refresh(token);
     this.writeAuthCookie(res, data.token);
     return { message: data.message, user: data.user };
   }

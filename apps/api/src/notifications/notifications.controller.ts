@@ -1,6 +1,8 @@
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { FastifyRequest } from 'fastify';
+import { Roles } from '../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
 import { NotificationsService } from './notifications.service';
 
 @Controller('notifications')
@@ -18,6 +20,18 @@ export class NotificationsController {
 
     return {
       message: 'Bildirim kuyruğa alındı.',
+      jobId: job.id,
+    };
+  }
+
+  @Post('email-test')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  async emailTest(@Body() body: { to: string; subject: string; html: string }) {
+    const job = await this.notificationsService.sendEmail(body.to, body.subject, body.html);
+
+    return {
+      message: 'E-posta kuyruğa alındı.',
       jobId: job.id,
     };
   }

@@ -5,7 +5,10 @@ import { DatabaseModule } from './database/database.module';
 import { FeedModule } from './feed/feed.module';
 import { HealthModule } from './health/health.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { ProfileModule } from './profile/profile.module';
 import { QueueModule } from './queue/queue.module';
+import { RealtimeModule } from './realtime/realtime.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -14,10 +17,13 @@ import { QueueModule } from './queue/queue.module';
       envFilePath: ['.env.local', '.env'],
     }),
     DatabaseModule,
+    RealtimeModule,
     QueueModule,
     HealthModule,
-    FeedModule,
     AuthModule,
+    ProfileModule,
+    FeedModule,
+    SearchModule,
     NotificationsModule,
   ],
 })

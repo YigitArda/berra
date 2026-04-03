@@ -100,4 +100,30 @@ export class AuthService {
 
     return { user: rows[0] };
   }
+  async refresh(token: string) {
+    try {
+      const decoded = jwt.verify(token, this.configService.getOrThrow<string>('JWT_SECRET')) as AuthUser;
+
+      const { rows } = await this.db.query<{ id: number; username: string; role: 'user' | 'mod' | 'admin'; is_banned: boolean }>(
+        'SELECT id, username, role, is_banned FROM users WHERE id = $1',
+        [decoded.id],
+      );
+
+      if (!rows.length || rows[0].is_banned) {
+        throw new UnauthorizedException('Geçersiz oturum.');
+      }
+
+      const user = { id: rows[0].id, username: rows[0].username, role: rows[0].role };
+      const newToken = this.signToken(user);
+
+      return {
+        message: 'Token yenilendi.',
+        user,
+        token: newToken,
+      };
+    } catch {
+      throw new UnauthorizedException('Geçersiz veya süresi dolmuş token.');
+    }
+  }
+
 }
