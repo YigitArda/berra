@@ -51,6 +51,7 @@ export function ForumClient() {
         isEmpty={forumQuery.isSuccess && (forumQuery.data?.threads.length ?? 0) === 0}
         error={forumQuery.error}
         loadingTitle="Konular yükleniyor..."
+        skeletonLines={5}
         emptyTitle="Henüz konu yok"
         emptyDescription="Bu kategoride henüz konu açılmamış."
         onRetry={() => forumQuery.refetch()}
