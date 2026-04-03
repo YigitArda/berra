@@ -233,6 +233,8 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 /* MODALS */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;display:grid;place-items:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .18s;}
 .overlay.open{opacity:1;pointer-events:all;}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:190;opacity:0;pointer-events:none;transition:opacity .18s;}
+body.modal-open .modal-backdrop.open{opacity:1;pointer-events:all;}
 .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;width:100%;max-width:min(460px,92vw);padding:20px;transform:translateY(8px);transition:transform .18s;}
 .overlay.open .modal{transform:translateY(0);}
 .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
