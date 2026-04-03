@@ -31,6 +31,7 @@ export default function SearchPage() {
           <Button onClick={() => setSubmitted(q)}>Ara</Button>
         </div>
       </Card>
+
       <div className="grid gap-2">
         {searchQuery.isError && (
           <Card>
@@ -42,12 +43,6 @@ export default function SearchPage() {
             <p>Sonuç bulunamadı.</p>
           </Card>
         )}
-        {(searchQuery.data?.items ?? []).map((item) => (
-          <Card key={item.id}>
-            <p className="font-semibold">#{item.id}</p>
-            <p>{item.body}</p>
-          </Card>
-        ))}
       </div>
     </div>
   );

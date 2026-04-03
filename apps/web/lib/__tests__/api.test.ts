@@ -2,8 +2,21 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiError, apiFetch, API_BASE } from '../api';
 
 describe('apiFetch', () => {
+  beforeEach(async () => {
+    vi.resetModules();
+    vi.stubEnv('API_BASE', 'http://localhost:4000/api');
+
+    const apiModule = await import('../api');
+    const urlModule = await import('../url');
+
+    apiFetch = apiModule.apiFetch;
+    apiBase = apiModule.API_BASE;
+    joinApiUrl = urlModule.joinApiUrl;
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
   });
 
   it('returns parsed JSON response', async () => {

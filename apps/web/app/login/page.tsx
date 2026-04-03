@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import type { AuthResponse, LoginRequest } from '@berra/shared';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { FormField } from '../../components/ui/form-field';
@@ -37,10 +38,14 @@ export default function LoginPage() {
         method: 'POST',
         body: JSON.stringify(payload satisfies LoginRequest),
       }),
+    onMutate: () => {
+      setGeneralError(null);
+    },
     onSuccess: async () => {
       setGeneralError(null);
       await queryClient.invalidateQueries({ queryKey: sessionQueryKey });
-      const nextPath = searchParams.get('next') ?? '/dashboard';
+      const nextCandidate = searchParams.get('next');
+      const nextPath = nextCandidate?.startsWith('/') ? nextCandidate : '/dashboard';
       router.replace(nextPath);
       router.refresh();
     },
@@ -56,7 +61,16 @@ export default function LoginPage() {
   return (
     <Card className="mx-auto max-w-md">
       <h1 className="mb-4 text-2xl font-bold">Giriş</h1>
-      <form onSubmit={form.handleSubmit((values) => loginMutation.mutate(values))} className="grid gap-4">
+      <form
+        onSubmit={form.handleSubmit((values) => loginMutation.mutate(values))}
+        className="grid gap-4"
+        aria-busy={loginMutation.isPending}
+      >
+        {generalError && (
+          <p role="alert" className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+            {generalError}
+          </p>
+        )}
         <FormField id="email" label="Email" helperText="Hesabınızda kayıtlı email adresi." errorText={emailError}>
           <Input
             id="email"
@@ -79,7 +93,7 @@ export default function LoginPage() {
           />
         </FormField>
 
-        <Button type="submit" disabled={loginMutation.isPending}>
+        <Button type="submit" disabled={loginMutation.isPending} aria-busy={loginMutation.isPending}>
           {loginMutation.isPending ? 'Gönderiliyor...' : 'Giriş yap'}
         </Button>
       </form>

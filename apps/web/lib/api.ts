@@ -1,4 +1,5 @@
-import { joinUrl } from './url';
+import { API_BASE, getApiBaseFallbackMessage, hasApiBase } from './env';
+import { joinApiUrl } from './url';
 
 export type ApiErrorModel = {
   code: string;
@@ -62,6 +63,10 @@ function normalizeApiError(payload: unknown, status: number): ApiErrorModel {
 }
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  if (!hasApiBase()) {
+    throw new Error(getApiBaseFallbackMessage());
+  }
+
   const headers = new Headers(init?.headers);
   const body = init?.body;
   const isJsonBody =
@@ -71,7 +76,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     headers.set('Content-Type', 'application/json');
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(joinApiUrl(API_BASE, path), {
     ...init,
     credentials: 'include',
     headers,
