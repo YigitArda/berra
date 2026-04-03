@@ -267,6 +267,13 @@ CREATE INDEX IF NOT EXISTS idx_threads_cat_pin    ON threads (category_id, is_pi
 CREATE INDEX IF NOT EXISTS idx_feed_comments_post ON feed_comments (feed_post_id, created_at ASC);
 CREATE INDEX IF NOT EXISTS idx_reports_status     ON reports (status, created_at DESC);
 
+-- Full-text search indexleri (forum araması)
+CREATE INDEX IF NOT EXISTS idx_threads_title_fts
+  ON threads USING GIN (to_tsvector('simple', COALESCE(title, '')));
+CREATE INDEX IF NOT EXISTS idx_posts_body_fts
+  ON posts USING GIN (to_tsvector('simple', COALESCE(body, '')))
+  WHERE is_deleted = false;
+
 -- ── BAŞLANGIÇ VERİLERİ ────────────────────────────────────────
 
 -- Forum kategorileri
