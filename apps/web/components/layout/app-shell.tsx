@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import { useLogout } from '../../hooks/use-logout';
 import { useRealtimeNotifications } from '../../hooks/use-realtime-notifications';
 import { useSession } from '../../hooks/use-session';
@@ -11,9 +11,35 @@ import { Button } from '../ui/button';
 
 export function AppShell({ children }: { children: ReactNode }) {
   useRealtimeNotifications();
+  const { isAuthenticated } = useSession();
+  const logoutMutation = useLogout();
   const unread = useAppStore((s) => s.unreadCount);
   const toastMessage = useAppStore((s) => s.toastMessage);
-  const setToastMessage = useAppStore((s) => s.setToastMessage);
+  const clearToast = useAppStore((s) => s.clearToast);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+      toastTimeoutRef.current = null;
+    }
+
+    if (!toastMessage) {
+      return;
+    }
+
+    toastTimeoutRef.current = setTimeout(() => {
+      clearToast();
+      toastTimeoutRef.current = null;
+    }, 4000);
+
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+        toastTimeoutRef.current = null;
+      }
+    };
+  }, [toastMessage, clearToast]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -45,7 +71,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <button
             type="button"
             className="rounded bg-slate-700 px-2 py-1 text-xs hover:bg-slate-600"
-            onClick={() => setToastMessage(null)}
+            onClick={clearToast}
           >
             Kapat
           </button>

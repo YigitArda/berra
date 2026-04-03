@@ -7,6 +7,7 @@ type AppState = {
   setUnreadCount: (value: number) => void;
   toastMessage: string | null;
   setToastMessage: (value: string | null) => void;
+  clearToast: () => void;
 };
 
 export const useAppStore = create<AppState>((set) => ({
@@ -14,4 +15,5 @@ export const useAppStore = create<AppState>((set) => ({
   setUnreadCount: (value) => set({ unreadCount: value }),
   toastMessage: null,
   setToastMessage: (value) => set({ toastMessage: value }),
+  clearToast: () => set({ toastMessage: null }),
 }));
