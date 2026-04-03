@@ -14,7 +14,7 @@ const registerRules = [
     .isEmail().withMessage('Geçerli bir email girin.')
     .normalizeEmail(),
   body('password')
-    .isLength({ min: 6 }).withMessage('Şifre en az 6 karakter olmalı.'),
+    .isLength({ min: 8 }).withMessage('Şifre en az 8 karakter olmalı.'),
 ];
 
 // Giriş doğrulama kuralları

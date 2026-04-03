@@ -5,8 +5,27 @@ const db      = require('../../config/db');
 const SEARCH_CACHE_TTL_MS = 30 * 1000;
 const SHORT_QUERY_WINDOW_MS = 60 * 1000;
 const SHORT_QUERY_MAX_REQUESTS = 20;
+const SEARCH_CACHE_MAX_SIZE = 500;
 const searchCache = new Map();
 const shortQueryHits = new Map();
+
+// Süresi dolmuş cache girişlerini periyodik olarak temizle
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of searchCache) {
+    if (entry.expiresAt < now) searchCache.delete(key);
+  }
+  // Hâlâ limitin üzerindeyse en eski girişleri sil
+  if (searchCache.size > SEARCH_CACHE_MAX_SIZE) {
+    const excess = searchCache.size - SEARCH_CACHE_MAX_SIZE;
+    let removed = 0;
+    for (const key of searchCache.keys()) {
+      if (removed >= excess) break;
+      searchCache.delete(key);
+      removed++;
+    }
+  }
+}, 60 * 1000).unref();
 
 function getClientIp(req) {
   return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || 'unknown';

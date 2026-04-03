@@ -26,13 +26,25 @@ export class AuthService {
     const hash = await bcrypt.hash(raw, 10);
     const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 14); // 14 gün
 
-    await this.db.query(
+    const { rows } = await this.db.query<{ id: number }>(
       `INSERT INTO user_sessions (user_id, refresh_token_hash, user_agent, ip_address, expires_at)
-       VALUES ($1, $2, $3, $4, $5)`,
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id`,
       [userId, hash, userAgent || null, ipAddress || null, expiresAt],
     );
 
-    return raw;
+    // Token formatı: "{sessionId}.{rawHex}" — refresh endpoint'te indexed lookup için
+    return `${rows[0].id}.${raw}`;
+  }
+
+  private parseRefreshToken(rawRefreshToken: string): { sessionId: number; rawToken: string } | null {
+    const dotIndex = rawRefreshToken.indexOf('.');
+    if (dotIndex < 1) return null;
+    const sessionId = parseInt(rawRefreshToken.slice(0, dotIndex), 10);
+    if (!sessionId || isNaN(sessionId)) return null;
+    const rawToken = rawRefreshToken.slice(dotIndex + 1);
+    if (!rawToken) return null;
+    return { sessionId, rawToken };
   }
 
   async register(username: string, email: string, password: string, userAgent?: string, ipAddress?: string) {
@@ -89,6 +101,11 @@ export class AuthService {
   }
 
   async refresh(rawRefreshToken: string) {
+    const parsed = this.parseRefreshToken(rawRefreshToken);
+    if (!parsed) throw new UnauthorizedException('Geçersiz refresh token.');
+
+    const { sessionId, rawToken } = parsed;
+
     const { rows } = await this.db.query<{
       id: number;
       user_id: number;
@@ -103,12 +120,16 @@ export class AuthService {
               u.username, u.role, u.is_banned
        FROM user_sessions s
        JOIN users u ON u.id = s.user_id
-       ORDER BY s.created_at DESC
-       LIMIT 100`,
+       WHERE s.id = $1`,
+      [sessionId],
     );
 
-    const match = await this.findMatchingSession(rows, rawRefreshToken);
-    if (!match) throw new UnauthorizedException('Geçersiz refresh token.');
+    if (!rows.length) throw new UnauthorizedException('Geçersiz refresh token.');
+
+    const match = rows[0];
+    const tokenValid = await bcrypt.compare(rawToken, match.refresh_token_hash);
+    if (!tokenValid) throw new UnauthorizedException('Geçersiz refresh token.');
+
     if (match.revoked_at) {
       await this.db.query('UPDATE user_sessions SET revoked_at = NOW() WHERE user_id = $1 AND revoked_at IS NULL', [match.user_id]);
       throw new UnauthorizedException('Refresh token tekrar kullanımı algılandı. Lütfen tekrar giriş yapın.');
@@ -128,28 +149,17 @@ export class AuthService {
     return { message: 'Token yenilendi.', user, accessToken, refreshToken };
   }
 
-  private async findMatchingSession(
-    sessions: Array<{ id: number; refresh_token_hash: string; [k: string]: unknown }>,
-    rawRefreshToken: string,
-  ) {
-    for (const s of sessions) {
-      const ok = await bcrypt.compare(rawRefreshToken, s.refresh_token_hash);
-      if (ok) return s;
-    }
-    return null;
-  }
-
   async logout(rawRefreshToken?: string) {
     if (!rawRefreshToken) return { message: 'Çıkış yapıldı.' };
 
-    const { rows } = await this.db.query<{ id: number; refresh_token_hash: string }>(
-      'SELECT id, refresh_token_hash FROM user_sessions WHERE revoked_at IS NULL ORDER BY created_at DESC LIMIT 30',
-    );
-
-    for (const s of rows) {
-      if (await bcrypt.compare(rawRefreshToken, s.refresh_token_hash)) {
-        await this.db.query('UPDATE user_sessions SET revoked_at = NOW() WHERE id = $1', [s.id]);
-        break;
+    const parsed = this.parseRefreshToken(rawRefreshToken);
+    if (parsed) {
+      const { rows } = await this.db.query<{ id: number; refresh_token_hash: string }>(
+        'SELECT id, refresh_token_hash FROM user_sessions WHERE id = $1 AND revoked_at IS NULL',
+        [parsed.sessionId],
+      );
+      if (rows.length && (await bcrypt.compare(parsed.rawToken, rows[0].refresh_token_hash))) {
+        await this.db.query('UPDATE user_sessions SET revoked_at = NOW() WHERE id = $1', [rows[0].id]);
       }
     }
 
