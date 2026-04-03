@@ -25,6 +25,7 @@ export default function ModelDetailPage({ params }: { params: { slug: string } }
 
   const modelQuery = useQuery({
     queryKey: ['models', params.slug],
+    // CUTOVER_PROXY: `/discovery/*` requests go through Nest API and are proxied during migration.
     queryFn: () => apiFetch<ModelDetailResponse>(`/discovery/models/${params.slug}`),
   });
 
@@ -32,6 +33,7 @@ export default function ModelDetailPage({ params }: { params: { slug: string } }
     mutationFn: () => {
       const modelId = modelQuery.data?.model.id;
       if (!modelId) return Promise.reject(new Error('Model henüz yüklenmedi'));
+      // CUTOVER_PROXY: `/discovery/*` requests go through Nest API and are proxied during migration.
       return apiFetch(`/discovery/models/${modelId}/follow`, { method: isFollowing ? 'DELETE' : 'POST' });
     },
     onSuccess: () => setIsFollowing((prev) => !prev),

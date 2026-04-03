@@ -83,6 +83,7 @@ export function ThreadClient({ slug }: { slug: string }) {
     mutationFn: () => {
       const threadId = threadQuery.data?.thread.id;
       if (!threadId) return Promise.reject(new Error('Thread bulunamadı'));
+      // CUTOVER_PROXY: `/discovery/*` requests go through Nest API and are proxied during migration.
       return apiFetch(`/discovery/threads/${threadId}/follow`, {
         method: isFollowing ? 'DELETE' : 'POST',
       });

@@ -16,6 +16,7 @@ type Business = {
 };
 
 export function useBusinesses(category: string, city: string) {
+  // CUTOVER_PROXY: `/businesses` requests go through Nest API and are proxied during migration.
   const params = new URLSearchParams();
   if (category) params.set('cat', category);
   if (city) params.set('city', city);
