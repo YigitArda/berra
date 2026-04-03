@@ -1,3 +1,4 @@
+import React from 'react';
 import { ReactNode } from 'react';
 
 export function Badge({ children }: { children: ReactNode }) {

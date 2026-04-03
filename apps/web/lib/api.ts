@@ -43,5 +43,9 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     throw new ApiError(payload.error ?? payload.message ?? `HTTP ${res.status}`, res.status);
   }
 
-  return (await res.text()) as T;
+  if (res.status === 204) {
+    return null as T;
+  }
+
+  return (await res.json()) as T;
 }
