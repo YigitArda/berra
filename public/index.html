@@ -51,7 +51,8 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 .nav-link{padding:5px 9px;border-radius:var(--r-sm);font-size:0.8rem;font-weight:500;color:var(--text2);cursor:pointer;white-space:nowrap;transition:all var(--t);text-decoration:none;border:none;background:transparent;font-family:var(--font);}
 .nav-link:hover{background:var(--bg3);color:var(--text);}
 .nav-link.active{color:var(--text);background:var(--bg3);}
-.nav-right{margin-left:auto;display:flex;align-items:center;gap:7px;}
+.nav-right{margin-left:auto;display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:0;flex-wrap:nowrap;overflow:hidden;}
+.nav-right>*{flex-shrink:0;}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 /* Buton sistemi */
 .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:var(--r-sm);font-family:var(--font);font-size:0.82rem;font-weight:600;cursor:pointer;border:none;transition:all var(--t);text-decoration:none;white-space:nowrap;}
@@ -357,16 +358,23 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 .bio-edit-area::placeholder{color:var(--text3);}
 
 /* ── NAVBAR: BİLDİRİMLER + KULLANICI ── */
-.nav-notif-btn{position:relative;background:none;border:none;cursor:pointer;padding:6px 8px;border-radius:var(--r-sm);color:var(--text2);font-size:1rem;transition:all var(--t);display:flex;align-items:center;gap:4px;}
+.nav-notif-btn{position:relative;background:none;border:none;cursor:pointer;padding:0;border-radius:var(--r-sm);color:var(--text2);font-size:1rem;transition:all var(--t);display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;min-width:36px;min-height:36px;}
 .nav-notif-btn:hover{background:var(--bg3);color:var(--text);}
 .nav-notif-btn .notif-badge{position:absolute;top:2px;right:2px;min-width:16px;height:16px;padding:0 3px;background:var(--accent);color:#fff;border-radius:var(--r-full);font-size:.6rem;font-weight:700;line-height:16px;text-align:center;}
-.nav-msg-btn{position:relative;background:none;border:none;cursor:pointer;padding:6px 8px;border-radius:var(--r-sm);color:var(--text2);font-size:1rem;transition:all var(--t);}
+.nav-msg-btn{position:relative;background:none;border:none;cursor:pointer;padding:0;border-radius:var(--r-sm);color:var(--text2);font-size:1rem;transition:all var(--t);display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;min-width:36px;min-height:36px;}
 .nav-msg-btn:hover{background:var(--bg3);color:var(--text);}
 .nav-msg-btn .msg-badge{position:absolute;top:2px;right:2px;min-width:16px;height:16px;padding:0 3px;background:var(--blue);color:#fff;border-radius:var(--r-full);font-size:.6rem;font-weight:700;line-height:16px;text-align:center;}
 .nav-user-chip{display:flex;align-items:center;gap:7px;padding:4px 10px 4px 5px;border-radius:var(--r-full);cursor:pointer;border:1px solid var(--border);background:var(--bg3);transition:all var(--t);}
 .nav-user-chip:hover{border-color:var(--border2);background:var(--bg2);}
 .nav-user-ava{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0;}
-.nav-user-name{font-size:.8rem;font-weight:600;color:var(--text);}
+.nav-user-name{font-size:.8rem;font-weight:600;color:var(--text);max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nav-more-wrap{position:relative;display:none;}
+.nav-more-btn{width:36px;height:36px;min-width:36px;min-height:36px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.15rem;line-height:1;}
+.nav-more-btn:hover{color:var(--text);border-color:var(--border2);}
+.nav-more-menu{position:absolute;top:calc(100% + 6px);right:0;min-width:150px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-md);padding:6px;display:none;z-index:70;}
+.nav-more-menu.open{display:flex;flex-direction:column;gap:4px;}
+.nav-more-item{background:none;border:none;border-radius:var(--r-sm);color:var(--text);font-family:var(--font);font-size:.82rem;padding:8px 10px;cursor:pointer;text-align:left;white-space:nowrap;}
+.nav-more-item:hover{background:var(--bg3);}
 
 /* ── FEED KART: YENİ STILLER ── */
 .feed-item.is-trend{border-left:3px solid var(--accent)!important;}
@@ -494,14 +502,21 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 @media (max-width: 600px) {
   .navbar { padding: 0 10px; gap: 6px; }
   .nav-user-name { display: none; }
+  .nav-right { gap: 4px; }
   .nav-search { max-width: 120px; }
   .logo-dot { display: none; }
   .feed-item { margin: 0 0 6px; border-radius: 8px; }
   .compose-area { border-radius: 8px; margin: 0 0 8px; }
   .post-detail-text { font-size: .95rem; }
   .modal-content { margin: 10px; border-radius: var(--r-lg); }
-  .nav-notif-btn, .nav-msg-btn { padding: 4px 6px; }
   .page-inner { padding: 12px; }
+}
+@media (max-width: 760px) {
+  .nav-right .nav-optional { display: none; }
+  .nav-more-wrap { display: block; }
+}
+@media (min-width: 761px) {
+  .nav-more-wrap { display: none !important; }
 }
 /* Hamburger menü butonu (mobilde nav-links yerine) */
 .nav-hamburger { display: none; background: none; border: none; color: var(--text2); cursor: pointer; padding: 6px; font-size: 1.2rem; }
@@ -633,8 +648,14 @@ body.light .profile-header { background: var(--bg2); }
   </div>
   <button class="nav-hamburger" id="btnHamburger" aria-label="Menüyü aç" aria-expanded="false" aria-controls="mobileMenu" onclick="toggleMobileMenu()">☰</button>
   <div class="nav-right" id="navRight">
-    <button class="btn btn-ghost" id="btnLogin">Giriş Yap</button>
+    <button class="btn btn-ghost nav-optional" id="btnLogin">Giriş Yap</button>
     <button class="btn btn-accent" id="btnRegBtn">Kayıt Ol</button>
+    <div class="nav-more-wrap">
+      <button class="nav-more-btn" id="navMoreBtn" aria-haspopup="true" aria-expanded="false" aria-controls="navMoreMenu" onclick="toggleNavMoreMenu(event)">⋯</button>
+      <div class="nav-more-menu" id="navMoreMenu">
+        <button class="nav-more-item" onclick="openModal('authModal');closeNavMoreMenu()">Giriş Yap</button>
+      </div>
+    </div>
   </div>
 </div>
 <!-- Mobil menü -->
@@ -1492,11 +1513,18 @@ function setUser(u) {
     <button class="nav-notif-btn" title="Bildirimler" onclick="openNotifPanel()">
       🔔${unreadCount > 0 ? `<span class="notif-badge">${unreadCount}</span>` : ''}
     </button>
-    <button class="nav-user-chip" onclick="navigate('/profile/${escapeHtml(u.username)}')" aria-label="Profil sayfasına git">
+    <button class="nav-user-chip nav-optional" onclick="navigate('/profile/${escapeHtml(u.username)}')" aria-label="Profil sayfasına git">
       <div class="nav-user-ava ${avaClass}">${escapeHtml(u.ava || u.username[0].toUpperCase())}</div>
       <span class="nav-user-name">${escapeHtml(u.username)}</span>
     </button>
-    <button class="btn btn-ghost btn-sm" onclick="doLogout()">Çıkış</button>`;
+    <button class="btn btn-ghost btn-sm nav-optional" onclick="doLogout()">Çıkış</button>
+    <div class="nav-more-wrap">
+      <button class="nav-more-btn" id="navMoreBtn" aria-haspopup="true" aria-expanded="false" aria-controls="navMoreMenu" onclick="toggleNavMoreMenu(event)">⋯</button>
+      <div class="nav-more-menu" id="navMoreMenu">
+        <button class="nav-more-item" onclick="navigate('/profile/${escapeHtml(u.username)}');closeNavMoreMenu()">Profil</button>
+        <button class="nav-more-item" onclick="doLogout();closeNavMoreMenu()">Çıkış</button>
+      </div>
+    </div>`;
   const ca2 = document.getElementById('composeAva');
   if (ca2) { ca2.textContent = u.ava || u.username[0].toUpperCase(); ca2.className = 'compose-ava ' + avaClass; }
   setTimeout(renderNavBadges, 0); // async olarak çalıştır
@@ -1514,10 +1542,20 @@ function doLogout() {
     window._tokenRefreshInterval = null;
   }
   document.getElementById('navRight').innerHTML = `
-    <button class="btn btn-ghost" id="btnLogin">Giriş Yap</button>
+    <button class="btn btn-ghost nav-optional" id="btnLogin">Giriş Yap</button>
     <button class="btn btn-accent" id="btnRegBtn">Kayıt Ol</button>`;
   document.getElementById('btnLogin').onclick = () => openModal('authModal');
   document.getElementById('btnRegBtn').onclick = () => { openModal('authModal'); switchAuth('register'); };
+  const navRight = document.getElementById('navRight');
+  if (navRight) {
+    navRight.insertAdjacentHTML('beforeend', `
+      <div class="nav-more-wrap">
+        <button class="nav-more-btn" id="navMoreBtn" aria-haspopup="true" aria-expanded="false" aria-controls="navMoreMenu" onclick="toggleNavMoreMenu(event)">⋯</button>
+        <div class="nav-more-menu" id="navMoreMenu">
+          <button class="nav-more-item" onclick="openModal('authModal');closeNavMoreMenu()">Giriş Yap</button>
+        </div>
+      </div>`);
+  }
   const ca = document.getElementById('composeAva');
   if (ca) { ca.textContent = '👤'; ca.className = 'compose-ava'; }
   showToast('Çıkış yapıldı.', 'ok');
@@ -2939,6 +2977,19 @@ function showMsgSidebar() {
 // ══════════════════════════════════════════════════════════════
 // MOBİL HAMBURGER MENÜ
 // ══════════════════════════════════════════════════════════════
+function closeNavMoreMenu() {
+  const menu = document.getElementById('navMoreMenu');
+  const btn = document.getElementById('navMoreBtn');
+  menu?.classList.remove('open');
+  btn?.setAttribute('aria-expanded', 'false');
+}
+function toggleNavMoreMenu(event) {
+  event?.stopPropagation();
+  const menu = document.getElementById('navMoreMenu');
+  const btn = document.getElementById('navMoreBtn');
+  const isOpen = menu?.classList.toggle('open');
+  btn?.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+}
 function toggleMobileMenu() {
   const menu = document.getElementById('mobileMenu');
   const btn = document.getElementById('btnHamburger');
@@ -2949,6 +3000,7 @@ function toggleMobileMenu() {
 }
 // Menü dışına tıklayınca kapat
 document.addEventListener('click', e => {
+  if (!e.target.closest('.nav-more-wrap')) closeNavMoreMenu();
   if (!e.target.closest('#mobileMenu') && !e.target.closest('#btnHamburger')) {
     const menu = document.getElementById('mobileMenu');
     const btn = document.getElementById('btnHamburger');
