@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { ReactNode, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { ReactNode } from 'react';
 import { useLogout } from '../../hooks/use-logout';
 import { useRealtimeNotifications } from '../../hooks/use-realtime-notifications';
 import { useSession } from '../../hooks/use-session';
@@ -12,6 +13,7 @@ import { Button } from '../ui/button';
 
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
   useRealtimeNotifications();
   const { isAuthenticated } = useSession();
   const logoutMutation = useLogout();
@@ -22,15 +24,37 @@ export function AppShell({ children }: { children: ReactNode }) {
   const toastMessage = useAppStore((s) => s.toastMessage);
   const clearToast = useAppStore((s) => s.clearToast);
 
+  const navItems = [
+    { href: '/', label: 'Home' },
+    { href: '/dashboard', label: 'Dashboard' },
+    { href: '/feed', label: 'Liste' },
+    { href: '/search', label: 'Arama' },
+  ];
+
+  const navLinkClass = (href: string) => {
+    const isActive = pathname === href;
+
+    return [
+      'rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
+      isActive
+        ? 'border-primary/60 bg-primary/15 text-primary'
+        : 'border-transparent text-muted hover:border-slate-700 hover:bg-slate-900 hover:text-slate-100 active:border-primary/40 active:bg-primary/10 active:text-slate-100',
+    ].join(' ');
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <header className="border-b border-slate-800">
-        <nav className="mx-auto flex max-w-5xl items-center gap-4 px-4 py-3">
-          <Link href="/">Home</Link>
-          <Link href="/dashboard">Dashboard</Link>
-          <Link href="/feed">Liste</Link>
-          <Link href="/search">Arama</Link>
-          <Link href="/notifications" className="ml-auto flex items-center gap-2">
+        <nav className="mx-auto flex max-w-5xl items-center gap-2 px-4 py-3">
+          {navItems.map((item) => (
+            <Link key={item.href} href={item.href} className={navLinkClass(item.href)}>
+              {item.label}
+            </Link>
+          ))}
+          <Link
+            href="/notifications"
+            className="ml-auto flex items-center gap-2 rounded-md border border-transparent px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:border-slate-700 hover:bg-slate-900 hover:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+          >
             Bildirimler {localBadgeCount > 0 && <Badge>{localBadgeCount}</Badge>}
           </Link>
           {isAuthenticated ? (
@@ -51,7 +75,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <span>{toastMessage}</span>
           <button
             type="button"
-            className="rounded bg-slate-700 px-2 py-1 text-xs hover:bg-slate-600"
+            className="rounded border border-slate-600 bg-slate-800 px-2 py-1 text-xs text-slate-100 transition-colors hover:border-slate-500 hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
             onClick={clearToast}
           >
             Kapat

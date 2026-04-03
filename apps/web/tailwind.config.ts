@@ -5,8 +5,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        surface: '#111827',
-        muted: '#6b7280',
+        surface: '#0f172a',
+        muted: '#94a3b8',
         primary: '#2563eb',
       },
     },

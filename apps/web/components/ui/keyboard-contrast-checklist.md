@@ -26,3 +26,11 @@
 - [ ] Sadece `Tab`/`Shift+Tab` ile form baştan sona dolaşılabildi.
 - [ ] Bir alan hata verdiğinde ekran okuyucu hata metnine bağlanıyor (`aria-describedby`).
 - [ ] Renk körlüğü simülasyonunda state farkları (error/success/info) korunuyor.
+
+## Ana Ekran Hızlı Kontrast Denetimi (Uygulandı)
+
+- [x] Üst navigasyon sekmelerinde `hover`, `active`, `focus-visible` durumları arka plan + kenarlık + metin birlikte değişiyor.
+- [x] Aktif sekme (`current page`) `text-primary` + vurgulu arka plan ile diğerlerinden net ayrılıyor.
+- [x] Ana metinlerde `text-muted` kontrastı artırıldı; ikincil metin okunabilirliği korundu.
+- [x] Kartlarda sınır ve gölgeler düşük yoğunlukta tutulup net ayırıcı olacak şekilde güncellendi.
+- [x] Link odak halkaları koyu zemin üzerinde görünür (`ring-offset-slate-950` + `ring-primary`).
