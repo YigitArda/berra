@@ -25,7 +25,7 @@ export default function ModelDetailPage({ params }: { params: { slug: string } }
 
   const modelQuery = useQuery({
     queryKey: ['models', params.slug],
-    // LEGACY_DEPENDENCY: `/discovery/*` endpoints are still served by legacy Express until Nest discovery module is migrated.
+    // CUTOVER_PROXY: `/discovery/*` requests go through Nest API and are proxied during migration.
     queryFn: () => apiFetch<ModelDetailResponse>(`/discovery/models/${params.slug}`),
   });
 
@@ -33,7 +33,7 @@ export default function ModelDetailPage({ params }: { params: { slug: string } }
     mutationFn: () => {
       const modelId = modelQuery.data?.model.id;
       if (!modelId) return Promise.reject(new Error('Model henüz yüklenmedi'));
-      // LEGACY_DEPENDENCY: `/discovery/*` endpoints are still served by legacy Express until Nest discovery module is migrated.
+      // CUTOVER_PROXY: `/discovery/*` requests go through Nest API and are proxied during migration.
       return apiFetch(`/discovery/models/${modelId}/follow`, { method: isFollowing ? 'DELETE' : 'POST' });
     },
     onSuccess: () => setIsFollowing((prev) => !prev),

@@ -5,7 +5,7 @@ Bu doküman `apps/web` tarafındaki API çağrılarını tek backend hedefi içi
 Durum etiketleri:
 
 - `nest-ready`: Nest API üzerinde karşılığı var, doğrudan yeni API kontratına bağlı.
-- `legacy-dependency`: Şu an legacy Express endpoint'ine bağlı, Nest modülü henüz yok.
+- `nest-proxied`: İstek Nest'e gelir, Nest cutover proxy ile legacy endpoint'e yönlendirir.
 - `dual-compatible`: Legacy ve Nest tarafında aynı kontratla çalışabilen geçiş noktası.
 
 ## Endpoint envanteri
@@ -26,11 +26,11 @@ Durum etiketleri:
 | `GET /profile/:username` | public profile page | dual-compatible | Legacy + Nest karşılığı var |
 | `PUT /profile/me` | profile edit | nest-ready | Nest kontratına hizalandı |
 | `GET /search` | search page/hook | nest-ready | `SearchController.search` |
-| `GET/POST /forum/*` | forum + thread pages | legacy-dependency | Nest forum modülü eksik |
-| `GET/POST /businesses*` | sanayi rehberi | legacy-dependency | Nest businesses modülü eksik |
-| `GET/POST/DELETE /bookmarks*` | bookmarks | legacy-dependency | Nest bookmarks modülü eksik |
-| `POST /reports` | report hook | legacy-dependency | Nest reports modülü eksik |
-| `GET/POST/DELETE /discovery/*` | models/thread follow | legacy-dependency | Nest discovery modülü eksik |
+| `GET/POST /forum/*` | forum + thread pages | nest-proxied | `CutoverProxyModule` üzerinden legacy forum'a aktarılır |
+| `GET/POST /businesses*` | sanayi rehberi | nest-proxied | `CutoverProxyModule` üzerinden legacy businesses'e aktarılır |
+| `GET/POST/DELETE /bookmarks*` | bookmarks | nest-proxied | `CutoverProxyModule` üzerinden legacy bookmarks'a aktarılır |
+| `POST /reports` | report hook | nest-proxied | `CutoverProxyModule` üzerinden legacy reports'a aktarılır |
+| `GET/POST/DELETE /discovery/*` | models/thread follow | nest-proxied | `CutoverProxyModule` üzerinden legacy discovery'e aktarılır |
 
 ## Karar matrisi (taşınacak / geçici kalacak)
 
@@ -45,8 +45,10 @@ Durum etiketleri:
 
 ## Uygulama notu
 
-`apps/web` içinde legacy bağımlı çağrıların yanına `LEGACY_DEPENDENCY` notu eklendi; böylece migration sırasında grep ile kolay izlenebilir:
+`apps/web` içinde proxy üzerinden çalışan çağrıların yanına `CUTOVER_PROXY` notu eklendi; böylece migration sırasında grep ile kolay izlenebilir:
 
 ```bash
-rg "LEGACY_DEPENDENCY" apps/web
+rg "CUTOVER_PROXY" apps/web
 ```
+
+Cutover proxy için `apps/api` ortamında `LEGACY_API_ORIGIN` tanımlanmalıdır.

@@ -44,7 +44,8 @@ Bu doküman legacy SPA (`public/index.html` + `public/assets/js/app-init.js`) il
 Next ekran parity'si tamamlanmış olsa bile backend migrasyonu kısmi durumdadır:
 
 - Nest-ready akışlar: auth, feed, profile, search, notifications.
-- Legacy bağımlı akışlar: forum, discovery, businesses, bookmarks, reports.
+- Nest proxy akışlar: forum, discovery, businesses, bookmarks, reports
+  (`CutoverProxyModule` istekleri legacy servise aktarır).
 
 Detaylı envanter için: `docs/next-cutover-api-matrix.md`.
 

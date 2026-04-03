@@ -16,7 +16,7 @@ type Business = {
 };
 
 export function useBusinesses(category: string, city: string) {
-  // LEGACY_DEPENDENCY: `/businesses` endpoints are still served by legacy Express until Nest businesses module is migrated.
+  // CUTOVER_PROXY: `/businesses` requests go through Nest API and are proxied during migration.
   const params = new URLSearchParams();
   if (category) params.set('cat', category);
   if (city) params.set('city', city);
