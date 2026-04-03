@@ -26,11 +26,19 @@ export function AppShell({ children }: { children: ReactNode }) {
   const localBadgeCount = useAppStore((s) => s.localBadgeCount);
   const toastMessage = useAppStore((s) => s.toastMessage);
   const clearToast = useAppStore((s) => s.clearToast);
+  const theme = useAppStore((s) => s.theme);
+  const toggleTheme = useAppStore((s) => s.toggleTheme);
 
   const navItems = [
     { href: '/', label: 'Home' },
     { href: '/dashboard', label: 'Dashboard' },
+    { href: '/forum', label: 'Forum' },
     { href: '/feed', label: 'Liste' },
+    { href: '/following', label: 'Takip' },
+    { href: '/models', label: 'Modeller' },
+    { href: '/karsilastir', label: '⚖️ Karşılaştır' },
+    { href: '/rehber', label: 'Rehber' },
+    { href: '/sanayi', label: 'Sanayi' },
     { href: '/search', label: 'Arama' },
   ];
 
@@ -46,9 +54,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <header className="border-b border-slate-800">
-        <nav className="mx-auto flex max-w-5xl items-center gap-2 px-4 py-3">
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+      <header className="border-b border-slate-200 dark:border-slate-800">
+        <nav className="mx-auto flex max-w-5xl items-center gap-2 overflow-x-auto px-4 py-3">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -80,14 +88,17 @@ export function AppShell({ children }: { children: ReactNode }) {
               Giriş
             </Link>
           )}
+          <Button type="button" variant="ghost" size="sm" onClick={toggleTheme}>
+            {theme === 'dark' ? '☀️ Aydınlık' : '🌙 Karanlık'}
+          </Button>
         </nav>
       </header>
       {toastMessage && (
-        <div className="fixed right-4 top-4 flex items-center gap-3 rounded-md bg-slate-800 px-4 py-2 text-sm shadow">
+        <div className="fixed right-4 top-4 flex items-center gap-3 rounded-md bg-slate-200 px-4 py-2 text-sm shadow dark:bg-slate-800">
           <span>{toastMessage}</span>
           <button
             type="button"
-            className="rounded border border-slate-600 bg-slate-800 px-2 py-1 text-xs text-slate-100 transition-colors hover:border-slate-500 hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+            className="rounded border border-slate-400 bg-slate-100 px-2 py-1 text-xs text-slate-900 transition-colors hover:border-slate-500 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-700 dark:focus-visible:ring-offset-slate-950"
             onClick={clearToast}
           >
             Kapat

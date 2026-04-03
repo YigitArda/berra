@@ -46,8 +46,32 @@ function sanitizeObj(obj) {
       obj[key] = RICH_TEXT_KEYS.has(key)
         ? sanitizeRichText(obj[key])
         : stripDangerous(obj[key]);
-    } else if (obj[key] && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+    } else if (Array.isArray(obj[key])) {
+      sanitizeArray(obj[key], key);
+    } else if (obj[key] && typeof obj[key] === 'object') {
       sanitizeObj(obj[key]);
+    }
+  }
+}
+
+function sanitizeArray(items, parentKey = '') {
+  for (let i = 0; i < items.length; i += 1) {
+    const value = items[i];
+
+    if (typeof value === 'string') {
+      items[i] = RICH_TEXT_KEYS.has(parentKey)
+        ? sanitizeRichText(value)
+        : stripDangerous(value);
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      sanitizeArray(value, parentKey);
+      continue;
+    }
+
+    if (value && typeof value === 'object') {
+      sanitizeObj(value);
     }
   }
 }
@@ -58,7 +82,7 @@ function validateImageMime(dataUrl) {
   if (!dataUrl.startsWith('data:')) return true; // HTTP URL — bu middleware'de kontrol etme
   const match = dataUrl.match(/^data:([^;]+);base64,/);
   if (!match) return false;
-  return ALLOWED_IMAGE_MIME.includes(match[1]);
+  return ALLOWED_IMAGE_MIME.includes(match[1].toLowerCase());
 }
 
 module.exports = { sanitizeBody, validateImageMime, sanitizeRichText };
