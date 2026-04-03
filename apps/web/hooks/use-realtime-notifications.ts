@@ -2,12 +2,13 @@
 
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { io } from 'socket.io-client';
 import { NotificationsResponse, notificationsQueryKey } from '../lib/notifications';
+import { getSocket, releaseSocket } from '../lib/socket';
 import { useAppStore } from '../store/app-store';
 
-type NotificationPayload = {
+type NotificationCreatedPayload = {
   message: string;
+  notificationId?: number;
 };
 
 export function useRealtimeNotifications() {
@@ -15,10 +16,10 @@ export function useRealtimeNotifications() {
   const setToastMessage = useAppStore((s) => s.setToastMessage);
 
   useEffect(() => {
-    const socket = io(SOCKET_URL, { withCredentials: true });
+    const socket = getSocket();
     let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
-    socket.on('notification.created', (payload: { message: string; notificationId?: number }) => {
+    const onNotificationCreated = (payload: NotificationPayload) => {
       queryClient.setQueryData<NotificationsResponse>(notificationsQueryKey, (current) => {
         if (!current) {
           return {
@@ -54,19 +55,27 @@ export function useRealtimeNotifications() {
         };
       });
 
-      const nextUnread = (queryClient.getQueryData<NotificationsResponse>(notificationsQueryKey)?.unread)
-        ?? (useAppStore.getState().unreadCount + 1);
+      const nextUnread =
+        queryClient.getQueryData<NotificationsResponse>(notificationsQueryKey)?.unread ??
+        useAppStore.getState().unreadCount + 1;
       useAppStore.getState().setUnreadCount(nextUnread);
       setToastMessage(payload.message);
-      if (toastTimer) clearTimeout(toastTimer);
+      if (toastTimer) {
+        clearTimeout(toastTimer);
+      }
       toastTimer = setTimeout(() => {
         setToastMessage(null);
       }, 4000);
-    });
+    };
+
+    socket.on('notification.created', onNotificationCreated);
 
     return () => {
-      if (toastTimer) clearTimeout(toastTimer);
-      socket.disconnect();
+      if (toastTimer) {
+        clearTimeout(toastTimer);
+      }
+      socket.off('notification.created', onNotificationCreated);
+      releaseSocket();
     };
   }, [queryClient, setToastMessage]);
 }

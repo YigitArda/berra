@@ -5,6 +5,12 @@ import userEvent from '@testing-library/user-event';
 import RegisterPage from '../page';
 import { apiFetch } from '../../../lib/api';
 
+const pushMock = vi.fn();
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: pushMock }),
+}));
+
 vi.mock('../../../lib/api', () => ({
   apiFetch: vi.fn(),
 }));
@@ -21,15 +27,19 @@ function renderWithClient(ui: React.ReactElement) {
 }
 
 describe('RegisterPage integration', () => {
-  it('submits the form and shows error message on failure', async () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('submits register form and redirects to dashboard', async () => {
     const user = userEvent.setup();
-    vi.mocked(apiFetch).mockRejectedValue(new Error('Email kullanımda'));
+    vi.mocked(apiFetch).mockResolvedValue({ message: 'ok' });
 
     renderWithClient(<RegisterPage />);
 
-    await user.type(screen.getByPlaceholderText('Kullanıcı adı'), 'testuser');
-    await user.type(screen.getByPlaceholderText('Email'), 'test@example.com');
-    await user.type(screen.getByPlaceholderText('Şifre'), 'password123');
+    await user.type(screen.getByPlaceholderText('berra_user'), 'testuser');
+    await user.type(screen.getByPlaceholderText('ornek@berra.app'), 'test@example.com');
+    await user.type(screen.getByPlaceholderText('••••••••'), 'password123');
     await user.click(screen.getByRole('button', { name: 'Kayıt ol' }));
 
     await waitFor(() => {
@@ -43,6 +53,8 @@ describe('RegisterPage integration', () => {
       });
     });
 
-    expect(await screen.findByText('Email kullanımda')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(pushMock).toHaveBeenCalledWith('/dashboard');
+    });
   });
 });

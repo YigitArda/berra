@@ -14,6 +14,7 @@ import { FastifyRequest } from 'fastify';
 import IORedis from 'ioredis';
 import jwt from 'jsonwebtoken';
 import { Server, Socket } from 'socket.io';
+import { REALTIME_EVENT } from '../../../../packages/shared/src';
 
 @WebSocketGateway({
   cors: {
@@ -70,15 +71,15 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection 
   }
 
   emitNotificationCreated(payload: { userId: number; notificationId?: number; message: string }) {
-    this.server.to(`user:${payload.userId}`).emit('notification.created', payload);
+    this.server.to(`user:${payload.userId}`).emit(REALTIME_EVENT.notificationCreated, payload);
   }
 
   emitContentUpdated(payload: { contentId: number; entityRoom?: string; action: 'created' | 'updated' }) {
     if (payload.entityRoom) {
-      this.server.to(payload.entityRoom).emit('content.updated', payload);
+      this.server.to(payload.entityRoom).emit(REALTIME_EVENT.contentUpdated, payload);
       return;
     }
-    this.server.emit('content.updated', payload);
+    this.server.emit(REALTIME_EVENT.contentUpdated, payload);
   }
 
   emitMessageReceived(payload: { userId: number; fromUserId?: number; message: string }) {
@@ -88,15 +89,15 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection 
   private forwardRedisEvent(message: string) {
     try {
       const envelope = JSON.parse(message) as
-        | { event: 'notification.created'; payload: { userId: number; notificationId: number; message: string } }
-        | { event: 'content.updated'; payload: { contentId: number; action: 'created' | 'updated'; entityRoom?: string } };
+        | { event: typeof REALTIME_EVENT.notificationCreated; payload: { userId: number; notificationId: number; message: string } }
+        | { event: typeof REALTIME_EVENT.contentUpdated; payload: { contentId: number; action: 'created' | 'updated'; entityRoom?: string } };
 
-      if (envelope.event === 'notification.created') {
+      if (envelope.event === REALTIME_EVENT.notificationCreated) {
         this.emitNotificationCreated(envelope.payload);
         return;
       }
 
-      if (envelope.event === 'content.updated') {
+      if (envelope.event === REALTIME_EVENT.contentUpdated) {
         this.emitContentUpdated(envelope.payload);
       }
     } catch (err) {

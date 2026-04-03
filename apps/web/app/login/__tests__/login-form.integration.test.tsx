@@ -5,6 +5,14 @@ import userEvent from '@testing-library/user-event';
 import LoginPage from '../page';
 import { apiFetch } from '../../../lib/api';
 
+const replaceMock = vi.fn();
+const refreshMock = vi.fn();
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ replace: replaceMock, refresh: refreshMock }),
+  useSearchParams: () => ({ get: () => '/feed' }),
+}));
+
 vi.mock('../../../lib/api', () => ({
   apiFetch: vi.fn(),
 }));
@@ -21,14 +29,18 @@ function renderWithClient(ui: React.ReactElement) {
 }
 
 describe('LoginPage integration', () => {
-  it('submits the form and shows error message on failure', async () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('submits login form and redirects to next path', async () => {
     const user = userEvent.setup();
-    vi.mocked(apiFetch).mockRejectedValue(new Error('Geçersiz bilgiler'));
+    vi.mocked(apiFetch).mockResolvedValue({ message: 'ok' });
 
     renderWithClient(<LoginPage />);
 
-    await user.type(screen.getByPlaceholderText('Email'), 'user@example.com');
-    await user.type(screen.getByPlaceholderText('Şifre'), 'password123');
+    await user.type(screen.getByPlaceholderText('ornek@berra.app'), 'user@example.com');
+    await user.type(screen.getByPlaceholderText('••••••••'), 'password123');
     await user.click(screen.getByRole('button', { name: 'Giriş yap' }));
 
     await waitFor(() => {
@@ -41,6 +53,9 @@ describe('LoginPage integration', () => {
       });
     });
 
-    expect(await screen.findByText('Geçersiz bilgiler')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenCalledWith('/feed');
+      expect(refreshMock).toHaveBeenCalled();
+    });
   });
 });

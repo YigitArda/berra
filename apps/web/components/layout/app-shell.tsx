@@ -1,19 +1,27 @@
 'use client';
 
 import Link from 'next/link';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useLogout } from '../../hooks/use-logout';
 import { useRealtimeNotifications } from '../../hooks/use-realtime-notifications';
 import { useSession } from '../../hooks/use-session';
+import { useNotifications } from '../../hooks/use-notifications';
 import { useAppStore } from '../../store/app-store';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 
 export function AppShell({ children }: { children: ReactNode }) {
   useRealtimeNotifications();
-  const unread = useAppStore((s) => s.unreadCount);
+  const { isAuthenticated } = useSession();
+  const logoutMutation = useLogout();
+  const notificationsQuery = useNotifications();
+
+  const localBadgeCount = useAppStore((s) => s.localBadgeCount);
+  const setLocalBadgeCount = useAppStore((s) => s.setLocalBadgeCount);
   const toastMessage = useAppStore((s) => s.toastMessage);
   const setToastMessage = useAppStore((s) => s.setToastMessage);
+  const { isAuthenticated } = useSession();
+  const logoutMutation = useLogout();
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -24,7 +32,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Link href="/feed">Liste</Link>
           <Link href="/search">Arama</Link>
           <Link href="/notifications" className="ml-auto flex items-center gap-2">
-            Bildirimler {unread > 0 && <Badge>{unread}</Badge>}
+            Bildirimler {localBadgeCount > 0 && <Badge>{localBadgeCount}</Badge>}
           </Link>
           {isAuthenticated ? (
             <Button
@@ -45,7 +53,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <button
             type="button"
             className="rounded bg-slate-700 px-2 py-1 text-xs hover:bg-slate-600"
-            onClick={() => setToastMessage(null)}
+            onClick={clearToast}
           >
             Kapat
           </button>
