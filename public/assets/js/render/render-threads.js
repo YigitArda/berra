@@ -11,7 +11,7 @@ export function renderThreadsModule({ list, escapeHtml }) {
           <div class="thread-title-row">
             ${t.pinned ? '<span class="tag tag-pin">📌</span>' : ''}
             ${t.locked ? '<span class="tag tag-lock">🔒</span>' : ''}
-            <span class="thread-title">${escapeHtml(t.title)}</span>
+            <span class="thread-title" title="${escapeHtml(t.title)}">${escapeHtml(t.title)}</span>
             <span class="tag tag-cat">${escapeHtml(t.cat)}</span>
           </div>
           <div class="thread-meta2"><span data-action="open-profile" data-user="${escapeHtml(t.author)}" style="cursor:pointer;color:var(--text2)">${escapeHtml(t.author)}</span> · ${escapeHtml(t.sub)}</div>
