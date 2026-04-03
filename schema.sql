@@ -206,6 +206,27 @@ CREATE TABLE IF NOT EXISTS bookmarks (
   UNIQUE (user_id, thread_id)
 );
 
+-- Akış yorumları
+CREATE TABLE IF NOT EXISTS feed_comments (
+  id           SERIAL PRIMARY KEY,
+  feed_post_id INTEGER NOT NULL REFERENCES feed_posts(id) ON DELETE CASCADE,
+  user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  body         VARCHAR(500) NOT NULL,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Şikayetler
+CREATE TABLE IF NOT EXISTS reports (
+  id          SERIAL PRIMARY KEY,
+  reporter_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  target_type VARCHAR(20) NOT NULL CHECK (target_type IN ('post','feed_post','feed_comment')),
+  target_id   INTEGER NOT NULL,
+  reason      VARCHAR(100) NOT NULL,
+  status      VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','resolved','dismissed')),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (reporter_id, target_type, target_id)
+);
+
 -- Ek sütunlar (mevcut veritabanlarına güvenle eklenir)
 DO $$ BEGIN
   ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(64);
@@ -213,6 +234,10 @@ DO $$ BEGIN
   -- Soft delete audit alanları
   ALTER TABLE posts ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
   ALTER TABLE posts ADD COLUMN IF NOT EXISTS deleted_by INTEGER REFERENCES users(id) ON DELETE SET NULL;
+  -- Forum yanıt görselleri
+  ALTER TABLE posts ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT '{}';
+  -- Akış yorum sayacı
+  ALTER TABLE feed_posts ADD COLUMN IF NOT EXISTS comment_count INTEGER NOT NULL DEFAULT 0;
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
@@ -239,6 +264,8 @@ CREATE INDEX IF NOT EXISTS idx_threads_locked     ON threads (is_locked) WHERE i
 CREATE INDEX IF NOT EXISTS idx_businesses_status  ON businesses (status);
 CREATE INDEX IF NOT EXISTS idx_posts_thread_live  ON posts (thread_id, created_at ASC) WHERE is_deleted = false;
 CREATE INDEX IF NOT EXISTS idx_threads_cat_pin    ON threads (category_id, is_pinned DESC, last_reply_at DESC);
+CREATE INDEX IF NOT EXISTS idx_feed_comments_post ON feed_comments (feed_post_id, created_at ASC);
+CREATE INDEX IF NOT EXISTS idx_reports_status     ON reports (status, created_at DESC);
 
 -- ── BAŞLANGIÇ VERİLERİ ────────────────────────────────────────
 
