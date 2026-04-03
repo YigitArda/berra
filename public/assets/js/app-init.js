@@ -463,7 +463,8 @@ async function submitComment(id) {
   // Scroll to new comment
   list.lastElementChild?.scrollIntoView({behavior:'smooth',block:'nearest'});
   // API call
-  try { await apiCall('/api/feed/' + id + '/comment', 'POST', {text: txt}); } catch(_){ showToast('Yorum gönderilemedi.', 'err'); }
+  const commentRes = await apiCall('/api/feed/' + id + '/comment', 'POST', { text: txt });
+  if (commentRes.error) showToast(commentRes.error || 'Yorum gönderilemedi.', 'err');
 }
 
 function commentKeydown(e, id) {
@@ -482,10 +483,9 @@ async function likeFeed(id, btn) {
   if (p.liked) { btn.classList.add('heart-anim'); setTimeout(() => btn.classList.remove('heart-anim'), 400); }
   // API'ye gönder (gerçek post için)
   if (id < 1000000000000) { // timestamp ID değilse gerçek DB ID'si
-    try {
-      const method = p.liked ? 'POST' : 'DELETE';
-      await apiCall('/api/feed/' + id + '/like', method);
-    } catch(e) { showToast('Beğeni işlemi başarısız.', 'err'); }
+    const method = p.liked ? 'POST' : 'DELETE';
+    const likeRes = await apiCall('/api/feed/' + id + '/like', method);
+    if (likeRes.error) showToast(likeRes.error || 'Beğeni işlemi başarısız.', 'err');
   }
 }
 
@@ -551,18 +551,42 @@ function doLogout() {
 
 async function apiCall(url, method, body) {
   try {
+    const hasJsonBody = body !== undefined && body !== null;
+    const headers = {};
+    if (hasJsonBody) headers['Content-Type'] = 'application/json';
     const res = await fetch(url, {
       method: method || 'GET', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: body ? JSON.stringify(body) : undefined
+      headers,
+      body: hasJsonBody ? JSON.stringify(body) : undefined
     });
-    if (res.status === 401) {
-      showToast('Oturumun sona erdi, tekrar giriş yap.', 'err');
+
+    const contentType = res.headers.get('content-type') || '';
+    let parsed = null;
+
+    if (res.status === 204) {
+      parsed = null;
+    } else if (contentType.includes('application/json')) {
+      parsed = await res.json();
+    } else {
+      const text = await res.text();
+      parsed = text ? { message: text } : null;
     }
-    return res.json();
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        showToast('Oturumun sona erdi, tekrar giriş yap.', 'err');
+      }
+      return {
+        error: parsed?.error || parsed?.message || `İstek başarısız (${res.status})`,
+        status: res.status
+      };
+    }
+
+    if (parsed === null) return { status: res.status };
+    return parsed;
   } catch(e) {
     showToast('Bağlantı hatası. İnternet bağlantını kontrol et.', 'err');
-    throw e;
+    return { error: 'Bağlantı hatası. İnternet bağlantını kontrol et.', status: 0 };
   }
 }
 
@@ -573,13 +597,15 @@ document.getElementById('doLogin').addEventListener('click', async () => {
   if (!email || !pass) { showErr(errEl, 'Email ve şifre gerekli.'); return; }
   const btn = document.getElementById('doLogin');
   btn.innerHTML = '<span class="spinner"></span>';
-  try {
-    const data = await apiCall('/api/auth/login', 'POST', { email, password: pass });
-    if (data.error) { showErr(errEl, data.error); btn.textContent = 'Giriş Yap'; return; }
-    setUser({ username: data.user.username, ava: data.user.username[0].toUpperCase(), role: data.user.role });
-    closeModal('authModal');
-    showToast('Hoş geldin, ' + data.user.username + '!', 'ok');
-  } catch(e) { showErr(errEl, 'Bağlantı hatası.'); btn.textContent = 'Giriş Yap'; }
+  const data = await apiCall('/api/auth/login', 'POST', { email, password: pass });
+  if (data.error) {
+    showErr(errEl, data.error);
+    btn.textContent = 'Giriş Yap';
+    return;
+  }
+  setUser({ username: data.user.username, ava: data.user.username[0].toUpperCase(), role: data.user.role });
+  closeModal('authModal');
+  showToast('Hoş geldin, ' + data.user.username + '!', 'ok');
 });
 
 document.getElementById('doReg').addEventListener('click', async () => {
@@ -591,14 +617,12 @@ document.getElementById('doReg').addEventListener('click', async () => {
   if (pass.length < 6) { showErr(errEl, 'Şifre en az 6 karakter olmalı.'); return; }
   const btn = document.getElementById('doReg');
   btn.innerHTML = '<span class="spinner"></span>';
-  try {
-    const data = await apiCall('/api/auth/register', 'POST', { username, email, password: pass });
-    if (data.error) { showErr(errEl, data.error); btn.textContent = 'Kayıt Ol'; return; }
-    if (data.errors) { showErr(errEl, data.errors[0].msg); btn.textContent = 'Kayıt Ol'; return; }
-    setUser({ username: data.user.username, ava: data.user.username[0].toUpperCase(), role: data.user.role });
-    closeModal('authModal');
-    showToast('Kayıt başarılı! Hoş geldin, ' + data.user.username + '!', 'ok');
-  } catch(e) { showErr(errEl, 'Bağlantı hatası.'); btn.textContent = 'Kayıt Ol'; }
+  const data = await apiCall('/api/auth/register', 'POST', { username, email, password: pass });
+  if (data.error) { showErr(errEl, data.error); btn.textContent = 'Kayıt Ol'; return; }
+  if (data.errors) { showErr(errEl, data.errors[0].msg); btn.textContent = 'Kayıt Ol'; return; }
+  setUser({ username: data.user.username, ava: data.user.username[0].toUpperCase(), role: data.user.role });
+  closeModal('authModal');
+  showToast('Kayıt başarılı! Hoş geldin, ' + data.user.username + '!', 'ok');
 });
 
 // ── YENİ KONU ────────────────────────────────────────────────
