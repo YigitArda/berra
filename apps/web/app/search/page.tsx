@@ -1,16 +1,13 @@
 'use client';
 
-import React from 'react';
-
 import { useQuery } from '@tanstack/react-query';
+import type { SearchResponse } from '@berra/shared';
 import { useMemo, useState } from 'react';
 import { DataState } from '../../components/data-state';
-import { EmptyState } from '../../components/empty-state';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { apiFetch } from '../../lib/api';
-import type { SearchResponse } from '@berra/shared';
 
 export default function SearchPage() {
   const [q, setQ] = useState('');
@@ -23,30 +20,40 @@ export default function SearchPage() {
     enabled,
   });
 
-  const items = searchQuery.data?.items ?? [];
-
   return (
     <div className="grid gap-4">
       <Card>
         <h1 className="mb-3 text-2xl font-bold">Arama</h1>
         <div className="flex gap-2">
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Arama terimi..." />
-          <Button onClick={() => setSubmitted(q)}>Ara</Button>
+          <Button onClick={() => setSubmitted(q)} disabled={searchQuery.isPending}>
+            {searchQuery.isPending ? 'Aranıyor...' : 'Ara'}
+          </Button>
         </div>
       </Card>
-      <div className="grid gap-2">
-        {searchQuery.isSuccess && searchQuery.data.items.length === 0 && submitted.trim().length > 1 && (
-          <Card>
-            <p>Sonuç bulunamadı.</p>
-          </Card>
-        )}
-        {(searchQuery.data?.items ?? []).map((item) => (
-          <Card key={item.id}>
-            <p className="font-semibold">#{item.id}</p>
-            <p>{item.body}</p>
-          </Card>
-        ))}
-      </div>
+
+      {enabled ? (
+        <DataState
+          isLoading={searchQuery.isLoading}
+          isError={searchQuery.isError}
+          isEmpty={searchQuery.isSuccess && searchQuery.data.items.length === 0}
+          error={searchQuery.error}
+          loadingTitle="Sonuçlar getiriliyor..."
+          emptyTitle="Sonuç bulunamadı"
+          emptyDescription="Farklı bir arama terimi ile tekrar deneyin."
+          onRetry={() => searchQuery.refetch()}
+          isRetrying={searchQuery.isRefetching}
+        >
+          <div className="grid gap-2">
+            {(searchQuery.data?.items ?? []).map((item) => (
+              <Card key={item.id}>
+                <p className="font-semibold">#{item.id}</p>
+                <p>{item.body}</p>
+              </Card>
+            ))}
+          </div>
+        </DataState>
+      ) : null}
     </div>
   );
 }
