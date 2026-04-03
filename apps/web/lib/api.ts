@@ -4,20 +4,13 @@ import { joinApiUrl } from './url';
 export { API_BASE };
 
 export class ApiError extends Error {
-  status: number;
-  payload: unknown;
-
-  constructor(message: string, status: number, payload: unknown) {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly payload: unknown,
+  ) {
     super(message);
     this.name = 'ApiError';
-    this.status = status;
-    this.payload = payload;
-  }
-}
-
-export function getHealthEndpoint(): string | null {
-  if (!hasApiBase()) {
-    return null;
   }
 
   return joinApiUrl(API_BASE, '/health');
