@@ -22,7 +22,7 @@ export function useUpdateProfile() {
 
   return useMutation({
     mutationFn: (payload: { bio: string }) =>
-      apiFetch('/profile/me/info', {
+      apiFetch('/profile/me', {
         method: 'PUT',
         body: JSON.stringify(payload),
       }),
