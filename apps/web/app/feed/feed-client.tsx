@@ -1,6 +1,5 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { DataState } from '../../components/data-state';
 import { InlineAlert } from '../../components/feedback/InlineAlert';
@@ -22,26 +21,10 @@ type FeedPost = {
 
 export function FeedClient() {
   const [body, setBody] = useState('');
-  const queryClient = useQueryClient();
   const { isLoading: isSessionLoading, isAuthenticated } = useRequireAuth();
 
-  const postsQuery = useQuery({
-    queryKey: ['feed', 1],
-    queryFn: () => apiFetch<{ posts: FeedPost[] }>('/feed?page=1'),
-    enabled: isAuthenticated,
-  });
-
-  const createMutation = useMutation({
-    mutationFn: () =>
-      apiFetch('/feed', {
-        method: 'POST',
-        body: JSON.stringify({ body }),
-      }),
-    onSuccess: async () => {
-      setBody('');
-      await queryClient.invalidateQueries({ queryKey: ['feed', 1] });
-    },
-  });
+  const postsQuery = useFeed(isAuthenticated);
+  const createMutation = useCreateFeedPost(() => setBody(''));
 
   if (isSessionLoading) {
     return <Skeleton title="Oturum doğrulanıyor..." lines={2} />;
@@ -53,7 +36,7 @@ export function FeedClient() {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          createMutation.mutate();
+          createMutation.mutate(body);
         }}
         className="mb-5 grid gap-2"
       >

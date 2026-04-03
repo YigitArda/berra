@@ -12,7 +12,6 @@ import { apiFetch } from '../../lib/api';
 export default function SearchPage() {
   const [q, setQ] = useState('');
   const [submitted, setSubmitted] = useState('');
-  const enabled = useMemo(() => submitted.trim().length > 1, [submitted]);
 
   const searchQuery = useQuery({
     queryKey: ['search', submitted],

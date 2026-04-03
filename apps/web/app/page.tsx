@@ -1,13 +1,13 @@
 import Link from 'next/link';
 import { Card } from '../components/ui/card';
-import { getHealthEndpoint } from '../lib/api';
+import { getApiConfigFallbackMessage, getHealthEndpoint } from '../lib/api';
 
 export default async function HomePage() {
   let apiHealth: string;
   const healthEndpoint = getHealthEndpoint();
 
   if (!healthEndpoint) {
-    apiHealth = 'API URL tanımlı değil. API_BASE veya NEXT_PUBLIC_API_BASE ayarlayın.';
+    apiHealth = getApiConfigFallbackMessage();
   } else {
     try {
       const res = await fetch(healthEndpoint, { cache: 'no-store' });
