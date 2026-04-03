@@ -49,23 +49,10 @@ npm run build:web
 
 ## API sahiplik durumu (Next cutover)
 
-Next frontend tarafında endpoint sahipliği ikiye ayrılır:
+Next frontend tarafında kullanılan endpointler Nest API üzerinde çalışır:
 
-- **Nest-ready:** `auth`, `feed`, `profile`, `search`, `notifications`
-- **Nest proxied (cutover):** `forum`, `discovery`, `businesses`, `bookmarks`, `reports`
-  - Bu akışlar `apps/api` içindeki `CutoverProxyModule` ile legacy servise aktarılır.
-  - Gerekli env: `LEGACY_API_ORIGIN` (örn. `http://legacy:3000`)
-
-Detay endpoint envanteri ve taşınma kararları: `docs/next-cutover-api-matrix.md`.
-
-## API sahiplik durumu (Next cutover)
-
-Next frontend tarafında endpoint sahipliği ikiye ayrılır:
-
-- **Nest-ready:** `auth`, `feed`, `profile`, `search`, `notifications`
-- **Nest proxied (cutover):** `forum`, `discovery`, `businesses`, `bookmarks`, `reports`
-  - Bu akışlar `apps/api` içindeki `CutoverProxyModule` ile legacy servise aktarılır.
-  - Gerekli env: `LEGACY_API_ORIGIN` (örn. `http://legacy:3000`)
+- `auth`, `feed`, `profile`, `search`, `notifications`
+- `forum`, `discovery`, `businesses`, `bookmarks`, `reports`
 
 Detay endpoint envanteri ve taşınma kararları: `docs/next-cutover-api-matrix.md`.
 

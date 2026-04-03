@@ -22,7 +22,7 @@ Bu doküman legacy SPA (`public/index.html` + `public/assets/js/app-init.js`) il
 | Auth | Login/register akışı (legacy modal), oturum bazlı koruma | `/login`, `/register` | ✅ | ✅ form validasyonu, ✅ backend hataları, ✅ yönlendirme |
 | Notifications | Bildirim listeleme, okunmamış sayısı, hepsini okundu | `/notifications` | ✅ | ✅ listeleme, ✅ unread state, ✅ mark-all-read |
 | Profile | Public profil + düzenleme | `/profile/[username]`, `/profile/me/edit` | ✅ | ✅ profil görüntüleme, ✅ bio güncelleme (`PUT /profile/me`) |
-| Model merkezi | Model listesi + model detay + takip | `/models`, `/models/[slug]` | ⚠️ Kısmi | ✅ ekranlar var, ⚠️ API hâlâ legacy `discovery` bağımlı |
+| Model merkezi | Model listesi + model detay + takip | `/models`, `/models/[slug]` | ✅ | ✅ ekranlar var, ✅ API discovery endpointleri Nest tarafında |
 | Mesajlar | Liste + kullanıcı bazlı sohbet | `/messages`, `/messages/[username]` | ✅ (UI) | ✅ route taşındı, ⏳ gerçek chat bileşenleri |
 
 ## 3) Redirect politikası (legacy → Next)
@@ -44,11 +44,10 @@ Bu doküman legacy SPA (`public/index.html` + `public/assets/js/app-init.js`) il
 
 ## 4) Backend bağımlılık görünürlüğü
 
-Next ekran parity'si tamamlanmış olsa bile backend migrasyonu kısmi durumdadır:
+Next ekran parity'si ve backend endpoint sahipliği Nest tarafında tamamlanmıştır:
 
 - Nest-ready akışlar: auth, feed, profile, search, notifications.
-- Nest proxy akışlar: forum, discovery, businesses, bookmarks, reports
-  (`CutoverProxyModule` istekleri legacy servise aktarır).
+- Nest-ready akışlar: forum, discovery, businesses, bookmarks, reports.
 
 Detaylı envanter için: `docs/next-cutover-api-matrix.md`.
 
