@@ -1,25 +1,30 @@
 'use client';
 
 import { useEffect } from 'react';
-import { io } from 'socket.io-client';
+import { getSocket, releaseSocket } from '../lib/socket';
 import { useAppStore } from '../store/app-store';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL ?? 'http://localhost:4000';
+type NotificationPayload = {
+  message: string;
+};
 
 export function useRealtimeNotifications() {
   const incrementUnread = useAppStore((s) => s.incrementUnread);
   const setToastMessage = useAppStore((s) => s.setToastMessage);
 
   useEffect(() => {
-    const socket = io(SOCKET_URL, { withCredentials: true });
+    const socket = getSocket();
 
-    socket.on('notification.created', (payload: { message: string }) => {
+    const handleNotificationCreated = (payload: NotificationPayload) => {
       incrementUnread();
       setToastMessage(payload.message);
-    });
+    };
+
+    socket.on('notification.created', handleNotificationCreated);
 
     return () => {
-      socket.disconnect();
+      socket.off('notification.created', handleNotificationCreated);
+      releaseSocket();
     };
   }, [incrementUnread, setToastMessage]);
 }
