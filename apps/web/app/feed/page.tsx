@@ -1,6 +1,10 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
+import { apiFetch } from '../../lib/api';
 
 type FeedPost = {
   id: number;
@@ -11,67 +15,57 @@ type FeedPost = {
   username: string;
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000/api';
-
 export default function FeedPage() {
-  const [posts, setPosts] = useState<FeedPost[]>([]);
   const [body, setBody] = useState('');
-  const [message, setMessage] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  async function loadFeed() {
-    const res = await fetch(`${API_BASE}/feed?page=1`, { credentials: 'include' });
-    const data = (await res.json()) as { posts: FeedPost[] };
-    setPosts(data.posts || []);
-  }
+  const postsQuery = useQuery({
+    queryKey: ['feed', 1],
+    queryFn: () => apiFetch<{ posts: FeedPost[] }>('/feed?page=1'),
+  });
 
-  useEffect(() => {
-    loadFeed().catch(() => setMessage('Feed yüklenemedi.'));
-  }, []);
-
-  async function onCreate(e: FormEvent) {
-    e.preventDefault();
-    setMessage(null);
-
-    const res = await fetch(`${API_BASE}/feed`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ body }),
-      credentials: 'include',
-    });
-
-    const data = (await res.json()) as { message?: string; error?: string };
-    if (!res.ok) {
-      setMessage(data.error || 'Gönderi oluşturulamadı.');
-      return;
-    }
-
-    setBody('');
-    await loadFeed();
-  }
+  const createMutation = useMutation({
+    mutationFn: () =>
+      apiFetch('/feed', {
+        method: 'POST',
+        body: JSON.stringify({ body }),
+      }),
+    onSuccess: async () => {
+      setBody('');
+      await queryClient.invalidateQueries({ queryKey: ['feed', 1] });
+    },
+  });
 
   return (
-    <main style={{ maxWidth: 720, margin: '40px auto', padding: '0 16px' }}>
-      <h1>Yeni Feed (Migration)</h1>
-      <form onSubmit={onCreate} style={{ display: 'grid', gap: 8, marginBottom: 20 }}>
+    <div>
+      <h1 className="mb-4 text-2xl font-bold">Liste / Feed</h1>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          createMutation.mutate();
+        }}
+        className="mb-5 grid gap-2"
+      >
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder="Ne düşünüyorsun?"
           maxLength={500}
           rows={3}
+          className="rounded-md border border-slate-700 bg-slate-900 p-3"
         />
-        <button type="submit">Paylaş</button>
+        <Button type="submit" disabled={createMutation.isPending}>Paylaş</Button>
       </form>
-      {message && <p>{message}</p>}
-      <div style={{ display: 'grid', gap: 12 }}>
-        {posts.map((post) => (
-          <article key={post.id} style={{ border: '1px solid #2a2e38', borderRadius: 8, padding: 12 }}>
-            <div style={{ fontWeight: 700 }}>{post.username}</div>
+      {createMutation.isError && <p className="mb-3 text-red-400">{(createMutation.error as Error).message}</p>}
+      <div className="grid gap-3">
+        {(postsQuery.data?.posts ?? []).map((post) => (
+          <Card key={post.id}>
+            <div className="font-bold">{post.username}</div>
             <p>{post.body}</p>
             <small>♥ {post.like_count} · 💬 {post.comment_count}</small>
-          </article>
+          </Card>
         ))}
       </div>
-    </main>
+    </div>
   );
 }

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Card } from '../components/ui/card';
 
 export default async function HomePage() {
   let apiHealth: string;
@@ -11,12 +12,21 @@ export default async function HomePage() {
   }
 
   return (
-    <main style={{ maxWidth: 800, margin: '48px auto', padding: '0 16px', fontFamily: 'Inter, sans-serif' }}>
-      <h1>Berra Next.js Migration</h1>
-      <p>Bu uygulama, mevcut frontend&apos;in modüler TypeScript/Next.js geçiş başlangıcıdır.</p>
-      <p><strong>Durum:</strong> {apiHealth}</p>
-      <p><Link href="/login">Yeni auth akışını test et</Link></p>
-      <p><Link href="/feed">Yeni feed akışını test et</Link></p>
-    </main>
+    <div className="grid gap-4">
+      <Card>
+        <h1 className="text-3xl font-bold">Berra Frontend Stage-0</h1>
+        <p className="mt-2 text-slate-300">App Router + Query + Zustand + Realtime + Form stack hazır.</p>
+        <p className="mt-2"><strong>Durum:</strong> {apiHealth}</p>
+      </Card>
+      <Card className="grid gap-2">
+        <Link href="/login">/login</Link>
+        <Link href="/register">/register</Link>
+        <Link href="/dashboard">/dashboard</Link>
+        <Link href="/feed">/feed (liste)</Link>
+        <Link href="/items/1">/items/1 (detay)</Link>
+        <Link href="/search">/search</Link>
+        <Link href="/notifications">/notifications</Link>
+      </Card>
+    </div>
   );
 }

@@ -1,46 +1,45 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
+import { Input } from '../../components/ui/input';
+import { apiFetch } from '../../lib/api';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000/api';
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [msg, setMsg] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const form = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  });
 
-  async function onSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-    setMsg(null);
-
-    try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
+  const loginMutation = useMutation({
+    mutationFn: (payload: z.infer<typeof loginSchema>) =>
+      apiFetch<{ message?: string }>('/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include',
-      });
-
-      const data = (await res.json()) as { message?: string; error?: string };
-      setMsg(data.message ?? data.error ?? 'Bilinmeyen yanıt.');
-    } catch {
-      setMsg('Bağlantı hatası.');
-    } finally {
-      setLoading(false);
-    }
-  }
+        body: JSON.stringify(payload),
+      }),
+  });
 
   return (
-    <main style={{ maxWidth: 420, margin: '48px auto', padding: '0 16px' }}>
-      <h1>Giriş</h1>
-      <form onSubmit={onSubmit} style={{ display: 'grid', gap: 12 }}>
-        <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Email" required />
-        <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Şifre" required />
-        <button type="submit" disabled={loading}>{loading ? 'Gönderiliyor...' : 'Giriş yap'}</button>
+    <Card className="mx-auto max-w-md">
+      <h1 className="mb-4 text-2xl font-bold">Giriş</h1>
+      <form onSubmit={form.handleSubmit((values) => loginMutation.mutate(values))} className="grid gap-3">
+        <Input type="email" placeholder="Email" {...form.register('email')} />
+        <Input type="password" placeholder="Şifre" {...form.register('password')} />
+        <Button type="submit" disabled={loginMutation.isPending}>
+          {loginMutation.isPending ? 'Gönderiliyor...' : 'Giriş yap'}
+        </Button>
       </form>
-      {msg && <p style={{ marginTop: 12 }}>{msg}</p>}
-    </main>
+      {loginMutation.isError && <p className="mt-2 text-sm text-red-400">{(loginMutation.error as Error).message}</p>}
+      {loginMutation.isSuccess && <p className="mt-2 text-sm text-emerald-400">Giriş başarılı.</p>}
+    </Card>
   );
 }
