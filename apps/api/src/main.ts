@@ -1,0 +1,26 @@
+import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
+import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
+import cookie from '@fastify/cookie';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter({ logger: true }),
+  );
+
+  await app.register(cookie);
+
+  app.setGlobalPrefix('api');
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+
+  const configService = app.get(ConfigService);
+  const port = configService.get<number>('PORT', 4000);
+  const host = configService.get<string>('HOST', '0.0.0.0');
+
+  await app.listen(port, host);
+}
+
+bootstrap();
