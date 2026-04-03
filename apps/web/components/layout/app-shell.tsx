@@ -30,7 +30,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navItems = [
     { href: '/', label: 'Home' },
     { href: '/dashboard', label: 'Dashboard' },
+    { href: '/forum', label: 'Forum' },
     { href: '/feed', label: 'Liste' },
+    { href: '/following', label: 'Takip' },
+    { href: '/models', label: 'Modeller' },
     { href: '/search', label: 'Arama' },
   ];
 
@@ -48,7 +51,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <header className="border-b border-slate-800">
-        <nav className="mx-auto flex max-w-5xl items-center gap-2 px-4 py-3">
+        <nav className="mx-auto flex max-w-5xl items-center gap-2 overflow-x-auto px-4 py-3">
           {navItems.map((item) => (
             <Link
               key={item.href}
