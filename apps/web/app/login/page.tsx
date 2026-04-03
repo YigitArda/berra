@@ -16,9 +16,9 @@ import { Input } from '../../components/ui/input';
 import { apiFetch } from '../../lib/api';
 import { sessionQueryKey } from '../../lib/auth/session';
 import { applyBackendErrors } from '../../lib/form-errors';
-import type { AuthResponse, LoginRequest } from '@berra/shared';
 import { loginSchema } from './schema';
-import type { AuthResponse, LoginRequest } from '@berra/shared';
+
+const loginFields = ['email', 'password'] as const;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -96,7 +96,6 @@ export default function LoginPage() {
           {loginMutation.isPending ? 'Gönderiliyor...' : 'Giriş yap'}
         </Button>
       </form>
-      {generalError && <p className="mt-2 text-sm text-red-400">{generalError}</p>}
       {loginMutation.isSuccess && <p className="mt-2 text-sm text-emerald-400">Giriş başarılı, yönlendiriliyorsunuz...</p>}
     </Card>
   );

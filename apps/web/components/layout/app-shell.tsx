@@ -10,6 +10,7 @@ import { useAppStore } from '../../store/app-store';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 
+
 export function AppShell({ children }: { children: ReactNode }) {
   useRealtimeNotifications();
   const { isAuthenticated } = useSession();
@@ -19,9 +20,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const localBadgeCount = useAppStore((s) => s.localBadgeCount);
   const setLocalBadgeCount = useAppStore((s) => s.setLocalBadgeCount);
   const toastMessage = useAppStore((s) => s.toastMessage);
-  const setToastMessage = useAppStore((s) => s.setToastMessage);
-  const { isAuthenticated } = useSession();
-  const logoutMutation = useLogout();
+  const clearToast = useAppStore((s) => s.clearToast);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
