@@ -7,8 +7,8 @@ import { Card } from '../../components/ui/card';
 
 export function NotificationsClient() {
   const { isLoading } = useRequireAuth();
-  const unread = useAppStore((s) => s.unreadCount);
-  const setUnreadCount = useAppStore((s) => s.setUnreadCount);
+  const localBadgeCount = useAppStore((s) => s.localBadgeCount);
+  const setLocalBadgeCount = useAppStore((s) => s.setLocalBadgeCount);
 
   if (isLoading) {
     return <p>Oturum doğrulanıyor...</p>;
@@ -17,8 +17,8 @@ export function NotificationsClient() {
   return (
     <Card>
       <h1 className="text-2xl font-bold">Bildirim Merkezi</h1>
-      <p className="mt-2 text-slate-300">Okunmamış: {unread}</p>
-      <Button className="mt-3" onClick={() => setUnreadCount(0)}>Tümünü okundu işaretle</Button>
+      <p className="mt-2 text-slate-300">Okunmamış: {localBadgeCount}</p>
+      <Button className="mt-3" onClick={() => setLocalBadgeCount(0)}>Tümünü okundu işaretle</Button>
     </Card>
   );
 }

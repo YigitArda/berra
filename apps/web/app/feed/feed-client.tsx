@@ -1,44 +1,17 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useRequireAuth } from '../../hooks/use-require-auth';
+import { useCreateFeedPost, useFeed } from '../../hooks/use-feed';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
-import { apiFetch } from '../../lib/api';
-import { toUserMessage } from '../../lib/error-message';
-
-type FeedPost = {
-  id: number;
-  body: string;
-  like_count: number;
-  comment_count: number;
-  created_at: string;
-  username: string;
-};
 
 export function FeedClient() {
   const [body, setBody] = useState('');
-  const queryClient = useQueryClient();
   const { isLoading: isSessionLoading, isAuthenticated } = useRequireAuth();
 
-  const postsQuery = useQuery({
-    queryKey: ['feed', 1],
-    queryFn: () => apiFetch<{ posts: FeedPost[] }>('/feed?page=1'),
-    enabled: isAuthenticated,
-  });
-
-  const createMutation = useMutation({
-    mutationFn: () =>
-      apiFetch('/feed', {
-        method: 'POST',
-        body: JSON.stringify({ body }),
-      }),
-    onSuccess: async () => {
-      setBody('');
-      await queryClient.invalidateQueries({ queryKey: ['feed', 1] });
-    },
-  });
+  const postsQuery = useFeed(isAuthenticated);
+  const createMutation = useCreateFeedPost(() => setBody(''));
 
   if (isSessionLoading) {
     return <p>Oturum doğrulanıyor...</p>;
@@ -50,7 +23,7 @@ export function FeedClient() {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          createMutation.mutate();
+          createMutation.mutate(body);
         }}
         className="mb-5 grid gap-2"
       >
