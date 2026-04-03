@@ -19,8 +19,22 @@ async function bootstrap() {
   );
 
   await app.register(cookie);
+  const isProd = process.env.NODE_ENV === 'production';
   await app.register(helmet, {
-    contentSecurityPolicy: false,
+    contentSecurityPolicy: isProd
+      ? {
+          directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", 'data:', 'blob:'],
+            connectSrc: ["'self'"],
+            fontSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            frameAncestors: ["'none'"],
+          },
+        }
+      : false,
     crossOriginResourcePolicy: { policy: 'cross-origin' },
   });
   await app.register(rateLimit, {

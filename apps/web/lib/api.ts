@@ -1,24 +1,23 @@
 import { API_BASE, getApiBaseFallbackMessage, hasApiBase } from './env';
 import { joinApiUrl } from './url';
 
-const rawApiBase = process.env.NEXT_PUBLIC_API_BASE ?? process.env.API_BASE ?? '';
+export class ApiError extends Error {
+  status: number;
+  payload: unknown;
 
-export const API_BASE = rawApiBase.replace(/\/+$/, '');
+  constructor(message: string, status: number, payload: unknown) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.payload = payload;
+  }
+}
 
 export function getHealthEndpoint(): string | null {
   if (!API_BASE) {
     return null;
   }
-
-  return joinUrl(API_BASE, '/health');
-}
-
-export class ApiError extends Error {
-  status: number;
-  payload: unknown;
-
-export function getHealthEndpoint(): string {
-  return joinUrl(API_BASE, '/health');
+  return joinApiUrl(API_BASE, '/health');
 }
 
 function isJsonResponse(res: Response) {
@@ -39,7 +38,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     headers.set('Content-Type', 'application/json');
   }
 
-  const targetUrl = API_BASE ? joinUrl(API_BASE, path) : path;
+  const targetUrl = API_BASE ? joinApiUrl(API_BASE, path) : path;
   const res = await fetch(targetUrl, {
     ...init,
     credentials: 'include',
