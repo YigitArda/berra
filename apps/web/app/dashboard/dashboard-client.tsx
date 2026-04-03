@@ -1,44 +1,57 @@
 'use client';
 
-import { useState } from 'react';
+import Link from 'next/link';
 import { Skeleton } from '../../components/feedback/Skeleton';
-import { Button } from '../../components/ui/button';
+import { Badge } from '../../components/ui/badge';
 import { Card } from '../../components/ui/card';
-import { useRequireAuth } from '../../hooks/use-require-auth';
+import { useFeed } from '../../hooks/use-feed';
+import { useNotifications } from '../../hooks/use-notifications';
+import { useSession } from '../../hooks/use-session';
+import { useAppStore } from '../../store/app-store';
 
 export function DashboardClient() {
-  const { isLoading } = useRequireAuth();
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    setIsRefreshing(false);
-  };
+  const { isLoading, session } = useSession();
+  const notifications = useNotifications();
+  const feed = useFeed(true, 1);
+  const unread = useAppStore((s) => s.localBadgeCount);
 
   if (isLoading) {
-    return <Skeleton title="Oturum doğrulanıyor..." lines={2} />;
+    return <Skeleton title="Dashboard yükleniyor..." lines={3} />;
   }
+
+  const user = session?.user;
 
   return (
     <div className="grid gap-4">
-      <div className="flex justify-end">
-        <Button onClick={handleRefresh} disabled={isRefreshing}>
-          {isRefreshing ? 'Yenileniyor...' : 'Verileri yenile'}
-        </Button>
-      </div>
-      <div className="grid gap-4 md:grid-cols-3">
+      <Card>
+        <h1 className="text-2xl font-bold">Hoş geldin, {user?.username}</h1>
+        <div className="mt-2 flex items-center gap-2">
+          <Badge variant="outline">Rol: {user?.role ?? 'user'}</Badge>
+          <Badge variant="neutral">Okunmamış bildirim: {unread || notifications.unreadCount}</Badge>
+        </div>
+      </Card>
+
+      <div className="grid gap-4 md:grid-cols-2">
         <Card>
-          <h2 className="text-sm text-muted">Toplam Gönderi</h2>
-          <p className="text-3xl font-bold">128</p>
+          <h2 className="text-lg font-semibold">Son gönderiler</h2>
+          <div className="mt-3 grid gap-2">
+            {(feed.data?.posts ?? []).slice(0, 5).map((post) => (
+              <div key={post.id} className="rounded border border-slate-700 p-2">
+                <p className="text-sm font-semibold">{post.username}</p>
+                <p className="text-sm text-slate-300">{post.body}</p>
+              </div>
+            ))}
+          </div>
         </Card>
+
         <Card>
-          <h2 className="text-sm text-muted">Aktif Bildirim</h2>
-          <p className="text-3xl font-bold">5</p>
-        </Card>
-        <Card>
-          <h2 className="text-sm text-muted">Arama Trendleri</h2>
-          <p className="text-3xl font-bold">24</p>
+          <h2 className="text-lg font-semibold">Hızlı erişim</h2>
+          <div className="mt-3 grid gap-2">
+            <Link href="/forum" className="rounded border border-slate-700 p-3 text-sm hover:border-slate-500">Forum</Link>
+            <Link href="/feed" className="rounded border border-slate-700 p-3 text-sm hover:border-slate-500">Feed</Link>
+            <Link href={`/profile/${user?.username ?? ''}`} className="rounded border border-slate-700 p-3 text-sm hover:border-slate-500">Profil</Link>
+            <Link href="/bookmarks" className="rounded border border-slate-700 p-3 text-sm hover:border-slate-500">Kayıtlılarım</Link>
+          </div>
         </Card>
       </div>
     </div>

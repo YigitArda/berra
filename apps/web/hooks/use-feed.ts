@@ -13,12 +13,19 @@ export type FeedPost = {
   username: string;
 };
 
-export const feedQueryKey = ['feed', 1] as const;
+export type FeedComment = {
+  id: number;
+  body: string;
+  created_at: string;
+  username: string;
+};
 
-export function useFeed(enabled: boolean) {
+export const feedQueryKey = (page: number) => ['feed', page] as const;
+
+export function useFeed(enabled: boolean, page = 1) {
   return useQuery({
-    queryKey: feedQueryKey,
-    queryFn: () => apiFetch<{ posts: FeedPost[] }>('/feed?page=1'),
+    queryKey: feedQueryKey(page),
+    queryFn: () => apiFetch<{ posts: FeedPost[]; page: number; limit: number }>(`/feed?page=${page}`),
     enabled,
   });
 }
@@ -34,9 +41,47 @@ export function useCreateFeedPost(onSuccess?: () => void) {
       }),
     onSuccess: async () => {
       if (CACHE_PATCH_STRATEGY.FEED_CREATE_POST === 'invalidate') {
-        await queryClient.invalidateQueries({ queryKey: feedQueryKey });
+        await queryClient.invalidateQueries({ queryKey: ['feed'] });
       }
       onSuccess?.();
+    },
+  });
+}
+
+export function useLikeFeedPost(postId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (like: boolean) =>
+      apiFetch<{ like_count: number }>(`/feed/${postId}/like`, {
+        method: like ? 'POST' : 'DELETE',
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['feed'] });
+    },
+  });
+}
+
+export function useFeedComments(postId: number, enabled: boolean) {
+  return useQuery({
+    queryKey: ['feed', 'comments', postId],
+    queryFn: () => apiFetch<{ comments: FeedComment[] }>(`/feed/${postId}/comments`),
+    enabled,
+  });
+}
+
+export function useCreateFeedComment(postId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (text: string) =>
+      apiFetch<{ comment: FeedComment }>(`/feed/${postId}/comment`, {
+        method: 'POST',
+        body: JSON.stringify({ text }),
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['feed'] });
+      void queryClient.invalidateQueries({ queryKey: ['feed', 'comments', postId] });
     },
   });
 }
