@@ -10,6 +10,11 @@
   --shadow-md: 0 4px 16px rgba(0,0,0,.6);
   --t: .15s ease;
   --font:'Barlow',sans-serif; --fontc:'Barlow Condensed',sans-serif;
+  --thread-list-columns:minmax(0,1fr) 56px 66px 80px;
+  --thread-title-size:.86rem;
+  --thread-meta-size:.72rem;
+  --thread-counter-size:.8rem;
+  --thread-counter-label-size:.65rem;
 }
 html,body { height:100%; }
 html { background:#0f1014; }
@@ -65,21 +70,21 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 .cat-count{font-size:.65rem;background:rgba(255,255,255,.15);border-radius:var(--r-full);padding:1px 5px;font-weight:700;}
 .cat-tab:not(.active) .cat-count{background:var(--bg3);color:var(--text3);}
 /* Thread header */
-.thread-header{display:grid;grid-template-columns:1fr 52px 62px 76px;padding:5px 12px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;position:sticky;top:0;z-index:2;}
+.thread-header{display:grid;grid-template-columns:var(--thread-list-columns);padding:5px 12px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;position:sticky;top:0;z-index:2;gap:6px;}
 .th-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);cursor:pointer;transition:color var(--t);}
 .th-label:hover{color:var(--text2);}
-.th-label.c{text-align:center;}
+.th-label.c{text-align:right;}
 .thread-list{flex:1;overflow-y:auto;}
 /* Thread satırı */
-.thread-row{display:grid;grid-template-columns:1fr 52px 62px 76px;align-items:center;padding:0 12px;border-bottom:1px solid var(--border);min-height:52px;cursor:pointer;transition:background var(--t);gap:6px;}
+.thread-row{display:grid;grid-template-columns:var(--thread-list-columns);align-items:center;padding:0 12px;border-bottom:1px solid var(--border);min-height:56px;cursor:pointer;transition:background var(--t);gap:6px;}
 .thread-row:hover{background:var(--bg2);}
 .thread-row.pinned{background:rgba(240,165,0,.04);border-left:3px solid rgba(240,165,0,.45);}
 .thread-row:not(.pinned){border-left:3px solid transparent;}
 .thread-main{display:flex;align-items:center;gap:9px;min-width:0;padding:8px 0;}
 .thread-ava{width:34px;height:34px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:grid;place-items:center;font-size:.82rem;font-weight:700;color:var(--text2);flex-shrink:0;}
 .thread-info{min-width:0;}
-.thread-title-row{display:flex;align-items:center;gap:5px;overflow:hidden;}
-.thread-title{font-size:.87rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color var(--t);}
+.thread-title-row{display:flex;align-items:flex-start;gap:5px;overflow:hidden;}
+.thread-title{font-size:var(--thread-title-size);font-weight:700;color:var(--text);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-clamp:2;transition:color var(--t);}
 .thread-row:hover .thread-title{color:var(--acc2);}
 .tag{display:inline-flex;align-items:center;font-size:.65rem;font-weight:700;padding:2px 6px;border-radius:var(--r-full);flex-shrink:0;letter-spacing:.2px;}
 /* Kategori etiket renkleri */
@@ -91,9 +96,9 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 .tag-cat[data-cat="ariza"]{background:rgba(170,120,230,.1);color:#b07ee8;border-color:rgba(170,120,230,.25);}
 .tag-pin{background:rgba(240,165,0,.12);color:var(--amber);border:1px solid rgba(240,165,0,.25);}
 .tag-lock{background:rgba(74,144,217,.12);color:var(--blue);border:1px solid rgba(74,144,217,.25);}
-.thread-meta2{font-size:.72rem;color:var(--text3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.thread-stat{text-align:center;font-size:.82rem;font-weight:700;color:var(--text2);}
-.thread-stat small{display:block;font-size:.65rem;font-weight:400;color:var(--text3);margin-top:1px;}
+.thread-meta2{font-size:var(--thread-meta-size);color:var(--text3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.thread-stat{text-align:right;font-size:var(--thread-counter-size);font-weight:700;color:var(--text2);font-variant-numeric:tabular-nums;}
+.thread-stat small{display:block;font-size:var(--thread-counter-label-size);font-weight:400;color:var(--text3);margin-top:1px;}
 .thread-time-col{text-align:center;font-size:.7rem;color:var(--text3);line-height:1.4;}
 
 /* SAĞ — PANEL */
