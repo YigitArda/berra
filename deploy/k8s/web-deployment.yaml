@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: berra-web
+  namespace: berra-staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: berra-web
+  template:
+    metadata:
+      labels:
+        app: berra-web
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/your-org/berra-web:staging
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: NEXT_PUBLIC_API_BASE
+              value: https://api-staging.example.com/api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: berra-web
+  namespace: berra-staging
+spec:
+  selector:
+    app: berra-web
+  ports:
+    - port: 3000
+      targetPort: 3000

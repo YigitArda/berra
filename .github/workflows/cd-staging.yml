@@ -1,0 +1,98 @@
+name: cd-staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      rollback_to:
+        description: "Optional image tag for rollback (example: sha-abc123)"
+        required: false
+        type: string
+  push:
+    branches: ["work"]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+  K8S_NAMESPACE: berra-staging
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    environment: staging
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute image tag
+        id: meta
+        run: echo "image_tag=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Login GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push API
+        uses: docker/build-push-action@v6
+        with:
+          context: ./apps/api
+          file: ./apps/api/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/api:${{ steps.meta.outputs.image_tag }}
+
+      - name: Build and push Web
+        uses: docker/build-push-action@v6
+        with:
+          context: ./apps/web
+          file: ./apps/web/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/web:${{ steps.meta.outputs.image_tag }}
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" > ~/.kube/config
+
+      - name: Apply manifests
+        run: |
+          kubectl apply -f deploy/k8s/namespace.yaml
+          kubectl apply -f deploy/k8s/api-deployment.yaml
+          kubectl apply -f deploy/k8s/web-deployment.yaml
+          kubectl apply -f deploy/k8s/worker-deployment.yaml
+          kubectl apply -f deploy/k8s/ingress.yaml
+
+      - name: Run DB migration job
+        run: |
+          kubectl -n $K8S_NAMESPACE apply -f deploy/k8s/db-migrate-job.yaml
+          kubectl -n $K8S_NAMESPACE delete job berra-db-migrate --ignore-not-found=true
+          kubectl -n $K8S_NAMESPACE create job --from=cronjob/berra-db-migrate berra-db-migrate-manual || true
+          kubectl -n $K8S_NAMESPACE wait --for=condition=complete job/berra-db-migrate-manual --timeout=300s
+
+      - name: Set rollout images
+        run: |
+          TAG="${{ github.event.inputs.rollback_to || needs.build-and-push.outputs.image_tag }}"
+          kubectl -n $K8S_NAMESPACE set image deployment/berra-api api=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/api:$TAG
+          kubectl -n $K8S_NAMESPACE set image deployment/berra-web web=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/web:$TAG
+          kubectl -n $K8S_NAMESPACE set image deployment/berra-worker worker=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/api:$TAG
+
+      - name: Rollout status
+        run: |
+          kubectl -n $K8S_NAMESPACE rollout status deployment/berra-api --timeout=300s
+          kubectl -n $K8S_NAMESPACE rollout status deployment/berra-web --timeout=300s
+          kubectl -n $K8S_NAMESPACE rollout status deployment/berra-worker --timeout=300s
