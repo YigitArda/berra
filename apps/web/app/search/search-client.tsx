@@ -11,7 +11,8 @@ import { apiFetch } from '../../lib/api';
 
 type SearchItem = {
   id: number;
-  body: string;
+  body?: string;
+  bio?: string;
   title?: string;
   username?: string;
   slug?: string;
@@ -20,7 +21,7 @@ type SearchItem = {
 };
 
 type SearchResponse = {
-  items: SearchItem[];
+  results: SearchItem[];
   page?: number;
 };
 
@@ -64,7 +65,7 @@ export function SearchClient() {
         <DataState
           isLoading={searchQuery.isLoading}
           isError={searchQuery.isError}
-          isEmpty={searchQuery.isSuccess && (searchQuery.data?.items.length ?? 0) === 0}
+          isEmpty={searchQuery.isSuccess && (searchQuery.data?.results.length ?? 0) === 0}
           error={searchQuery.error}
           loadingTitle="Sonuçlar getiriliyor..."
           emptyTitle="Sonuç bulunamadı"
@@ -73,7 +74,7 @@ export function SearchClient() {
           isRetrying={searchQuery.isRefetching}
         >
           <div className="grid gap-2">
-            {(searchQuery.data?.items ?? []).map((item) => (
+            {(searchQuery.data?.results ?? []).map((item) => (
               <Card key={item.id}>
                 {type === 'threads' ? (
                   <>
@@ -82,10 +83,10 @@ export function SearchClient() {
                     {item.username && <p className="text-sm text-slate-300">Yazar: {item.username}</p>}
                   </>
                 ) : (
-                  <>
-                    <p className="font-semibold">{item.username || item.title || `#${item.id}`}</p>
-                    <p className="text-sm text-slate-300">{item.body}</p>
-                  </>
+                    <>
+                      <p className="font-semibold">{item.username || item.title || `#${item.id}`}</p>
+                      <p className="text-sm text-slate-300">{item.bio || item.body || 'Bio bulunmuyor.'}</p>
+                    </>
                 )}
               </Card>
             ))}

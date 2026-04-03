@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DataState } from '../../components/data-state';
 import { InlineAlert } from '../../components/feedback/InlineAlert';
 import { Skeleton } from '../../components/feedback/Skeleton';
@@ -104,10 +104,26 @@ function FeedPostCard({ post }: FeedPostCardProps) {
 export function FeedClient() {
   const [body, setBody] = useState('');
   const [page, setPage] = useState(1);
+  const [loadedPosts, setLoadedPosts] = useState<Array<FeedPostCardProps['post']>>([]);
   const { isLoading: isSessionLoading, isAuthenticated } = useRequireAuth();
 
   const postsQuery = useFeed(isAuthenticated, page);
   const createMutation = useCreateFeedPost(() => setBody(''));
+
+  useEffect(() => {
+    const incoming = postsQuery.data?.posts ?? [];
+    if (incoming.length === 0) return;
+
+    setLoadedPosts((prev) => {
+      const next = [...prev];
+      for (const post of incoming) {
+        if (!next.some((item) => item.id === post.id)) {
+          next.push(post);
+        }
+      }
+      return next;
+    });
+  }, [postsQuery.data?.posts]);
 
   if (isSessionLoading) {
     return <Skeleton title="Oturum doğrulanıyor..." lines={2} />;
@@ -169,7 +185,7 @@ export function FeedClient() {
         isRetrying={postsQuery.isRefetching}
       >
         <div className="grid gap-3">
-          {(postsQuery.data?.posts ?? []).map((post) => (
+          {(loadedPosts.length ? loadedPosts : postsQuery.data?.posts ?? []).map((post) => (
             <FeedPostCard key={post.id} post={post} />
           ))}
         </div>

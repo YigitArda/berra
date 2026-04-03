@@ -4,11 +4,16 @@ import { useState } from 'react';
 import { Card } from '../../../../components/ui/card';
 import { Button } from '../../../../components/ui/button';
 import { FormField } from '../../../../components/ui/form-field';
+import { Skeleton } from '../../../../components/feedback/Skeleton';
+import { useRequireAuth } from '../../../../hooks/use-require-auth';
 import { useUpdateProfile } from '../../../../hooks/use-profile';
 
 export default function EditProfilePage() {
+  const { isLoading } = useRequireAuth();
   const [bio, setBio] = useState('');
   const update = useUpdateProfile();
+
+  if (isLoading) return <Skeleton title="Profil hazırlanıyor..." lines={2} />;
 
   return (
     <Card>

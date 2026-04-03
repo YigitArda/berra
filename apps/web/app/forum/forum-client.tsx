@@ -10,10 +10,10 @@ import { Card } from '../../components/ui/card';
 const categories = [
   { id: 'all', label: 'Tümü' },
   { id: 'genel', label: '💬 Genel' },
-  { id: 'ilk-araba', label: '⭐ İlk Araba' },
+  { id: 'haberler', label: '📰 Haberler' },
   { id: 'modifiye', label: '🔧 Modifiye' },
-  { id: 'ilan', label: '👁 İlan' },
-  { id: 'ariza', label: '🛠 Arıza' },
+  { id: 'alim-satim', label: '👁 Alım-Satım' },
+  { id: 'teknik', label: '🛠 Teknik' },
 ] as const;
 
 export function ForumClient() {
