@@ -6,7 +6,14 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "migrate": "node scripts/migrate.js"
+    "migrate": "node scripts/migrate.js",
+    "dev:legacy": "nodemon src/app.js",
+    "start:legacy": "node src/app.js",
+    "dev:api": "npm --prefix apps/api run dev",
+    "dev:web": "npm --prefix apps/web run dev",
+    "build:api": "npm --prefix apps/api run build",
+    "build:web": "npm --prefix apps/web run build",
+    "worker:api": "npm --prefix apps/api run worker"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -28,5 +35,6 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "private": true
 }
