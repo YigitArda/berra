@@ -39,12 +39,21 @@ npm run dev
 ## API Rotaları
 
 ### Auth
-| Metod | Rota             | Açıklama        |
-|-------|------------------|-----------------|
-| POST  | /api/auth/register | Kayıt ol      |
-| POST  | /api/auth/login    | Giriş yap     |
-| POST  | /api/auth/logout   | Çıkış yap     |
-| GET   | /api/auth/me       | Aktif kullanıcı |
+Auth akışı **cookie tabanlıdır**. `register`, `login`, `refresh`, `reset-password` endpoint'leri
+token'ı JSON response gövdesinde döndürmez; sadece `httpOnly` cookie (`token`) set eder.
+
+Frontend isteklerinde `Authorization: Bearer ...` yerine `fetch(..., { credentials: 'include' })`
+kullanılmalıdır.
+
+| Metod | Rota                   | Açıklama |
+|------|------------------------|----------|
+| POST | /api/auth/register     | Kayıt olur, oturum cookie'si set edilir |
+| POST | /api/auth/login        | Giriş yapar, oturum cookie'si set edilir |
+| POST | /api/auth/refresh      | Geçerli cookie ile oturumu yeniler (response'ta token yok) |
+| POST | /api/auth/logout       | Oturum cookie'sini temizler |
+| POST | /api/auth/forgot-password | Şifre sıfırlama kodu oluşturur |
+| POST | /api/auth/reset-password  | Şifreyi sıfırlar, yeni oturum cookie'si set eder |
+| GET  | /api/auth/me           | Aktif kullanıcı |
 
 ### Forum
 | Metod  | Rota                           | Açıklama          |
