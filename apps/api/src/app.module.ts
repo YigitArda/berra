@@ -3,6 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { QueueModule } from './queue/queue.module';
 
 @Module({
   imports: [
@@ -11,8 +13,10 @@ import { HealthModule } from './health/health.module';
       envFilePath: ['.env.local', '.env'],
     }),
     DatabaseModule,
+    QueueModule,
     HealthModule,
     AuthModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

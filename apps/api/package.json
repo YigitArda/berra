@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "nest start --watch",
     "build": "nest build",
-    "start": "node dist/main.js"
+    "start": "node dist/main.js",
+    "worker": "ts-node src/queue/worker.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.8",
@@ -20,7 +21,9 @@
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.12.0",
     "class-validator": "^0.14.1",
-    "class-transformer": "^0.5.1"
+    "class-transformer": "^0.5.1",
+    "bullmq": "^5.13.2",
+    "ioredis": "^5.4.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.4.5",
@@ -31,6 +34,7 @@
     "typescript": "^5.7.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.7",
-    "@types/pg": "^8.11.10"
+    "@types/pg": "^8.11.10",
+    "@types/ioredis": "^4.28.10"
   }
 }

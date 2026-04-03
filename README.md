@@ -27,6 +27,9 @@ npm run build:web
 - Yeni `apps/api` tarafında gerçek veritabanı bağlantısı (`pg`) eklendi.
 - `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` endpointleri Nest tarafında çalışır hale getirildi.
 - Next.js tarafında `/login` sayfası ile yeni auth endpointlerini test edecek istemci formu eklendi.
+- Queue altyapısı için `apps/api` tarafına BullMQ + Redis tabanlı `QueueService` eklendi.
+- `POST /api/notifications/system-test` endpointi ile bildirim job'ı kuyruğa atılabilir hale geldi.
+- Ayrı worker başlangıcı için `npm run worker -w @berra/api` script'i eklendi.
 
 Legacy Express uygulaması hâlâ çalışır:
 

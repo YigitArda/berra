@@ -15,3 +15,10 @@ export type AuthSuccess = {
   user: AuthUser;
   token: string;
 };
+
+export type SystemNotificationJob = {
+  userId: number;
+  type: 'system';
+  message: string;
+  link?: string;
+};
