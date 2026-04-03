@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
+    "prisma:migrate:check": "prisma migrate status",
     "prisma:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {

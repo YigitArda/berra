@@ -162,6 +162,7 @@ Bu repoda staging için temel deploy altyapısı eklendi:
 - `apps/api/Dockerfile`, `apps/web/Dockerfile`: üretim imajı build dosyaları
 - `deploy/k8s/*`: namespace/deployment/service/ingress manifestleri
 - `.github/workflows/staging.yml`: staging build/doğrulama workflow
+- `.github/workflows/cd-staging.yml`: staging deploy workflow (image push + migration + rollout)
 - `.env.staging.example`: staging ortam değişken örneği
 
 ### Local staging smoke
@@ -176,8 +177,17 @@ docker compose -f docker-compose.staging.yml up --build
 kubectl apply -f deploy/k8s/namespace.yaml
 kubectl apply -f deploy/k8s/api-deployment.yaml
 kubectl apply -f deploy/k8s/web-deployment.yaml
+kubectl apply -f deploy/k8s/worker-deployment.yaml
+kubectl apply -f deploy/k8s/db-migrate-job.yaml
 kubectl apply -f deploy/k8s/ingress.yaml
 ```
+
+### CI/CD özeti
+
+- CI: `/.github/workflows/staging.yml` (lint + typecheck + test + migration check + image/compose doğrulama)
+- CD: `/.github/workflows/cd-staging.yml` (staging deploy + db migration + rollout)
+- Secret yönetimi: `deploy/SECRETS.md`
+- Rollback planı: `deploy/ROLLBACK.md`
 
 
 ## Backend Foundation (2.x)
