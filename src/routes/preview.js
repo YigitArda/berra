@@ -16,10 +16,13 @@ const ALLOWED_DOMAINS = [
 // Özel/iç ağ IP'lerini engelle (SSRF koruması)
 const BLOCKED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '[::1]', '169.254.169.254'];
 const PRIVATE_IP_RE = /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/;
+const ALLOWED_PROTOCOLS = new Set(['http:', 'https:']);
+const MAX_REDIRECTS = 2;
 
 function isAllowed(urlStr) {
   try {
     const parsed = new url.URL(urlStr);
+    if (!ALLOWED_PROTOCOLS.has(parsed.protocol)) return false;
     if (BLOCKED_HOSTS.includes(parsed.hostname)) return false;
     if (PRIVATE_IP_RE.test(parsed.hostname)) return false;
     return ALLOWED_DOMAINS.some(d => parsed.hostname.endsWith(d));
@@ -91,19 +94,35 @@ router.post('/', async (req, res) => {
   if (!isAllowed(urlStr)) return res.status(403).json({ error: 'Bu site desteklenmiyor.' });
 
   try {
-    let result = await fetchPage(urlStr);
+    let resolvedUrl = urlStr;
+    let result = null;
 
-    // Tek redirect takibi
-    if (result.redirectTo) {
+    for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount += 1) {
+      if (!isAllowed(resolvedUrl)) {
+        return res.status(403).json({ error: 'Yönlendirme güvenli değil.' });
+      }
+
+      result = await fetchPage(resolvedUrl);
+      if (!result.redirectTo) break;
+
+      if (redirectCount === MAX_REDIRECTS) {
+        return res.status(400).json({ error: 'Çok fazla yönlendirme.' });
+      }
+
       const redirectUrl = result.redirectTo.startsWith('http')
         ? result.redirectTo
-        : new url.URL(result.redirectTo, urlStr).toString();
-      result = await fetchPage(redirectUrl);
+        : new url.URL(result.redirectTo, resolvedUrl).toString();
+
+      if (!isAllowed(redirectUrl)) {
+        return res.status(403).json({ error: 'Yönlendirme güvenli değil.' });
+      }
+
+      resolvedUrl = redirectUrl;
     }
 
     if (!result.body) return res.status(500).json({ error: 'Sayfa yüklenemedi.' });
 
-    const meta = extractMeta(result.body, urlStr);
+    const meta = extractMeta(result.body, resolvedUrl);
     res.json(meta);
   } catch (err) {
     console.error('preview error:', err.message);
