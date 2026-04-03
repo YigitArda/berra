@@ -19,7 +19,7 @@ const db = new Pool({
 
 type RealtimeEnvelope =
   | { event: typeof REALTIME_EVENT.notificationCreated; payload: { userId: number; notificationId: number; message: string } }
-  | { event: typeof REALTIME_EVENT.contentUpdated; payload: { contentId: number; action: 'updated'; entityRoom?: string } };
+  | { event: typeof REALTIME_EVENT.contentUpdated; payload: { contentId: number; action: 'created' | 'updated'; entityRoom?: string } };
 
 async function publishRealtime(envelope: RealtimeEnvelope) {
   await realtimePublisher.publish('realtime.events', JSON.stringify(envelope));

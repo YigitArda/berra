@@ -11,6 +11,7 @@ import { Card } from '../../components/ui/card';
 import { useRequireAuth } from '../../hooks/use-require-auth';
 import { useCreateFeedComment, useCreateFeedPost, useFeed, useFeedComments, useLikeFeedPost } from '../../hooks/use-feed';
 import { useReportContent } from '../../hooks/use-report';
+import { getSocket, releaseSocket, SOCKET_EVENTS } from '../../lib/socket';
 
 type FeedPostCardProps = {
   post: {
@@ -107,6 +108,7 @@ export function FeedClient() {
   const [page, setPage] = useState(1);
   const [activeTab, setActiveTab] = useState<'following' | 'discover'>('discover');
   const [loadedPosts, setLoadedPosts] = useState<Array<FeedPostCardProps['post']>>([]);
+  const [hasNewPosts, setHasNewPosts] = useState(false);
   const { isLoading: isSessionLoading, isAuthenticated } = useRequireAuth();
 
   const postsQuery = useFeed(isAuthenticated, page, activeTab);
@@ -116,6 +118,20 @@ export function FeedClient() {
     setLoadedPosts([]);
     setPage(1);
   }, [activeTab]);
+
+  useEffect(() => {
+    const socket = getSocket();
+    const onContentUpdated = (payload: { action: string }) => {
+      if (payload.action === 'created') {
+        setHasNewPosts(true);
+      }
+    };
+    socket.on(SOCKET_EVENTS.contentUpdated, onContentUpdated);
+    return () => {
+      socket.off(SOCKET_EVENTS.contentUpdated, onContentUpdated);
+      releaseSocket();
+    };
+  }, []);
 
   useEffect(() => {
     const incoming = postsQuery.data?.posts ?? [];
@@ -175,6 +191,23 @@ export function FeedClient() {
 
       {createMutation.isError && (
         <InlineAlert className="mb-3" variant="error" message={resolveFeedbackErrorMessage(createMutation.error)} />
+      )}
+
+      {hasNewPosts && (
+        <div className="mb-3 flex items-center justify-between rounded-md border border-blue-800 bg-blue-950/40 px-4 py-2">
+          <span className="text-sm text-blue-200">Yeni gönderiler mevcut</span>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              setHasNewPosts(false);
+              setLoadedPosts([]);
+              setPage(1);
+            }}
+          >
+            Yenile
+          </Button>
+        </div>
       )}
 
       <DataState
