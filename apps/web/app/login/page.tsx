@@ -18,8 +18,7 @@ import { sessionQueryKey } from '../../lib/auth/session';
 import { applyBackendErrors } from '../../lib/form-errors';
 import type { AuthResponse, LoginRequest } from '@berra/shared';
 import { loginSchema } from './schema';
-
-const loginFields = ['email', 'password'] as const;
+import type { AuthResponse, LoginRequest } from '@berra/shared';
 
 export default function LoginPage() {
   const router = useRouter();

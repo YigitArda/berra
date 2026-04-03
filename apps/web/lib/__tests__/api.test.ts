@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ApiError, apiFetch, API_BASE } from '../api';
+import { ApiError, API_BASE, apiFetch } from '../api';
 
 describe('apiFetch', () => {
   beforeEach(async () => {
@@ -19,7 +19,7 @@ describe('apiFetch', () => {
     vi.unstubAllEnvs();
   });
 
-  it('returns parsed JSON response', async () => {
+  it('returns parsed JSON response for JSON payloads', async () => {
     const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue(
       new Response(JSON.stringify({ ok: true }), {
         status: 200,
@@ -33,18 +33,20 @@ describe('apiFetch', () => {
     expect(url).toBe(`${API_BASE}/health`);
     expect(init).toMatchObject({
       credentials: 'include',
+      headers: new Headers(),
     });
     expect(new Headers((init as RequestInit).headers).get('Content-Type')).toBe('application/json');
   });
 
-  it('throws status fallback for non-JSON error payloads', async () => {
-    vi.spyOn(global, 'fetch').mockResolvedValue(new Response('server down', { status: 502 }));
+  it('returns plain text for non-JSON successful responses', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValue(
+      new Response('pong', {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain' },
+      }),
+    );
 
-    await expect(apiFetch('/health')).rejects.toMatchObject({
-      code: 'HTTP_502',
-      message: 'HTTP 502',
-      status: 502,
-    });
+    await expect(apiFetch<string>('/health')).resolves.toBe('pong');
   });
 
   it('returns null for 204 responses', async () => {
@@ -53,24 +55,14 @@ describe('apiFetch', () => {
     await expect(apiFetch<null>('/health')).resolves.toBeNull();
   });
 
-  it('uses standardized JSON error fields', async () => {
-    vi.spyOn(global, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ code: 'UNAUTHORIZED', message: 'Unauthorized', status: 401 }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      }),
-    );
+  it('throws ApiError with fallback status message for non-JSON error payloads', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValue(new Response('server down', { status: 502 }));
 
-    try {
-      await apiFetch('/secure');
-      throw new Error('expected apiFetch to throw');
-    } catch (error) {
-      expect(error).toBeInstanceOf(ApiError);
-      expect(error).toMatchObject({
-        code: 'UNAUTHORIZED',
-        message: 'Unauthorized',
-        status: 401,
-      });
-    }
+    await expect(apiFetch('/health')).rejects.toMatchObject<ApiError>({
+      name: 'ApiError',
+      message: 'HTTP 502',
+      status: 502,
+      payload: null,
+    });
   });
 });

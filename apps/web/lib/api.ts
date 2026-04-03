@@ -1,40 +1,28 @@
 import { API_BASE, getApiBaseFallbackMessage, hasApiBase } from './env';
 import { joinApiUrl } from './url';
 
-export const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE ?? process.env.API_BASE ?? 'http://localhost:4000/api';
+const rawApiBase = process.env.NEXT_PUBLIC_API_BASE ?? process.env.API_BASE ?? '';
+
+export const API_BASE = rawApiBase.replace(/\/+$/, '');
+
+export function getHealthEndpoint(): string | null {
+  if (!API_BASE) {
+    return null;
+  }
+
+  return joinUrl(API_BASE, '/health');
+}
+
+export class ApiError extends Error {
+  status: number;
+  payload: unknown;
 
 export function getHealthEndpoint(): string {
   return joinUrl(API_BASE, '/health');
 }
 
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    public readonly status: number,
-    public readonly payload?: unknown,
-  ) {
-    super(message);
-    this.name = 'ApiError';
-  }
-
-  const data = payload as {
-    code?: unknown;
-    message?: unknown;
-    error?: unknown;
-    status?: unknown;
-  };
-
-  return {
-    code: typeof data.code === 'string' && data.code.trim().length > 0 ? data.code : fallback.code,
-    message:
-      typeof data.message === 'string' && data.message.trim().length > 0
-        ? data.message
-        : typeof data.error === 'string' && data.error.trim().length > 0
-          ? data.error
-          : fallback.message,
-    status: typeof data.status === 'number' ? data.status : status,
-  };
+function isJsonResponse(res: Response) {
+  return res.headers.get('Content-Type')?.toLowerCase().includes('application/json') ?? false;
 }
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -51,24 +39,28 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     headers.set('Content-Type', 'application/json');
   }
 
-  const res = await fetch(joinUrl(API_BASE, path), {
+  const targetUrl = API_BASE ? joinUrl(API_BASE, path) : path;
+  const res = await fetch(targetUrl, {
     ...init,
     credentials: 'include',
     headers,
   });
 
   if (!res.ok) {
-    const payload = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
-    throw new ApiError(payload.error ?? payload.message ?? `HTTP ${res.status}`, res.status, payload);
+    const payload = isJsonResponse(res)
+      ? ((await res.json().catch(() => ({}))) as { error?: string; message?: string })
+      : null;
+
+    throw new ApiError(payload?.error ?? payload?.message ?? `HTTP ${res.status}`, res.status, payload);
   }
 
   if (res.status === 204) {
     return null as T;
   }
 
-  if (!isJsonResponse(res)) {
-    return null as T;
+  if (isJsonResponse(res)) {
+    return (await res.json()) as T;
   }
 
-  return (await res.json()) as T;
+  return (await res.text()) as T;
 }

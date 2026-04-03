@@ -19,40 +19,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const localBadgeCount = useAppStore((s) => s.localBadgeCount);
   const setLocalBadgeCount = useAppStore((s) => s.setLocalBadgeCount);
   const toastMessage = useAppStore((s) => s.toastMessage);
-  const clearToast = useAppStore((s) => s.clearToast);
-  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (toastTimeoutRef.current) {
-      clearTimeout(toastTimeoutRef.current);
-      toastTimeoutRef.current = null;
-    }
-
-    if (!toastMessage) {
-      return;
-    }
-
-    toastTimeoutRef.current = setTimeout(() => {
-      clearToast();
-      toastTimeoutRef.current = null;
-    }, 4000);
-
-    return () => {
-      if (toastTimeoutRef.current) {
-        clearTimeout(toastTimeoutRef.current);
-        toastTimeoutRef.current = null;
-      }
-    };
-  }, [toastMessage, clearToast]);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      setLocalBadgeCount(notificationsQuery.unreadCount);
-      return;
-    }
-
-    setLocalBadgeCount(0);
-  }, [isAuthenticated, notificationsQuery.unreadCount, setLocalBadgeCount]);
+  const setToastMessage = useAppStore((s) => s.setToastMessage);
+  const { isAuthenticated } = useSession();
+  const logoutMutation = useLogout();
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
