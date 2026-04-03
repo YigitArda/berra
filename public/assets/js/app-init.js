@@ -1,393 +1,40 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>arabalariseviyoruz.com — Türkiye'nin Araba Topluluğu</title>
-<meta name="description" content="Araba tutkunlarının buluştuğu platform. Forum, araç skorlama, bakım takibi, galeri ve sanayi rehberi.">
-<meta property="og:title" content="arabalariseviyoruz.com — Türkiye'nin Araba Topluluğu">
-<meta property="og:description" content="Araba tutkunlarının buluştuğu platform. Forum, araç skorlama, bakım takibi, galeri ve sanayi rehberi.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://arabalariseviyoruz.com/">
-<meta property="og:locale" content="tr_TR">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="arabalariseviyoruz.com">
-<meta name="twitter:description" content="Araba tutkunlarının buluştuğu platform.">
-<link rel="canonical" href="https://arabalariseviyoruz.com/">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/index.css">
-</head>
-<body>
+import { getUser, setUserState, clearUserState, getCurrentCat, setCurrentCat } from './state/session.js';
+import { getThreads, setThreads, getFeedData, setFeedData } from './state/feed.js';
+import { renderThreadsModule } from './render/render-threads.js';
+import { renderFeedModule } from './render/render-feed.js';
+import { renderProfileHeaderModule } from './render/render-profile.js';
+import { navbarEls } from './ui/navbar.js';
+import { threadListEl } from './ui/thread-list.js';
+import { feedListEl } from './ui/feed-card.js';
+import { profileEls } from './ui/profile.js';
+import { messageEls } from './ui/messages.js';
+import { notificationEls } from './ui/notifications.js';
 
-<div class="navbar">
-  <a class="logo" href="#" onclick="goHome()">🚗 arabalariseviyoruz<span class="logo-dot">.com</span></a>
-  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Tema değiştir"></button>
-  <span class="theme-icon" id="themeIcon">🌙</span>
-  <div class="nav-search" style="position:relative">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input type="text" id="searchInput" placeholder="Konu, araç, üye ara..." autocomplete="off">
-    <div class="search-dropdown" id="searchDropdown"></div>
-  </div>
-  <div class="nav-links">
-    <a class="nav-link active" href="#">Forum</a>
-    <a class="nav-link" href="sanayi.html">🏭 Sanayi</a>
-    <a class="nav-link" href="ozellikler.html">🔧 Bakım & Galeri</a>
-    <a class="nav-link" href="rehber.html">📖 Rehber</a>
-    <a class="nav-link" href="karsilastir.html">⚖️ Karşılaştır</a>
-    <button class="nav-link" id="btnScore">🧮 Alınır mı?</button>
-  </div>
-  <button class="nav-hamburger" id="btnHamburger" aria-label="Menüyü aç" onclick="toggleMobileMenu()">☰</button>
-  <div class="nav-right" id="navRight">
-    <button class="btn btn-ghost" id="btnLogin">Giriş Yap</button>
-    <button class="btn btn-accent" id="btnRegBtn">Kayıt Ol</button>
-  </div>
-</div>
-<!-- Mobil menü -->
-<div class="mobile-menu" id="mobileMenu">
-  <a href="#">Forum</a>
-  <a href="sanayi.html">🏭 Sanayi</a>
-  <a href="ozellikler.html">🔧 Bakım &amp; Galeri</a>
-  <a href="rehber.html">📖 Rehber</a>
-  <a href="karsilastir.html">⚖️ Karşılaştır</a>
-  <button id="btnScoreMobile" onclick="document.getElementById('btnScore').click();toggleMobileMenu()">🧮 Alınır mı?</button>
-</div>
-
-<!-- ANA LAYOUT -->
-<div class="layout">
-  <!-- SOL: KONULAR -->
-  <div class="panel-left">
-    <div class="panel-left-top">
-      <span class="panel-left-title">💬 Forum</span>
-      <button class="btn btn-accent btn-sm" id="btnNewThread">+ Yeni Konu</button>
-    </div>
-    <div class="cat-bar">
-      <div class="cat-tab active" data-cat="all">Tümü <span class="cat-count" id="cnt-all">0</span></div>
-      <div class="cat-tab" data-cat="genel">💬 Genel <span class="cat-count" id="cnt-genel">0</span></div>
-      <div class="cat-tab" data-cat="ilk">⭐ İlk Araba <span class="cat-count" id="cnt-ilk">0</span></div>
-      <div class="cat-tab" data-cat="modifiye">🔧 Modifiye <span class="cat-count" id="cnt-modifiye">0</span></div>
-      <div class="cat-tab" data-cat="ilan">👁 İlan <span class="cat-count" id="cnt-ilan">0</span></div>
-      <div class="cat-tab" data-cat="ariza">🛠 Arıza <span class="cat-count" id="cnt-ariza">0</span></div>
-    </div>
-    <div class="thread-header">
-      <span class="th-label" data-sort="title">Konu</span>
-      <span class="th-label c" data-sort="replies">Yanıt</span>
-      <span class="th-label c">Görüntü</span>
-      <span class="th-label c">Son Mesaj</span>
-    </div>
-    <div class="thread-list" id="threadList"></div>
-  </div>
-
-  <!-- SAĞ: PANEL -->
-  <div class="panel-right">
-    <!-- Sekme çubuğu -->
-    <div class="feed-tabs" id="feedTabs">
-      <button class="feed-tab active" data-panel="akis">⚡ Akış</button>
-      <button class="feed-tab" data-panel="kesf">🔍 Keşfet</button>
-      <button class="feed-tab" data-panel="bildirim">🔔 Bildirimler <span class="notif-badge" id="notifBadge" style="display:none">0</span></button>
-    </div>
-
-    <!-- Akış paneli -->
-    <div class="feed-panel active" id="panelAkis" style="overflow-y:auto;" id="feedScroll">
-      <div class="feed-center">
-        <div class="compose">
-          <div class="compose-inner">
-            <div class="compose-ava" id="composeAva">👤</div>
-            <div class="compose-area">
-              <textarea class="compose-input" id="feedInput" rows="2" placeholder="Ne hakkında konu açmak istiyorsun?"></textarea>
-              <div class="compose-foot">
-                <span class="char-count" id="charCount">0/200</span>
-                <button class="btn btn-accent btn-sm" id="btnPost">+ Konu Aç</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="feed-divider">💬 SON KONULAR</div>
-        <div id="feedList"></div>
-        <div id="feedLoadMore" class="feed-load-more" style="display:none">Yükleniyor...</div>
-      </div>
-    </div>
-
-    <!-- Keşfet paneli -->
-    <div class="feed-panel" id="panelKesf" style="overflow-y:auto;">
-      <div class="explore-center">
-        <!-- İstatistik -->
-        <div class="stats-row" id="exploreStats">
-          <div class="stat-block"><div class="stat-num" id="statThreads">—</div><div class="stat-lbl">Konu</div></div>
-          <div class="stat-block"><div class="stat-num" id="statReplies">—</div><div class="stat-lbl">Yanıt</div></div>
-          <div class="stat-block"><div class="stat-num" id="statPosts">—</div><div class="stat-lbl">Paylaşım</div></div>
-        </div>
-        <!-- Öne çıkan konu -->
-        <div class="explore-section" style="margin-top:16px">
-          <div class="explore-title">🏆 Öne Çıkan</div>
-          <div id="featuredThread"></div>
-        </div>
-        <!-- Trend konular -->
-        <div class="explore-section">
-          <div class="explore-title">🔥 Trend Konular</div>
-          <div class="trend-grid" id="trendTags"></div>
-        </div>
-        <!-- Aktif kullanıcılar -->
-        <div class="explore-section">
-          <div class="explore-title">👥 Aktif Üyeler</div>
-          <div class="active-users" id="activeUsers"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Bildirimler paneli -->
-    <div class="feed-panel" id="panelBildirim" style="overflow-y:auto;">
-      <div class="notif-center">
-        <div class="notif-top">
-          <span style="font-size:.85rem;font-weight:700;color:var(--text)">Bildirimler</span>
-          <button class="btn btn-ghost btn-sm" onclick="markAllRead()">Tümünü okundu işaretle</button>
-        </div>
-        <div class="notif-list" id="notifList"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="page" id="threadPage">
-  <div class="page-inner">
-    <button class="page-back" id="btnBack">← Geri dön</button>
-    <div id="threadDetailContent"></div>
-  </div>
-</div>
-
-<!-- POST DETAY SAYFASI -->
-<div class="page" id="postDetailPage">
-  <div style="height:calc(100vh - 48px);overflow-y:auto;" id="postDetailScroll">
-    <div style="position:sticky;top:0;z-index:5;background:rgba(15,16,20,.88);backdrop-filter:blur(8px);padding:8px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
-      <button class="btn btn-icon" onclick="navigateBack()">←</button>
-      <span style="font-family:var(--fontc);font-weight:700;font-size:1rem;color:var(--text)">Gönderi</span>
-    </div>
-    <div class="page-inner" id="postDetailContent"></div>
-  </div>
-</div>
-
-<!-- MESAJLAR SAYFASI -->
-<div class="page" id="messagesPage">
-  <div class="messages-layout">
-    <div class="msg-sidebar">
-      <div class="msg-sidebar-top">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <span>💬 Mesajlar</span>
-          <button class="btn btn-icon" onclick="navigateBack()">✕</button>
-        </div>
-      </div>
-      <div class="msg-conv-list" id="msgConvList"></div>
-    </div>
-    <div class="msg-main" id="msgMain">
-      <div class="msg-empty">
-        <div class="msg-empty-icon">💬</div>
-        <span>Bir konuşma seç</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- PROFİL SAYFASI -->
-<div class="page" id="profilePage">
-  <div style="height:calc(100vh - 48px);overflow-y:auto;">
-    <div style="position:sticky;top:0;z-index:5;background:rgba(15,16,20,.85);backdrop-filter:blur(8px);padding:8px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
-      <button class="btn btn-icon" onclick="navigateBack()" aria-label="Geri">←</button>
-      <span id="profilePageTitle" style="font-family:var(--fontc);font-weight:700;font-size:1rem;color:var(--text)">Profil</span>
-    </div>
-    <div class="profile-cover"><div class="profile-cover-inner"></div></div>
-    <div class="profile-header" id="profileHeader"></div>
-    <div class="profile-tabs" id="profileTabsEl"></div>
-    <div class="profile-content" id="profileContent"></div>
-  </div>
-</div>
-
-<!-- ARAÇ EKLE MODAL -->
-<div class="overlay" id="addCarModal">
-  <div class="modal" style="max-width:420px">
-    <div class="modal-head">
-      <span class="modal-title">🚗 Araç Ekle</span>
-      <button class="modal-close" id="closeAddCar">✕</button>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div class="form-row">
-        <div class="fg"><label>Marka</label><input id="car_brand" placeholder="Toyota..."></div>
-        <div class="fg"><label>Model</label><input id="car_model" placeholder="Corolla..."></div>
-      </div>
-      <div class="form-row">
-        <div class="fg"><label>Yıl</label><input id="car_year" type="number" placeholder="2018" min="1950" max="2030"></div>
-        <div class="fg"><label>Sahip olma yılı</label><input id="car_from" type="number" placeholder="2020" min="1950" max="2030"></div>
-      </div>
-      <div class="form-row full">
-        <div class="fg"><label>Satış yılı (boş = hâlâ kullanıyorum)</label><input id="car_to" type="number" placeholder="2023" min="1950" max="2030"></div>
-      </div>
-      <div class="form-row full">
-        <div class="fg"><label>Notlar</label><input id="car_notes" placeholder="Harika bir araçtı..."></div>
-      </div>
-      <div class="auth-error" id="carErr"></div>
-      <button class="btn btn-accent btn-full" id="doAddCar">Ekle</button>
-    </div>
-  </div>
-</div>
-
-<!-- SKOR MODAL -->
-<div class="overlay" id="scoreModal">
-  <div class="modal">
-    <div class="modal-head">
-      <span class="modal-title">🧮 Alınır mı Skoru</span>
-      <button class="modal-close" id="closeScore">✕</button>
-    </div>
-    <div class="form-row">
-      <div class="fg"><label>Marka</label><input id="sc_brand" placeholder="Toyota, BMW..."></div>
-      <div class="fg"><label>Model</label><input id="sc_model" placeholder="Corolla..."></div>
-    </div>
-    <div class="form-row">
-      <div class="fg"><label>Yıl</label><input id="sc_year" type="number" placeholder="2018" min="1980" max="2026"></div>
-      <div class="fg"><label>Kilometre</label><input id="sc_km" type="number" placeholder="85000"></div>
-    </div>
-    <div class="form-row full">
-      <div class="fg"><label>Fiyat (₺)</label><input id="sc_price" type="number" placeholder="950000"></div>
-    </div>
-    <button class="btn btn-accent btn-full" id="btnCalc">Hesapla</button>
-    <div class="score-result" id="scoreResult">
-      <div class="score-top">
-        <div class="score-big" id="scoreNum">–</div>
-        <div><div class="score-verdict" id="scoreVerdict">–</div><div class="score-sub" id="scoreSub">–</div></div>
-      </div>
-      <div class="bar-row"><span class="bar-label">Yaş puanı (3)</span><div class="bar-track"><div class="bar-fill" id="b_yas"></div></div><span class="bar-val" id="v_yas">–</span></div>
-      <div class="bar-row"><span class="bar-label">Km puanı (3)</span><div class="bar-track"><div class="bar-fill" id="b_km"></div></div><span class="bar-val" id="v_km">–</span></div>
-      <div class="bar-row"><span class="bar-label">Fiyat/değer (2)</span><div class="bar-track"><div class="bar-fill" id="b_fiyat"></div></div><span class="bar-val" id="v_fiyat">–</span></div>
-      <div class="bar-row"><span class="bar-label">Güvenilirlik (2)</span><div class="bar-track"><div class="bar-fill" id="b_marka"></div></div><span class="bar-val" id="v_marka">–</span></div>
-    </div>
-  </div>
-</div>
-
-<!-- AUTH MODAL -->
-<div class="overlay" id="authModal">
-  <div class="modal">
-    <div class="modal-head">
-      <span class="modal-title">Hesabın</span>
-      <button class="modal-close" id="closeAuth">✕</button>
-    </div>
-    <div class="auth-tabs">
-      <div class="a-tab active" data-t="login">Giriş Yap</div>
-      <div class="a-tab" data-t="register">Kayıt Ol</div>
-    </div>
-    <div class="a-form show" id="loginF">
-      <div class="fg"><label>Email</label><input id="l_email" type="email" placeholder="ornek@mail.com"></div>
-      <div class="fg"><label>Şifre</label><input id="l_pass" type="password" placeholder="••••••"></div>
-      <div class="auth-error" id="loginErr"></div>
-      <button class="btn btn-accent btn-full" id="doLogin">Giriş Yap</button>
-      <div style="text-align:center;margin-top:8px"><a href="#" onclick="switchAuth('forgot');return false" style="font-size:.78rem;color:var(--text2)">Şifremi unuttum</a></div>
-    </div>
-    <div class="a-form" id="forgotF">
-      <div class="fg"><label>Email adresiniz</label><input id="f_email" type="email" placeholder="ornek@mail.com"></div>
-      <div class="auth-error" id="forgotErr"></div>
-      <button class="btn btn-accent btn-full" id="doForgot">Sıfırlama Kodu Gönder</button>
-      <div id="resetForm" style="display:none;margin-top:12px">
-        <div class="fg"><label>Sıfırlama Kodu</label><input id="f_token" placeholder="Kodu yapıştır"></div>
-        <div class="fg"><label>Yeni Şifre</label><input id="f_newpass" type="password" placeholder="En az 6 karakter"></div>
-        <button class="btn btn-accent btn-full" id="doReset">Şifreyi Değiştir</button>
-      </div>
-      <div style="text-align:center;margin-top:8px"><a href="#" onclick="switchAuth('login');return false" style="font-size:.78rem;color:var(--text2)">Giriş ekranına dön</a></div>
-    </div>
-    <div class="a-form" id="regF">
-      <div class="fg"><label>Kullanıcı Adı</label><input id="r_user" placeholder="arabasever_42"></div>
-      <div class="fg"><label>Email</label><input id="r_email" type="email" placeholder="ornek@mail.com"></div>
-      <div class="fg"><label>Şifre</label><input id="r_pass" type="password" placeholder="En az 6 karakter"></div>
-      <div class="auth-error" id="regErr"></div>
-      <button class="btn btn-accent btn-full" id="doReg">Kayıt Ol</button>
-    </div>
-  </div>
-</div>
-
-<!-- YENİ KONU MODAL -->
-<div class="overlay" id="newThreadModal">
-  <div class="modal" style="max-width:540px">
-    <div class="modal-head">
-      <span class="modal-title">+ Yeni Konu Aç</span>
-      <button class="modal-close" id="closeNewThread">✕</button>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <div class="fg">
-        <label>Kategori</label>
-        <select id="nt_cat">
-          <option value="1">💬 Genel Sohbet</option>
-          <option value="2">⭐ İlk Araba Tavsiyesi</option>
-          <option value="3">🔧 Modifiye</option>
-          <option value="4">👁 İlan Yorumu</option>
-          <option value="5">🛠 Arıza / Bakım</option>
-        </select>
-      </div>
-      <div class="fg"><label>Başlık</label><input id="nt_title" placeholder="Konuyu kısaca özetle..."></div>
-      <div class="fg"><label>İçerik</label><textarea id="nt_body" placeholder="Detayları buraya yaz..."></textarea></div>
-      <div class="auth-error" id="ntErr"></div>
-      <button class="btn btn-accent btn-full" id="doNewThread">Konuyu Yayınla</button>
-    </div>
-  </div>
-</div>
-
-<!-- ŞİKAYET MODAL -->
-<div class="overlay" id="reportModal">
-  <div class="modal" style="max-width:min(400px,92vw)">
-    <div class="modal-head">
-      <span class="modal-title">🚨 Şikayet Et</span>
-      <button class="modal-close" onclick="closeReportModal()">✕</button>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <p style="color:var(--text2);font-size:.9rem;margin:0">Bu içeriği neden şikayet ediyorsunuz?</p>
-      <div class="fg">
-        <select id="reportReason" style="width:100%;padding:9px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text)">
-          <option value="">— Neden seçin —</option>
-          <option value="spam">Spam</option>
-          <option value="hakaret">Hakaret / Küfür</option>
-          <option value="nefret_söylemi">Nefret söylemi</option>
-          <option value="yanlış_bilgi">Yanlış bilgi</option>
-          <option value="uygunsuz_içerik">Uygunsuz içerik</option>
-          <option value="telif_hakkı">Telif hakkı ihlali</option>
-          <option value="diğer">Diğer</option>
-        </select>
-      </div>
-      <div class="auth-error" id="reportErr"></div>
-      <button class="btn btn-accent btn-full" id="btnSubmitReport" onclick="submitReport()">Gönder</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script src="js/sanitize-helpers.js"></script>
-<script>
 // ── XSS KORUMASI ───────────────────────────────────────────────
-const TRUSTED_HOSTS = [window.location.hostname, 'arabalariseviyoruz.com', 'www.arabalariseviyoruz.com'];
-
-function escapeText(s) {
-  return window.SafeRender.escapeText(s);
-}
-
-function sanitizeUrl(url) {
-  return window.SafeRender.sanitizeUrl(url, { allowedProtocols: ['https:'], allowedHosts: TRUSTED_HOSTS });
-}
-
-function safeUrl(url) {
-  return sanitizeUrl(url) || '#';
-}
-
 function escapeHtml(s) {
-  return escapeText(s);
-}
-
-function createEl(tag, className, text) {
-  const el = document.createElement(tag);
-  if (className) el.className = className;
-  if (text !== undefined && text !== null) el.textContent = String(text);
-  return el;
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
 }
 
 // ── STATE ──────────────────────────────────────────────────────
-let user = null;
-let currentCat = 'all';
-let threads = [];
-let feedData = [];
+let user = getUser();
+let currentCat = getCurrentCat();
+let threads = getThreads();
+let feedData = getFeedData();
+
+function syncSessionState() {
+  setUserState(user);
+  setCurrentCat(currentCat);
+}
+
+function syncFeedState() {
+  setThreads(threads);
+  setFeedData(feedData);
+}
 
 const STATIC_THREADS = [
   {id:1,ava:'M',author:'Murat_K',cat:'İlk Araba',title:'2019 Corolla mı, Clio mı? Bütçem 750k',sub:'Her ikisini test ettim, farklı deneyimler...',replies:23,views:412,time:'14 dk',pinned:false,locked:false,slug:'ilk',
@@ -429,64 +76,17 @@ feedData = STATIC_THREADS.map(t => ({
   pinned: t.pinned || false,
   locked: t.locked || false,
 }));
+syncFeedState();
+
+// UI modüllerini erken bağla
+navbarEls(); threadListEl(); feedListEl(); profileEls(); messageEls(); notificationEls();
 
 // ── THREAD RENDER ──────────────────────────────────────────────
 function renderThreads(list) {
-  const el = document.getElementById('threadList');
-  el.innerHTML = '';
-  list.forEach(t => {
-    const row = createEl('div', 'thread-row' + (t.pinned ? ' pinned' : ''));
-
-    const main = createEl('div', 'thread-main');
-    main.appendChild(createEl('div', 'thread-ava', t.ava));
-
-    const info = createEl('div', 'thread-info');
-    const titleRow = createEl('div', 'thread-title-row');
-
-    if (t.pinned) titleRow.appendChild(createEl('span', 'tag tag-pin', '📌'));
-    if (t.locked) titleRow.appendChild(createEl('span', 'tag tag-lock', '🔒'));
-
-    titleRow.appendChild(createEl('span', 'thread-title', t.title));
-    const cat = createEl('span', 'tag tag-cat', t.cat);
-    titleRow.appendChild(cat);
-
-    const meta = createEl('div', 'thread-meta2');
-    const authorBtn = createEl('span', '', t.author);
-    authorBtn.style.cursor = 'pointer';
-    authorBtn.style.color = 'var(--text2)';
-    authorBtn.addEventListener('click', (ev) => {
-      ev.stopPropagation();
-      openProfile(t.author);
-    });
-    meta.appendChild(authorBtn);
-    meta.append(' · ' + String(t.sub ?? ''));
-
-    info.appendChild(titleRow);
-    info.appendChild(meta);
-    main.appendChild(info);
-
-    row.appendChild(main);
-
-    const replies = createEl('div', 'thread-stat');
-    replies.appendChild(document.createTextNode(String(t.replies ?? 0)));
-    replies.appendChild(createEl('small', '', 'yanıt'));
-
-    const views = createEl('div', 'thread-stat');
-    views.appendChild(document.createTextNode(String(t.views ?? 0)));
-    views.appendChild(createEl('small', '', 'görüntü'));
-
-    const timeCol = createEl('div', 'thread-time-col', t.time);
-    timeCol.appendChild(document.createElement('br'));
-    const by = createEl('span', '', t.author);
-    by.style.fontSize = '.67rem';
-    timeCol.appendChild(by);
-
-    row.appendChild(replies);
-    row.appendChild(views);
-    row.appendChild(timeCol);
-
-    row.addEventListener('click', () => navigate('/thread/' + (t.slug || t.id)));
-    el.appendChild(row);
+  renderThreadsModule({
+    list,
+    escapeHtml,
+    onNavigate: navigate,
   });
 }
 
@@ -545,7 +145,7 @@ async function loadThreadBySlug(slug, localThread) {
     renderThreadDetail(t, posts);
     // Statik listedeki thread'i güncelle
     const idx = threads.findIndex(x => x.slug === slug);
-    if (idx !== -1) { threads[idx].views = t.views; threads[idx].replies = t.replies; }
+    if (idx !== -1) { threads[idx].views = t.views; threads[idx].replies = t.replies; syncFeedState(); }
     renderThreads(getFiltered());
   } catch(e) {
     if (localThread) renderThreadDetail(localThread, localThread.posts || []);
@@ -575,7 +175,7 @@ function renderThreadDetail(t, posts) {
     + '<span>💬 ' + escapeHtml(String(t.replies)) + ' yanıt</span>'
     + (t.locked ? '<span class="tag tag-lock">🔒 Kilitli</span>' : '')
     + '</div>'
-    + '<div id="postsList"></div>'
+    + '<div id="postsList">' + posts.map(p => renderPost(p)).join('') + '</div>'
     + (!t.locked
       ? '<div class="reply-box" id="replyBox">'
         + '<textarea id="replyInput" placeholder="' + (user ? 'Yanıtını yaz...' : 'Yanıtlamak için giriş yap.') + '"></textarea>'
@@ -585,9 +185,6 @@ function renderThreadDetail(t, posts) {
         + '<div class="reply-box-foot"><button class="btn btn-accent btn-sm" id="btnReply">Yanıtla</button></div>'
         + '</div>'
       : '');
-
-  const postsListEl = document.getElementById('postsList');
-  posts.forEach(post => postsListEl.appendChild(renderPost(post)));
 
   if (!t.locked) {
     setTimeout(() => {
@@ -611,13 +208,13 @@ function renderThreadDetail(t, posts) {
               images: [...replyImages]
             };
             replyImages = [];
-            document.getElementById('postsList').appendChild(renderPost(newPost));
+            document.getElementById('postsList').innerHTML += renderPost(newPost);
             document.getElementById('replyInput').value = '';
             replyBtn.textContent = 'Yanıtla';
             // Sayacı güncelle
             t.replies++;
             const localT = threads.find(x => x.id === t.id || x.slug === t.slug);
-            if (localT) { localT.replies = t.replies; }
+            if (localT) { localT.replies = t.replies; syncFeedState(); }
             renderThreads(getFiltered());
             showToast(posted ? 'Yanıtın kaydedildi!' : 'Yanıtın eklendi!', 'ok');
           } catch(e) {
@@ -639,76 +236,34 @@ function timeAgo(dateStr) {
 }
 
 function renderPost(p) {
-  const wrapper = createEl('div', 'post-item');
-
-  wrapper.appendChild(createEl('div', 'post-ava', p.ava));
-  const body = createEl('div', 'post-body');
-
-  const author = createEl('span', 'post-author', p.author);
-  author.style.cursor = 'pointer';
-  author.addEventListener('click', () => openProfile(p.author));
-  body.appendChild(author);
-
-  body.appendChild(createEl('span', 'post-time', p.time));
-  body.appendChild(createEl('div', 'post-text', p.text));
-
-  if (Array.isArray(p.images) && p.images.length) {
-    const images = createEl('div', 'post-images');
-    p.images.forEach((img) => {
-      const src = safeUrl(img);
-      if (src === '#') return;
-      const imgEl = createEl('img', 'post-img');
-      imgEl.setAttribute('src', src);
-      imgEl.addEventListener('click', () => openImg(src));
-      images.appendChild(imgEl);
-    });
-    body.appendChild(images);
-  }
-
-  if (p.preview) {
-    const previewUrl = safeUrl(p.preview.url);
-    if (previewUrl !== '#') {
-      const link = createEl('a');
-      link.style.textDecoration = 'none';
-      link.setAttribute('href', previewUrl);
-      link.setAttribute('target', '_blank');
-      link.setAttribute('rel', 'noopener noreferrer');
-
-      const card = createEl('div', 'preview-card');
-      if (p.preview.image) {
-        const imgSrc = safeUrl(p.preview.image);
-        if (imgSrc !== '#') {
-          const img = createEl('img', 'preview-img');
-          img.setAttribute('src', imgSrc);
-          img.addEventListener('error', () => img.remove());
-          card.appendChild(img);
-        }
-      }
-      const pb = createEl('div', 'preview-body');
-      pb.appendChild(createEl('div', 'preview-site', p.preview.site));
-      pb.appendChild(createEl('div', 'preview-title', p.preview.title || ''));
-      if (p.preview.price) pb.appendChild(createEl('div', 'preview-price', p.preview.price));
-      pb.appendChild(createEl('div', 'preview-desc', p.preview.description || ''));
-      card.appendChild(pb);
-      link.appendChild(card);
-      body.appendChild(link);
-    }
-  }
-
-  const actions = createEl('div', 'post-actions');
-  const likeBtn = createEl('button', 'post-like-btn' + (p.liked ? ' liked' : ''), `♥ ${p.likes || 0}`);
-  likeBtn.addEventListener('click', () => likePost(p.id, likeBtn));
-  actions.appendChild(likeBtn);
-
-  const reportBtn = createEl('button', 'post-like-btn', '🚨 Şikayet');
-  reportBtn.style.marginLeft = 'auto';
-  reportBtn.style.opacity = '.55';
-  reportBtn.addEventListener('click', () => openReport('post', p.id));
-  actions.appendChild(reportBtn);
-
-  body.appendChild(actions);
-  wrapper.appendChild(body);
-  return wrapper;
+  const imgsHtml = p.images && p.images.length
+    ? '<div class="post-images">' + p.images.map(img => `<img class="post-img" src="${img}" onclick="openImg('${img}')">`).join('') + '</div>'
+    : '';
+  const prevHtml = p.preview
+    ? `<a href="${p.preview.url}" target="_blank" style="text-decoration:none">
+        <div class="preview-card">
+          ${p.preview.image ? `<img class="preview-img" src="${p.preview.image}" onerror="this.style.display='none'">` : ''}
+          <div class="preview-body">
+            <div class="preview-site">${p.preview.site}</div>
+            <div class="preview-title">${p.preview.title || ''}</div>
+            ${p.preview.price ? `<div class="preview-price">${p.preview.price}</div>` : ''}
+            <div class="preview-desc">${p.preview.description || ''}</div>
+          </div>
+        </div>
+      </a>` : '';
+  return `<div class="post-item">
+    <div class="post-ava">${escapeHtml(p.ava)}</div>
+    <div class="post-body">
+      <span class="post-author" onclick="openProfile('${escapeHtml(p.author)}')" style="cursor:pointer">${escapeHtml(p.author)}</span>
+      <span class="post-time">${escapeHtml(p.time)}</span>
+      <div class="post-text">${escapeHtml(p.text)}</div>
+      ${imgsHtml}${prevHtml}
+      <div class="post-actions">
+        <button class="post-like-btn ${p.liked?'liked':''}" onclick="likePost(${p.id},this)">♥ ${escapeHtml(String(p.likes))}</button>
+        <button class="post-like-btn" style="margin-left:auto;opacity:.55" onclick="openReport('post',${p.id})">🚨 Şikayet</button>
+      </div>
+    </div>
+  </div>`;
 }
 
 async function likePost(id, btn) {
@@ -716,6 +271,7 @@ async function likePost(id, btn) {
     const p = t.posts?.find(x => x.id === id);
     if (p) {
       p.liked = !p.liked;
+  syncFeedState();
       p.likes += p.liked ? 1 : -1;
       btn.textContent = '♥ ' + p.likes;
       btn.classList.toggle('liked', p.liked);
@@ -751,6 +307,7 @@ document.querySelectorAll('.cat-tab').forEach(tab => {
     document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     currentCat = tab.dataset.cat;
+    syncSessionState();
     renderThreads(getFiltered());
   });
 });
@@ -795,88 +352,45 @@ function feedCommentHtml(c, postId, isReply) {
 }
 
 function feedCard(p, delay) {
-  if (isBlocked(p.author)) return null;
+  if (isBlocked(p.author)) return '';
   const isPinned = !!p.pinned;
   const isLocked = !!p.locked;
+  const cardClass = isPinned ? ' is-announce' : '';
+  const badge = isPinned ? '<div class="feed-item-badge badge-trend">📌 Sabit Konu</div>' : '';
   const menuId = 'pm-' + p.id;
-
-  const card = createEl('div', 'feed-item' + (isPinned ? ' is-announce' : ''));
-  card.id = 'fi-' + p.id;
-  card.style.animationDelay = `${delay}s`;
-  card.addEventListener('click', (event) => openFeedPost(event, p.id));
-
-  const top = createEl('div', 'feed-item-top');
-  const ava = createEl('div', `feed-ava ${avaColor(p.author)}`, p.ava);
-  top.appendChild(ava);
-
-  const meta = createEl('div', 'feed-meta');
-  const author = createEl('span', 'feed-author', p.author);
-  author.addEventListener('click', (event) => {
-    event.stopPropagation();
-    navigate('/profile/' + encodeURIComponent(String(p.author || '')));
-  });
-  meta.appendChild(author);
-  meta.appendChild(createEl('span', 'feed-time', p.time));
-  top.appendChild(meta);
-
-  const menuWrap = createEl('div', 'post-menu-wrap');
-  menuWrap.addEventListener('click', (e) => e.stopPropagation());
-  const menuBtn = createEl('button', 'post-menu-btn', '···');
-  menuBtn.addEventListener('click', () => togglePostMenu(menuId));
-  menuWrap.appendChild(menuBtn);
-
-  const menuDrop = createEl('div', 'post-menu-dropdown');
-  menuDrop.id = menuId;
-  const mkItem = (label, onClick, danger) => {
-    const item = createEl('div', 'post-menu-item' + (danger ? ' danger' : ''), label);
-    item.addEventListener('click', onClick);
-    return item;
-  };
-  menuDrop.appendChild(mkItem('👤 Profili gör', () => { navigate('/profile/' + encodeURIComponent(String(p.author || ''))); closeAllMenus(); }));
-  menuDrop.appendChild(mkItem('💬 Mesaj gönder', () => { openMessages(p.author); closeAllMenus(); }));
-  menuDrop.appendChild(mkItem('🚫 Engelle', () => { blockAndRefresh(p.author); closeAllMenus(); }, true));
-  menuDrop.appendChild(mkItem('🚨 Şikayet et', () => { openReport('feed_post', p.id); closeAllMenus(); }, true));
-  menuWrap.appendChild(menuDrop);
-  top.appendChild(menuWrap);
-
-  card.appendChild(top);
-
-  if (isPinned) card.appendChild(createEl('div', 'feed-item-badge badge-trend', '📌 Sabit Konu'));
-  card.appendChild(createEl('div', 'feed-text', p.text));
-
-  const tagRow = createEl('div', 'feed-tag-row');
-  if (p.cat) tagRow.appendChild(createEl('span', 'feed-auto-tag', `#${p.cat}`));
-  if (isLocked) tagRow.appendChild(createEl('span', 'feed-auto-tag', '#kilitli'));
-  if (p.views != null) tagRow.appendChild(createEl('span', 'feed-auto-tag', `👁 ${p.views}`));
-  card.appendChild(tagRow);
-
-  const actions = createEl('div', 'feed-actions');
-  actions.addEventListener('click', (e) => e.stopPropagation());
-
-  const commentBtn = createEl('button', 'feed-btn', '💬 ');
-  const commentCount = createEl('span', '', p.comment_count || 0);
-  commentBtn.appendChild(commentCount);
-  commentBtn.addEventListener('click', (e) => { e.stopPropagation(); openThreadFromFeed(p.id); });
-
-  const shareBtn = createEl('button', 'feed-btn' + (p.shared ? ' shared' : ''), '🔗 ');
-  const shareCount = createEl('span', '', p.shares || 0);
-  shareBtn.appendChild(shareCount);
-  shareBtn.addEventListener('click', () => shareFeed(p.id, shareBtn));
-
-  actions.appendChild(commentBtn);
-  actions.appendChild(shareBtn);
-  card.appendChild(actions);
-
-  return card;
+  return `<div class="feed-item${cardClass}" id="fi-${p.id}" style="animation-delay:${delay}s" onclick="openFeedPost(event,${p.id})">
+    <div class="feed-item-top">
+      <div class="feed-ava ${avaColor(p.author)}">${escapeHtml(p.ava)}</div>
+      <div class="feed-meta">
+        <span class="feed-author" onclick="event.stopPropagation();navigate('/profile/${escapeHtml(p.author)}')">${escapeHtml(p.author)}</span>
+        <span class="feed-time">${escapeHtml(p.time)}</span>
+      </div>
+      <div class="post-menu-wrap" onclick="event.stopPropagation()">
+        <button class="post-menu-btn" onclick="togglePostMenu('${menuId}')">···</button>
+        <div class="post-menu-dropdown" id="${menuId}">
+          <div class="post-menu-item" onclick="navigate('/profile/${escapeHtml(p.author)}');closeAllMenus()">👤 Profili gör</div>
+          <div class="post-menu-item" onclick="openMessages('${escapeHtml(p.author)}');closeAllMenus()">💬 Mesaj gönder</div>
+          <div class="post-menu-item danger" onclick="blockAndRefresh('${escapeHtml(p.author)}');closeAllMenus()">🚫 Engelle</div>
+          <div class="post-menu-item danger" onclick="openReport('feed_post',${p.id});closeAllMenus()">🚨 Şikayet et</div>
+        </div>
+      </div>
+    </div>
+    ${badge}
+    <div class="feed-text">${escapeHtml(p.text)}</div>
+    <div class="feed-tag-row">
+      ${p.cat ? `<span class="feed-auto-tag">#${escapeHtml(p.cat)}</span>` : ''}
+      ${isLocked ? '<span class="feed-auto-tag">#kilitli</span>' : ''}
+      ${p.views != null ? `<span class="feed-auto-tag">👁 ${escapeHtml(String(p.views))}</span>` : ''}
+    </div>
+    <div class="feed-actions" onclick="event.stopPropagation()">
+      <button class="feed-btn" onclick="event.stopPropagation();openThreadFromFeed(${p.id})">💬 <span>${p.comment_count || 0}</span></button>
+      <button class="feed-btn ${p.shared?'shared':''}" onclick="shareFeed(${p.id},this)">🔗 <span>${p.shares}</span></button>
+    </div>
+  </div>`;
 }
 
 function renderFeed(posts) {
-  const el = document.getElementById('feedList');
-  el.innerHTML = '';
-  posts.forEach((p, i) => {
-    const card = feedCard(p, i * 0.04);
-    if (card) el.appendChild(card);
-  });
+  renderFeedModule(posts, feedCard);
 }
 
 function openFeedPost(e, id) {
@@ -935,6 +449,7 @@ async function submitComment(id) {
     replies: [],
   };
   p.comments.push(newComment);
+  syncFeedState();
   // DOM'a ekle
   const list = document.getElementById('fcl-' + id);
   list.insertAdjacentHTML('beforeend', feedCommentHtml(newComment, id, false));
@@ -960,6 +475,7 @@ async function likeFeed(id, btn) {
   const p = feedData.find(x => x.id === id);
   if (!p) return;
   p.liked = !p.liked;
+  syncFeedState();
   p.likes += p.liked ? 1 : -1;
   btn.querySelector('span').textContent = p.likes;
   btn.classList.toggle('liked', p.liked);
@@ -989,6 +505,7 @@ document.getElementById('btnPost').addEventListener('click', () => {
 // ── AUTH ──────────────────────────────────────────────────────
 function setUser(u) {
   user = u;
+  syncSessionState();
   const avaClass = avaColor(u.username);
   const unreadCount = notifData.filter(n => !n.read).length;
   const msgCount = Object.values(conversations).reduce((a,msgs) => a + msgs.filter(m => !m.read && m.from !== u.username).length, 0);
@@ -1015,6 +532,8 @@ function setUser(u) {
 }
 function doLogout() {
   user = null;
+  clearUserState();
+  syncSessionState();
   // Token yenileme interval'ini temizle
   if (window._tokenRefreshInterval) {
     clearInterval(window._tokenRefreshInterval);
@@ -1115,6 +634,7 @@ document.getElementById('doNewThread').addEventListener('click', async () => {
       posts: [{ id: Date.now(), ava: user.ava, author: user.username, time: 'Az önce', text: body, likes: 0, liked: false, images: [...ntImages], preview: currentPreview }]
     };
     threads.unshift(newThread);
+    syncFeedState();
     renderThreads(getFiltered());
     feedData.unshift({
       id: newThread.id,
@@ -1325,63 +845,15 @@ async function loadProfile(username) {
 }
 
 function renderProfileHeader(data) {
-  const u = data.user;
-  const isMe = user && user.username === u.username;
-  // Kullanıcıya özgü cover rengi
-  const coverColors = ['#e03030','#2970c7','#1a9e52','#c47f00','#9b59b6','#e67e22'];
-  let ch = 0; for (let i=0;i<u.username.length;i++) ch=(ch*31+u.username.charCodeAt(i))&0xffffffff;
-  const cc = coverColors[Math.abs(ch)%6];
-  const coverEl = document.querySelector('.profile-cover');
-  if (coverEl) coverEl.style.background = `linear-gradient(135deg, ${cc}33 0%, #1a1c26 60%)`;
-  const coverInner = document.querySelector('.profile-cover-inner');
-  if (coverInner) coverInner.style.background = `linear-gradient(90deg, ${cc}2a 0%, transparent 60%)`;
-  const avaHtml = u.avatar_url
-    ? '<img src="' + u.avatar_url + '" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
-    : '<span>' + u.username[0].toUpperCase() + '</span>';
-  const joinDate = new Date(u.created_at).toLocaleDateString('tr-TR', { year:'numeric', month:'long' });
-  const roleHtml = u.role !== 'user' ? '<span class="profile-role">' + escapeHtml(u.role.toUpperCase()) + '</span>' : '';
-  const bioHtml  = u.bio
-    ? '<div class="profile-bio">' + escapeHtml(u.bio) + '</div>'
-    : '<div class="profile-bio-empty">Henüz bio eklenmemiş.</div>';
-  const editBioBtn = isMe ? '<button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="editBio()">✏ Bio düzenle</button>' : '';
-  const avatarEdit = isMe ? '<div class="profile-ava-edit" onclick="triggerAvatarUpload()" title="Fotoğraf değiştir">✎</div><input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">' : '';
-  // Takip / mesaj / engelle butonları (başkasının profili)
-  const followingNow = isFollowing(u.username);
-  const blockedNow = isBlocked(u.username);
-  const actionRow = !isMe ? `<div class="profile-action-row">
-    <button class="follow-btn ${followingNow?'following':''}" id="followBtn-${escapeHtml(u.username)}"
-      onclick="toggleFollow('${escapeHtml(u.username)}',this)">
-      ${followingNow ? 'Takip Ediliyor' : 'Takip Et'}
-    </button>
-    <button class="msg-open-btn" onclick="openMessages('${escapeHtml(u.username)}')">💬 Mesaj</button>
-    <div class="post-menu-wrap">
-      <button class="post-menu-btn" onclick="togglePostMenu('profile-menu-${escapeHtml(u.username)}')">···</button>
-      <div class="post-menu-dropdown" id="profile-menu-${escapeHtml(u.username)}">
-        <div class="post-menu-item danger" onclick="toggleBlock('${escapeHtml(u.username)}');closeAllMenus();navigateBack()">
-          ${blockedNow ? '✅ Engeli kaldır' : '🚫 Engelle'}
-        </div>
-      </div>
-    </div>
-  </div>` : '';
-
-  document.getElementById('profileHeader').innerHTML =
-    '<div class="profile-ava-wrap">'
-    + '<div class="profile-ava ' + avaColor(u.username) + '" id="profileAvaEl">' + avaHtml + '</div>'
-    + avatarEdit
-    + '</div>'
-    + '<div class="profile-info">'
-    + '<div><span class="profile-username">' + escapeHtml(u.username) + '</span>' + roleHtml + '</div>'
-    + '<div class="profile-handle">@' + escapeHtml(u.username.toLowerCase()) + ' · 🗓 ' + joinDate + '</div>'
-    + '<div id="bioDisplay">' + bioHtml + editBioBtn + '</div>'
-    + actionRow
-    + '<div class="profile-stats">'
-    + '<div><div class="profile-stat-num">' + data.threads.length + '</div><div class="profile-stat-label">Konu</div></div>'
-    + '<div><div class="profile-stat-num">' + data.posts.length + '</div><div class="profile-stat-label">Yanıt</div></div>'
-    + '<div><div class="profile-stat-num">' + data.cars.length + '</div><div class="profile-stat-label">Araç</div></div>'
-    + '<div><div class="profile-stat-num">' + (u.following_count ?? (isMe ? following.size : 0)) + '</div><div class="profile-stat-label">Takip</div></div>'
-    + '<div><div class="profile-stat-num">' + (u.follower_count ?? (isMe ? 0 : 0)) + '</div><div class="profile-stat-label">Takipçi</div></div>'
-    + '</div>'
-    + '</div>';
+  renderProfileHeaderModule({
+    data,
+    currentUser: user,
+    escapeHtml,
+    avaColor,
+    isFollowing,
+    isBlocked,
+    followingSize: following.size,
+  });
 }
 
 function renderProfileTabs() {
@@ -1642,17 +1114,9 @@ function removeReplyImg(i) { replyImages.splice(i, 1); renderReplyImages(); }
 
 // Resim tam ekran
 function openImg(src) {
-  const safeSrc = safeUrl(src);
-  if (safeSrc === '#') {
-    showToast('Güvensiz görsel adresi engellendi.', 'err');
-    return;
-  }
   const ov = document.createElement('div');
   ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:500;display:grid;place-items:center;cursor:pointer';
-  const image = document.createElement('img');
-  image.style.cssText = 'max-width:90vw;max-height:90vh;border-radius:8px';
-  image.setAttribute('src', safeSrc);
-  ov.appendChild(image);
+  ov.innerHTML = `<img src="${src}" style="max-width:90vw;max-height:90vh;border-radius:8px">`;
   ov.onclick = () => ov.remove();
   document.body.appendChild(ov);
 }
@@ -1673,40 +1137,17 @@ document.addEventListener('click', async function(e) {
     currentPreview = data;
     const pc = document.getElementById('previewCard');
     if (pc) {
-      pc.innerHTML = '';
-      const url = safeUrl(data.url);
-      if (url === '#') {
-        showToast('Önizleme URL güvenli değil.', 'err');
-        return;
-      }
-      const link = createEl('a');
-      link.style.textDecoration = 'none';
-      link.setAttribute('href', url);
-      link.setAttribute('target', '_blank');
-      link.setAttribute('rel', 'noopener noreferrer');
-
-      const card = createEl('div', 'preview-card');
-      card.style.maxHeight = 'none';
-      card.style.marginTop = '8px';
-
-      if (data.image) {
-        const imageUrl = safeUrl(data.image);
-        if (imageUrl !== '#') {
-          const img = createEl('img', 'preview-img');
-          img.setAttribute('src', imageUrl);
-          img.addEventListener('error', () => img.remove());
-          card.appendChild(img);
-        }
-      }
-
-      const body = createEl('div', 'preview-body');
-      body.appendChild(createEl('div', 'preview-site', data.site));
-      body.appendChild(createEl('div', 'preview-title', data.title || 'Başlık yok'));
-      if (data.price) body.appendChild(createEl('div', 'preview-price', data.price));
-      body.appendChild(createEl('div', 'preview-desc', data.description || ''));
-      card.appendChild(body);
-      link.appendChild(card);
-      pc.appendChild(link);
+      const img = data.image ? '<img class="preview-img" src="' + data.image + '" onerror="this.remove()">' : '';
+      const price = data.price ? '<div class="preview-price">' + data.price + '</div>' : '';
+      pc.innerHTML = '<a href="' + data.url + '" target="_blank" style="text-decoration:none">'
+        + '<div class="preview-card" style="max-height:none;margin-top:8px">'
+        + img
+        + '<div class="preview-body">'
+        + '<div class="preview-site">' + data.site + '</div>'
+        + '<div class="preview-title">' + (data.title || 'Başlık yok') + '</div>'
+        + price
+        + '<div class="preview-desc">' + (data.description || '') + '</div>'
+        + '</div></div></a>';
     }
   } catch(e2) { btn.textContent = 'Önizle'; showToast('Önizleme alınamadı.', 'err'); }
 });
@@ -1792,6 +1233,7 @@ async function submitCommentDetail(id) {
   if (!p) return;
   const c = { id: Date.now(), ava: user?(user.ava||user.username[0].toUpperCase()):'👤', author: user?user.username:'Misafir', time:'Az önce', text: txt, replies:[] };
   p.comments.push(c);
+  syncFeedState();
   const list = document.getElementById('pdComments-' + id);
   list?.insertAdjacentHTML('beforeend', feedCommentHtml(c, id, false));
   inp.value = '';
@@ -1865,11 +1307,13 @@ function saveBlocked() { localStorage.setItem('berra_blocked', JSON.stringify([.
 function isBlocked(username) { return blockedUsers.has(username); }
 function blockUser(username) {
   blockedUsers.add(username); saveBlocked();
+  syncFeedState();
   showToast(username + ' engellendi.', 'ok');
   renderFeed(feedData);
 }
 function unblockUser(username) {
   blockedUsers.delete(username); saveBlocked();
+  syncFeedState();
   showToast(username + ' engeli kaldırıldı.', 'ok');
   renderFeed(feedData);
 }
@@ -2103,10 +1547,7 @@ let feedHasMore = true;
 
 function appendFeedPosts(posts) {
   const el = document.getElementById('feedList');
-  posts.forEach((p, i) => {
-    const card = feedCard(p, i * 0.04);
-    if (card) el.appendChild(card);
-  });
+  el.insertAdjacentHTML('beforeend', posts.map((p, i) => feedCard(p, i * 0.04)).join(''));
 }
 
 async function loadMoreFeed() {
@@ -2139,6 +1580,7 @@ async function loadMoreFeed() {
       const existing = new Set(feedData.map(x => x.id));
       const fresh = newPosts.filter(x => !existing.has(x.id));
       feedData = [...feedData, ...fresh];
+      syncFeedState();
       if (feedPage === 1) {
         renderFeed(feedData);
       } else {
@@ -2309,9 +1751,11 @@ function renderNavBadges() {
 function toggleBlock(username) {
   if (isBlocked(username)) {
     blockedUsers.delete(username); saveBlocked();
+  syncFeedState();
     showToast(username + ' engeli kaldırıldı.', 'ok');
   } else {
     blockedUsers.add(username); saveBlocked();
+  syncFeedState();
     showToast(username + ' engellendi.', 'ok');
     // Feed kartını animasyonlu kaldır
     const card = document.getElementById('fi-0'); // generic
@@ -2449,6 +1893,55 @@ document.addEventListener('visibilitychange', () => {
   if (!document.hidden && user) renderNavBadges();
 });
 
+
+Object.assign(window, {
+  addImages,
+  addReplyImages,
+  blockAndRefresh,
+  closeReportModal,
+  commentKeydown,
+  deleteCar,
+  doLogout,
+  editBio,
+  goHome,
+  likeFeedDetail,
+  likePost,
+  markAllRead,
+  msgKeydown,
+  navigate,
+  navigateBack,
+  openConversation,
+  openFeedPost,
+  openImg,
+  openMessages,
+  openNotifPanel,
+  openProfile,
+  openReport,
+  readNotif,
+  removeNtImg,
+  removeReplyImg,
+  renderProfileHeader,
+  renderProfileTab,
+  replyKeydown,
+  saveBio,
+  searchSelect,
+  searchTag,
+  sendMessage,
+  shareFeed,
+  showMsgSidebar,
+  submitCommentDetail,
+  submitReply,
+  submitReport,
+  switchAuth,
+  toggleBlock,
+  toggleFollow,
+  toggleMobileMenu,
+  togglePostMenu,
+  toggleTheme,
+  triggerAvatarUpload,
+  uploadAvatar,
+});
+
 // ── İLK RENDER ────────────────────────────────────────────────
 renderThreads(threads);
 updateCatCounts();
@@ -2459,6 +1952,3 @@ renderNotifications();
 if (location.pathname && location.pathname !== '/') {
   handleRoute(location.pathname);
 }
-</script>
-</body>
-</html>
