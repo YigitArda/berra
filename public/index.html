@@ -52,6 +52,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 .nav-link:hover{background:var(--bg3);color:var(--text);}
 .nav-link.active{color:var(--text);background:var(--bg3);}
 .nav-right{margin-left:auto;display:flex;align-items:center;gap:7px;}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 /* Buton sistemi */
 .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:var(--r-sm);font-family:var(--font);font-size:0.82rem;font-weight:600;cursor:pointer;border:none;transition:all var(--t);text-decoration:none;white-space:nowrap;}
 .btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
@@ -186,6 +187,8 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 .explore-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:10px;}
 /* Öne çıkan kart */
 .featured-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;box-shadow:var(--shadow-sm);cursor:pointer;transition:all var(--t);}
+.featured-card{width:100%;text-align:left;font-family:var(--font);}
+.featured-card{text-decoration:none;color:inherit;}
 .featured-card:hover{border-color:var(--border2);box-shadow:var(--shadow-md);transform:translateY(-1px);}
 .featured-tag{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;padding:3px 8px;border-radius:var(--r-full);background:rgba(224,48,48,.12);color:var(--accent);border:1px solid rgba(224,48,48,.25);margin-bottom:8px;}
 .featured-title{font-size:1rem;font-weight:700;color:var(--text);line-height:1.35;margin-bottom:6px;}
@@ -198,6 +201,8 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 /* Aktif kullanıcılar */
 .active-users{display:flex;flex-direction:column;gap:8px;}
 .active-user{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);transition:all var(--t);cursor:pointer;}
+.active-user{width:100%;text-align:left;font-family:var(--font);}
+.active-user{text-decoration:none;color:inherit;}
 .active-user:hover{border-color:var(--border2);background:var(--bg3);}
 .active-user-ava{width:36px;height:36px;border-radius:50%;background:var(--bg3);border:2px solid var(--border2);display:grid;place-items:center;font-size:.9rem;font-weight:700;color:var(--text2);flex-shrink:0;}
 .active-user-info{flex:1;}
@@ -214,6 +219,8 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 .notif-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 .notif-list{display:flex;flex-direction:column;gap:6px;}
 .notif-item{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);transition:all var(--t);cursor:pointer;}
+.notif-item{width:100%;text-align:left;font-family:var(--font);}
+.notif-item{text-decoration:none;color:inherit;}
 .notif-item:hover{border-color:var(--border2);background:var(--bg3);}
 .notif-item.unread{border-left:3px solid var(--accent);background:rgba(224,48,48,.04);}
 .notif-icon{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:.95rem;flex-shrink:0;}
@@ -285,6 +292,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 /* Auth */
 .auth-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:16px;}
 .a-tab{padding:8px 16px;font-size:.85rem;font-weight:600;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .12s;}
+.a-tab{background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font);}
 .a-tab.active{color:var(--text);border-bottom-color:var(--accent);}
 .a-form{display:none;flex-direction:column;gap:10px;}
 .a-form.show{display:flex;}
@@ -326,6 +334,8 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 .profile-content{padding:20px;max-width:820px;}
 .profile-section-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:12px;}
 .profile-thread-item{padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer;}
+.profile-thread-item{display:block;width:100%;text-align:left;background:none;border-left:none;border-right:none;border-top:none;font-family:var(--font);}
+.profile-thread-item{text-decoration:none;color:inherit;}
 .profile-thread-item:hover .profile-thread-title{color:var(--acc2);}
 .profile-thread-title{font-size:.9rem;font-weight:600;color:var(--text);transition:color .12s;}
 .profile-thread-meta{font-size:.75rem;color:var(--text3);margin-top:3px;display:flex;gap:10px;}
@@ -382,6 +392,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 .post-menu-dropdown{position:absolute;right:0;top:calc(100% + 4px);background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);min-width:160px;z-index:90;box-shadow:var(--shadow-md);overflow:hidden;opacity:0;pointer-events:none;transform:translateY(-4px);transition:all var(--t);}
 .post-menu-dropdown.open{opacity:1;pointer-events:all;transform:translateY(0);}
 .post-menu-item{display:flex;align-items:center;gap:8px;padding:9px 14px;font-size:.83rem;color:var(--text2);cursor:pointer;transition:background var(--t);}
+.post-menu-item{width:100%;background:none;border:none;font-family:var(--font);text-align:left;}
 .post-menu-item:hover{background:var(--bg3);color:var(--text);}
 .post-menu-item.danger{color:var(--accent);}
 .post-menu-item.danger:hover{background:rgba(224,48,48,.08);}
@@ -415,6 +426,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 .msg-sidebar-top{padding:14px 14px 10px;border-bottom:1px solid var(--border);font-family:var(--fontc);font-weight:700;font-size:1rem;color:var(--text);}
 .msg-conv-list{flex:1;overflow-y:auto;}
 .msg-conv-item{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background var(--t);}
+.msg-conv-item{text-decoration:none;color:inherit;}
 .msg-conv-item:hover,.msg-conv-item.active{background:var(--bg3);}
 .msg-conv-ava{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:.95rem;font-weight:700;color:#fff;flex-shrink:0;}
 .msg-conv-info{flex:1;min-width:0;}
@@ -569,6 +581,8 @@ body.light .profile-header { background: var(--bg2); }
 .search-dropdown{position:absolute;top:calc(100% + 6px);left:0;width:380px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:200;display:none;max-height:400px;overflow-y:auto;}
 .search-dropdown.open{display:block;}
 .search-result{padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.search-result{width:100%;text-align:left;background:none;border-left:none;border-right:none;border-top:none;font-family:var(--font);}
+.search-result{text-decoration:none;color:inherit;display:block;}
 .search-result:hover{background:var(--bg3);}
 .search-result:last-child{border-bottom:none;}
 .search-result-title{font-size:.87rem;font-weight:600;color:var(--text);}
@@ -581,6 +595,7 @@ body.light .profile-header { background: var(--bg2); }
 .img-thumb{width:60px;height:60px;object-fit:cover;border-radius:4px;border:1px solid var(--border);}
 .img-thumb-wrap{position:relative;}
 .img-thumb-del{position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:var(--accent);border-radius:50%;display:grid;place-items:center;font-size:.6rem;cursor:pointer;color:#fff;line-height:1;}
+.img-thumb-del{border:none;padding:0;}
 .img-upload-btn{display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);font-size:.78rem;color:var(--text2);cursor:pointer;}
 .img-upload-btn:hover{color:var(--text);border-color:var(--border2);}
 .post-images{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
@@ -601,7 +616,7 @@ body.light .profile-header { background: var(--bg2); }
 
 <div class="navbar">
   <a class="logo" href="#" onclick="goHome()">🚗 arabalariseviyoruz<span class="logo-dot">.com</span></a>
-  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Tema değiştir"></button>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Tema değiştir" aria-label="Tema değiştir"></button>
   <span class="theme-icon" id="themeIcon">🌙</span>
   <div class="nav-search" style="position:relative">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -616,14 +631,14 @@ body.light .profile-header { background: var(--bg2); }
     <a class="nav-link" href="karsilastir.html">⚖️ Karşılaştır</a>
     <button class="nav-link" id="btnScore">🧮 Alınır mı?</button>
   </div>
-  <button class="nav-hamburger" id="btnHamburger" aria-label="Menüyü aç" onclick="toggleMobileMenu()">☰</button>
+  <button class="nav-hamburger" id="btnHamburger" aria-label="Menüyü aç" aria-expanded="false" aria-controls="mobileMenu" onclick="toggleMobileMenu()">☰</button>
   <div class="nav-right" id="navRight">
     <button class="btn btn-ghost" id="btnLogin">Giriş Yap</button>
     <button class="btn btn-accent" id="btnRegBtn">Kayıt Ol</button>
   </div>
 </div>
 <!-- Mobil menü -->
-<div class="mobile-menu" id="mobileMenu">
+<div class="mobile-menu" id="mobileMenu" aria-hidden="true">
   <a href="#">Forum</a>
   <a href="sanayi.html">🏭 Sanayi</a>
   <a href="ozellikler.html">🔧 Bakım &amp; Galeri</a>
@@ -641,16 +656,16 @@ body.light .profile-header { background: var(--bg2); }
       <button class="btn btn-accent btn-sm" id="btnNewThread">+ Yeni Konu</button>
     </div>
     <div class="cat-bar">
-      <div class="cat-tab active" data-cat="all">Tümü <span class="cat-count" id="cnt-all">0</span></div>
-      <div class="cat-tab" data-cat="genel">💬 Genel <span class="cat-count" id="cnt-genel">0</span></div>
-      <div class="cat-tab" data-cat="ilk">⭐ İlk Araba <span class="cat-count" id="cnt-ilk">0</span></div>
-      <div class="cat-tab" data-cat="modifiye">🔧 Modifiye <span class="cat-count" id="cnt-modifiye">0</span></div>
-      <div class="cat-tab" data-cat="ilan">👁 İlan <span class="cat-count" id="cnt-ilan">0</span></div>
-      <div class="cat-tab" data-cat="ariza">🛠 Arıza <span class="cat-count" id="cnt-ariza">0</span></div>
+      <button class="cat-tab active" data-cat="all" aria-label="Tüm kategoriler">Tümü <span class="cat-count" id="cnt-all">0</span></button>
+      <button class="cat-tab" data-cat="genel" aria-label="Genel kategorisi">💬 Genel <span class="cat-count" id="cnt-genel">0</span></button>
+      <button class="cat-tab" data-cat="ilk" aria-label="İlk Araba kategorisi">⭐ İlk Araba <span class="cat-count" id="cnt-ilk">0</span></button>
+      <button class="cat-tab" data-cat="modifiye" aria-label="Modifiye kategorisi">🔧 Modifiye <span class="cat-count" id="cnt-modifiye">0</span></button>
+      <button class="cat-tab" data-cat="ilan" aria-label="İlan kategorisi">👁 İlan <span class="cat-count" id="cnt-ilan">0</span></button>
+      <button class="cat-tab" data-cat="ariza" aria-label="Arıza kategorisi">🛠 Arıza <span class="cat-count" id="cnt-ariza">0</span></button>
     </div>
     <div class="thread-header">
-      <span class="th-label" data-sort="title">Konu</span>
-      <span class="th-label c" data-sort="replies">Yanıt</span>
+      <button class="th-label" data-sort="title" aria-label="Konuya göre sırala">Konu</button>
+      <button class="th-label c" data-sort="replies" aria-label="Yanıta göre sırala">Yanıt</button>
       <span class="th-label c">Görüntü</span>
       <span class="th-label c">Son Mesaj</span>
     </div>
@@ -660,10 +675,10 @@ body.light .profile-header { background: var(--bg2); }
   <!-- SAĞ: PANEL -->
   <div class="panel-right">
     <!-- Sekme çubuğu -->
-    <div class="feed-tabs" id="feedTabs">
-      <button class="feed-tab active" data-panel="akis">⚡ Akış</button>
-      <button class="feed-tab" data-panel="kesf">🔍 Keşfet</button>
-      <button class="feed-tab" data-panel="bildirim">🔔 Bildirimler <span class="notif-badge" id="notifBadge" style="display:none">0</span></button>
+    <div class="feed-tabs" id="feedTabs" role="tablist" aria-label="İçerik sekmeleri">
+      <button class="feed-tab active" data-panel="akis" id="tab-akis" role="tab" aria-selected="true" aria-controls="panelAkis">⚡ Akış</button>
+      <button class="feed-tab" data-panel="kesf" id="tab-kesf" role="tab" aria-selected="false" aria-controls="panelKesf">🔍 Keşfet</button>
+      <button class="feed-tab" data-panel="bildirim" id="tab-bildirim" role="tab" aria-selected="false" aria-controls="panelBildirim">🔔 Bildirimler <span class="notif-badge" id="notifBadge" style="display:none">0</span></button>
     </div>
 
     <!-- Akış paneli -->
@@ -781,7 +796,7 @@ body.light .profile-header { background: var(--bg2); }
 </div>
 
 <!-- ARAÇ EKLE MODAL -->
-<div class="overlay" id="addCarModal">
+<div class="overlay" id="addCarModal" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Araç ekle modalı">
   <div class="modal" style="max-width:420px">
     <div class="modal-head">
       <span class="modal-title">🚗 Araç Ekle</span>
@@ -809,7 +824,7 @@ body.light .profile-header { background: var(--bg2); }
 </div>
 
 <!-- SKOR MODAL -->
-<div class="overlay" id="scoreModal">
+<div class="overlay" id="scoreModal" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Alınır mı skoru modalı">
   <div class="modal">
     <div class="modal-head">
       <span class="modal-title">🧮 Alınır mı Skoru</span>
@@ -841,15 +856,15 @@ body.light .profile-header { background: var(--bg2); }
 </div>
 
 <!-- AUTH MODAL -->
-<div class="overlay" id="authModal">
+<div class="overlay" id="authModal" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Kimlik doğrulama modalı">
   <div class="modal">
     <div class="modal-head">
       <span class="modal-title">Hesabın</span>
       <button class="modal-close" id="closeAuth">✕</button>
     </div>
-    <div class="auth-tabs">
-      <div class="a-tab active" data-t="login">Giriş Yap</div>
-      <div class="a-tab" data-t="register">Kayıt Ol</div>
+    <div class="auth-tabs" role="tablist" aria-label="Kimlik doğrulama sekmeleri">
+      <button class="a-tab active" data-t="login" role="tab" aria-selected="true" aria-controls="loginF">Giriş Yap</button>
+      <button class="a-tab" data-t="register" role="tab" aria-selected="false" aria-controls="regF">Kayıt Ol</button>
     </div>
     <div class="a-form show" id="loginF">
       <div class="fg"><label>Email</label><input id="l_email" type="email" placeholder="ornek@mail.com"></div>
@@ -880,7 +895,7 @@ body.light .profile-header { background: var(--bg2); }
 </div>
 
 <!-- YENİ KONU MODAL -->
-<div class="overlay" id="newThreadModal">
+<div class="overlay" id="newThreadModal" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Yeni konu modalı">
   <div class="modal" style="max-width:540px">
     <div class="modal-head">
       <span class="modal-title">+ Yeni Konu Aç</span>
@@ -906,7 +921,7 @@ body.light .profile-header { background: var(--bg2); }
 </div>
 
 <!-- ŞİKAYET MODAL -->
-<div class="overlay" id="reportModal">
+<div class="overlay" id="reportModal" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Şikayet modalı">
   <div class="modal" style="max-width:min(400px,92vw)">
     <div class="modal-head">
       <span class="modal-title">🚨 Şikayet Et</span>
@@ -1009,7 +1024,7 @@ function renderThreads(list) {
             <span class="thread-title">${escapeHtml(t.title)}</span>
             <span class="tag tag-cat">${escapeHtml(t.cat)}</span>
           </div>
-          <div class="thread-meta2"><span data-u="${escapeHtml(t.author)}" onclick="openProfile(this.dataset.u)" style="cursor:pointer;color:var(--text2)">${escapeHtml(t.author)}</span> · ${escapeHtml(t.sub)}</div>
+          <div class="thread-meta2"><button class="post-like-btn" data-u="${escapeHtml(t.author)}" onclick="openProfile(this.dataset.u)" aria-label="${escapeHtml(t.author)} profiline git">${escapeHtml(t.author)}</button> · ${escapeHtml(t.sub)}</div>
         </div>
       </div>
       <div class="thread-stat">${escapeHtml(String(t.replies))}<small>yanıt</small></div>
@@ -1099,7 +1114,7 @@ function renderThreadDetail(t, posts) {
   el.innerHTML =
     '<div class="thread-detail-title">' + escapeHtml(t.title) + '</div>'
     + '<div class="thread-detail-meta">'
-    + '<span data-u="' + escapeHtml(t.author) + '" onclick="openProfile(this.dataset.u)" style="cursor:pointer">👤 ' + escapeHtml(t.author) + '</span>'
+    + '<button class="post-like-btn" data-u="' + escapeHtml(t.author) + '" onclick="openProfile(this.dataset.u)" aria-label="Yazar profiline git">👤 ' + escapeHtml(t.author) + '</button>'
     + '<span>📂 ' + escapeHtml(t.cat) + '</span>'
     + '<span>👁 ' + escapeHtml(String(t.views)) + ' görüntülenme</span>'
     + '<span>💬 ' + escapeHtml(String(t.replies)) + ' yanıt</span>'
@@ -1184,7 +1199,7 @@ function renderPost(p) {
   return `<div class="post-item">
     <div class="post-ava">${escapeHtml(p.ava)}</div>
     <div class="post-body">
-      <span class="post-author" onclick="openProfile('${escapeHtml(p.author)}')" style="cursor:pointer">${escapeHtml(p.author)}</span>
+      <button class="post-author post-like-btn" onclick="openProfile('${escapeHtml(p.author)}')" aria-label="${escapeHtml(p.author)} profiline git">${escapeHtml(p.author)}</button>
       <span class="post-time">${escapeHtml(p.time)}</span>
       <div class="post-text">${escapeHtml(p.text)}</div>
       ${imgsHtml}${prevHtml}
@@ -1286,20 +1301,20 @@ function feedCard(p, delay) {
   const cardClass = isPinned ? ' is-announce' : '';
   const badge = isPinned ? '<div class="feed-item-badge badge-trend">📌 Sabit Konu</div>' : '';
   const menuId = 'pm-' + p.id;
-  return `<div class="feed-item${cardClass}" id="fi-${p.id}" style="animation-delay:${delay}s" onclick="openFeedPost(event,${p.id})">
+  return `<div class="feed-item${cardClass}" id="fi-${p.id}" style="animation-delay:${delay}s" data-post-id="${p.id}" tabindex="0" role="button" aria-label="Gönderiyi aç">
     <div class="feed-item-top">
       <div class="feed-ava ${avaColor(p.author)}">${escapeHtml(p.ava)}</div>
       <div class="feed-meta">
-        <span class="feed-author" onclick="event.stopPropagation();navigate('/profile/${escapeHtml(p.author)}')">${escapeHtml(p.author)}</span>
+        <button class="feed-author post-like-btn" onclick="event.stopPropagation();navigate('/profile/${escapeHtml(p.author)}')" aria-label="${escapeHtml(p.author)} profiline git">${escapeHtml(p.author)}</button>
         <span class="feed-time">${escapeHtml(p.time)}</span>
       </div>
-      <div class="post-menu-wrap" onclick="event.stopPropagation()">
-        <button class="post-menu-btn" onclick="togglePostMenu('${menuId}')">···</button>
+      <div class="post-menu-wrap">
+        <button class="post-menu-btn" onclick="togglePostMenu('${menuId}', this)" aria-label="Gönderi menüsü" aria-expanded="false" aria-controls="${menuId}">···</button>
         <div class="post-menu-dropdown" id="${menuId}">
-          <div class="post-menu-item" onclick="navigate('/profile/${escapeHtml(p.author)}');closeAllMenus()">👤 Profili gör</div>
-          <div class="post-menu-item" onclick="openMessages('${escapeHtml(p.author)}');closeAllMenus()">💬 Mesaj gönder</div>
-          <div class="post-menu-item danger" onclick="blockAndRefresh('${escapeHtml(p.author)}');closeAllMenus()">🚫 Engelle</div>
-          <div class="post-menu-item danger" onclick="openReport('feed_post',${p.id});closeAllMenus()">🚨 Şikayet et</div>
+          <button class="post-menu-item" onclick="navigate('/profile/${escapeHtml(p.author)}');closeAllMenus()" aria-label="Profili gör">👤 Profili gör</button>
+          <button class="post-menu-item" onclick="openMessages('${escapeHtml(p.author)}');closeAllMenus()" aria-label="Mesaj gönder">💬 Mesaj gönder</button>
+          <button class="post-menu-item danger" onclick="blockAndRefresh('${escapeHtml(p.author)}');closeAllMenus()" aria-label="Kullanıcıyı engelle">🚫 Engelle</button>
+          <button class="post-menu-item danger" onclick="openReport('feed_post',${p.id});closeAllMenus()" aria-label="Gönderiyi şikayet et">🚨 Şikayet et</button>
         </div>
       </div>
     </div>
@@ -1310,7 +1325,7 @@ function feedCard(p, delay) {
       ${isLocked ? '<span class="feed-auto-tag">#kilitli</span>' : ''}
       ${p.views != null ? `<span class="feed-auto-tag">👁 ${escapeHtml(String(p.views))}</span>` : ''}
     </div>
-    <div class="feed-actions" onclick="event.stopPropagation()">
+    <div class="feed-actions">
       <button class="feed-btn" onclick="event.stopPropagation();openThreadFromFeed(${p.id})">💬 <span>${p.comment_count || 0}</span></button>
       <button class="feed-btn ${p.shared?'shared':''}" onclick="shareFeed(${p.id},this)">🔗 <span>${p.shares}</span></button>
     </div>
@@ -1327,6 +1342,19 @@ function openFeedPost(e, id) {
   const p = feedData.find(x => x.id === id);
   navigate('/thread/' + (p?.slug || id));
 }
+document.addEventListener('click', e => {
+  const card = e.target.closest('.feed-item[data-post-id]');
+  if (!card) return;
+  openFeedPost(e, Number(card.dataset.postId));
+});
+document.addEventListener('keydown', e => {
+  const card = e.target.closest('.feed-item[data-post-id]');
+  if (!card) return;
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    openFeedPost(e, Number(card.dataset.postId));
+  }
+});
 
 function openThreadFromFeed(id) {
   const p = feedData.find(x => x.id === id);
@@ -1442,10 +1470,10 @@ function setUser(u) {
     <button class="nav-notif-btn" title="Bildirimler" onclick="openNotifPanel()">
       🔔${unreadCount > 0 ? `<span class="notif-badge">${unreadCount}</span>` : ''}
     </button>
-    <div class="nav-user-chip" onclick="navigate('/profile/${escapeHtml(u.username)}')">
+    <button class="nav-user-chip" onclick="navigate('/profile/${escapeHtml(u.username)}')" aria-label="Profil sayfasına git">
       <div class="nav-user-ava ${avaClass}">${escapeHtml(u.ava || u.username[0].toUpperCase())}</div>
       <span class="nav-user-name">${escapeHtml(u.username)}</span>
-    </div>
+    </button>
     <button class="btn btn-ghost btn-sm" onclick="doLogout()">Çıkış</button>`;
   const ca2 = document.getElementById('composeAva');
   if (ca2) { ca2.textContent = u.ava || u.username[0].toUpperCase(); ca2.className = 'compose-ava ' + avaClass; }
@@ -1630,8 +1658,27 @@ document.getElementById('btnCalc').addEventListener('click', () => {
 });
 
 // ── MODAL YARDIMCILARI ────────────────────────────────────────
-const openModal  = id => document.getElementById(id).classList.add('open');
-const closeModal = id => document.getElementById(id).classList.remove('open');
+let activeModal = null;
+let lastFocusedBeforeModal = null;
+const focusableSelector = 'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])';
+function openModal(id) {
+  const modal = document.getElementById(id);
+  if (!modal) return;
+  lastFocusedBeforeModal = document.activeElement;
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  activeModal = modal;
+  const firstFocusable = modal.querySelector(focusableSelector);
+  firstFocusable?.focus();
+}
+function closeModal(id) {
+  const modal = document.getElementById(id);
+  if (!modal) return;
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+  if (activeModal === modal) activeModal = null;
+  lastFocusedBeforeModal?.focus?.();
+}
 function showErr(el, msg) { el.textContent = msg; el.classList.add('show'); }
 
 document.getElementById('btnScore').onclick      = () => openModal('scoreModal');
@@ -1642,7 +1689,7 @@ document.getElementById('closeAuth').onclick     = () => closeModal('authModal')
 document.getElementById('closeNewThread').onclick = () => closeModal('newThreadModal');
 
 document.querySelectorAll('.overlay').forEach(o => {
-  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+  o.addEventListener('click', e => { if (e.target === o) closeModal(o.id); });
 });
 document.querySelectorAll('.fg input, .fg textarea').forEach(el => {
   el.addEventListener('input', () => {
@@ -1652,7 +1699,11 @@ document.querySelectorAll('.fg input, .fg textarea').forEach(el => {
 });
 
 function switchAuth(tab) {
-  document.querySelectorAll('.a-tab').forEach(t => t.classList.toggle('active', t.dataset.t === tab));
+  document.querySelectorAll('.a-tab').forEach(t => {
+    const isActive = t.dataset.t === tab;
+    t.classList.toggle('active', isActive);
+    t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
   document.getElementById('loginF').classList.toggle('show', tab === 'login');
   document.getElementById('regF').classList.toggle('show', tab === 'register');
   document.getElementById('forgotF').classList.toggle('show', tab === 'forgot');
@@ -1787,7 +1838,7 @@ function renderProfileHeader(data) {
     ? '<div class="profile-bio">' + escapeHtml(u.bio) + '</div>'
     : '<div class="profile-bio-empty">Henüz bio eklenmemiş.</div>';
   const editBioBtn = isMe ? '<button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="editBio()">✏ Bio düzenle</button>' : '';
-  const avatarEdit = isMe ? '<div class="profile-ava-edit" onclick="triggerAvatarUpload()" title="Fotoğraf değiştir">✎</div><input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">' : '';
+  const avatarEdit = isMe ? '<button class="profile-ava-edit" onclick="triggerAvatarUpload()" title="Fotoğraf değiştir" aria-label="Profil fotoğrafını değiştir">✎</button><input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">' : '';
   // Takip / mesaj / engelle butonları (başkasının profili)
   const followingNow = isFollowing(u.username);
   const blockedNow = isBlocked(u.username);
@@ -1798,11 +1849,11 @@ function renderProfileHeader(data) {
     </button>
     <button class="msg-open-btn" onclick="openMessages('${escapeHtml(u.username)}')">💬 Mesaj</button>
     <div class="post-menu-wrap">
-      <button class="post-menu-btn" onclick="togglePostMenu('profile-menu-${escapeHtml(u.username)}')">···</button>
+      <button class="post-menu-btn" onclick="togglePostMenu('profile-menu-${escapeHtml(u.username)}', this)" aria-label="Profil menüsü" aria-expanded="false" aria-controls="profile-menu-${escapeHtml(u.username)}">···</button>
       <div class="post-menu-dropdown" id="profile-menu-${escapeHtml(u.username)}">
-        <div class="post-menu-item danger" onclick="toggleBlock('${escapeHtml(u.username)}');closeAllMenus();navigateBack()">
+        <button class="post-menu-item danger" onclick="toggleBlock('${escapeHtml(u.username)}');closeAllMenus();navigateBack()">
           ${blockedNow ? '✅ Engeli kaldır' : '🚫 Engelle'}
-        </div>
+        </button>
       </div>
     </div>
   </div>` : '';
@@ -1830,14 +1881,18 @@ function renderProfileHeader(data) {
 function renderProfileTabs() {
   const isMe = user && profileData && user.username === profileData.user.username;
   document.getElementById('profileTabsEl').innerHTML = `
-    <div class="profile-tab active" data-pt="threads" onclick="renderProfileTab('threads')">Konular</div>
-    <div class="profile-tab" data-pt="posts" onclick="renderProfileTab('posts')">Yanıtlar</div>
-    <div class="profile-tab" data-pt="cars" onclick="renderProfileTab('cars')">Araçları</div>`;
+    <button class="profile-tab active" data-pt="threads" role="tab" aria-selected="true" aria-controls="profileContent" onclick="renderProfileTab('threads')">Konular</button>
+    <button class="profile-tab" data-pt="posts" role="tab" aria-selected="false" aria-controls="profileContent" onclick="renderProfileTab('posts')">Yanıtlar</button>
+    <button class="profile-tab" data-pt="cars" role="tab" aria-selected="false" aria-controls="profileContent" onclick="renderProfileTab('cars')">Araçları</button>`;
 }
 
 function renderProfileTab(tab) {
   profileTab = tab;
-  document.querySelectorAll('.profile-tab').forEach(t => t.classList.toggle('active', t.dataset.pt === tab));
+  document.querySelectorAll('.profile-tab').forEach(t => {
+    const isActive = t.dataset.pt === tab;
+    t.classList.toggle('active', isActive);
+    t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
   const c = document.getElementById('profileContent');
   if (!profileData) return;
 
@@ -1845,14 +1900,14 @@ function renderProfileTab(tab) {
     if (!profileData.threads.length) { c.innerHTML = '<div style="color:var(--text3);padding:20px 0">Henüz konu açmamış.</div>'; return; }
     c.innerHTML = '<div class="profile-section-title">Açılan Konular</div>' +
       profileData.threads.map(t => `
-        <div class="profile-thread-item" onclick="navigate('/thread/' + (${JSON.stringify(t.slug||'')} || ${t.id}))">
+        <a class="profile-thread-item" href="#" onclick="navigate('/thread/' + (${JSON.stringify(t.slug||'')} || ${t.id}));return false;" aria-label="Konuya git">
           <div class="profile-thread-title">${escapeHtml(t.title)}</div>
           <div class="profile-thread-meta">
             <span>📂 ${escapeHtml(t.category_name)}</span>
             <span>💬 ${escapeHtml(String(t.reply_count))} yanıt</span>
             <span>👁 ${escapeHtml(String(t.view_count))} görüntü</span>
           </div>
-        </div>`).join('');
+        </a>`).join('');
   }
 
   if (tab === 'posts') {
@@ -2006,10 +2061,10 @@ searchInput.addEventListener('input', function() {
         return;
       }
       searchDrop.innerHTML = data.results.map(r => `
-        <div class="search-result" onclick="searchSelect(${r.id})">
+        <a class="search-result" href="#" onclick="searchSelect(${r.id});return false;" aria-label="Arama sonucunu aç">
           <div class="search-result-title">${r.title}</div>
           <div class="search-result-meta">📂 ${r.category_name} · 💬 ${r.reply_count} yanıt · 👤 ${r.author}</div>
-        </div>`).join('');
+        </a>`).join('');
     } catch(e) { searchDrop.innerHTML = '<div class="search-empty">Hata oluştu.</div>'; }
   }, 350);
 });
@@ -2049,7 +2104,7 @@ function renderNtImages() {
   const thumbs = ntImages.map((img, i) => `
     <div class="img-thumb-wrap">
       <img class="img-thumb" src="${img}">
-      <div class="img-thumb-del" onclick="removeNtImg(${i})">✕</div>
+      <button class="img-thumb-del" onclick="removeNtImg(${i})" aria-label="Resmi kaldır">✕</button>
     </div>`).join('');
   area.innerHTML = thumbs + `<label class="img-upload-btn">📷 Ekle<input type="file" accept="image/*" multiple style="display:none" onchange="addImages(this)"></label>`;
 }
@@ -2076,7 +2131,7 @@ function renderReplyImages() {
   const thumbs = replyImages.map((img, i) => `
     <div class="img-thumb-wrap">
       <img class="img-thumb" src="${img}">
-      <div class="img-thumb-del" onclick="removeReplyImg(${i})">✕</div>
+      <button class="img-thumb-del" onclick="removeReplyImg(${i})" aria-label="Yanıt görselini kaldır">✕</button>
     </div>`).join('');
   area.innerHTML = thumbs + `<label class="img-upload-btn">📷 Fotoğraf<input type="file" accept="image/*" multiple style="display:none" onchange="addReplyImages(this)"></label>`;
 }
@@ -2178,7 +2233,7 @@ function renderPostDetail(id) {
     <div class="post-detail-header">
       <div class="post-detail-ava ${avaColor(p.author)}">${escapeHtml(p.ava)}</div>
       <div class="post-detail-meta">
-        <div class="post-detail-author" onclick="navigate('/profile/${escapeHtml(p.author)}')">${escapeHtml(p.author)}</div>
+        <button class="post-detail-author post-like-btn" onclick="navigate('/profile/${escapeHtml(p.author)}')" aria-label="${escapeHtml(p.author)} profiline git">${escapeHtml(p.author)}</button>
         <div class="post-detail-time">${escapeHtml(p.time)}</div>
       </div>
     </div>
@@ -2239,12 +2294,12 @@ function openReport(type, id) {
   _reportTarget = { type, id };
   document.getElementById('reportReason').value = '';
   document.getElementById('reportErr').textContent = '';
-  document.getElementById('reportModal').classList.add('open');
+  openModal('reportModal');
   closeAllMenus();
 }
 
 function closeReportModal() {
-  document.getElementById('reportModal').classList.remove('open');
+  closeModal('reportModal');
   _reportTarget = null;
 }
 
@@ -2327,11 +2382,14 @@ function openMessages(toUser) {
   if (toUser) openConversation(toUser);
 }
 function openNotifPanel() {
-  document.querySelectorAll('.feed-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.feed-tab').forEach(t => {
+    t.classList.remove('active');
+    t.setAttribute('aria-selected', 'false');
+  });
   document.querySelectorAll('.feed-panel').forEach(p => p.classList.remove('active'));
   const tab = document.querySelector('.feed-tab[data-panel="bildirim"]');
   const panel = document.getElementById('panelBildirim');
-  if (tab) tab.classList.add('active');
+  if (tab) { tab.classList.add('active'); tab.setAttribute('aria-selected', 'true'); }
   if (panel) panel.classList.add('active');
   renderNotifications();
 }
@@ -2346,14 +2404,14 @@ function renderMsgSidebar() {
     const msgs = conversations[u];
     const last = msgs[msgs.length - 1];
     const unread = msgs.filter(m => !m.read && m.from !== (user?.username||'')).length;
-    return `<div class="msg-conv-item ${activeMsgUser===u?'active':''}" onclick="openConversation('${escapeHtml(u)}')">
+    return `<a class="msg-conv-item ${activeMsgUser===u?'active':''}" href="#" onclick="openConversation('${escapeHtml(u)}');return false;" aria-label="${escapeHtml(u)} konuşmasını aç">
       <div class="msg-conv-ava ${avaColor(u)}">${u[0].toUpperCase()}</div>
       <div class="msg-conv-info">
         <div class="msg-conv-name">${escapeHtml(u)}</div>
         <div class="msg-conv-preview">${last ? escapeHtml(last.text.slice(0,40)) : ''}</div>
       </div>
       ${unread ? `<div class="msg-conv-unread"></div>` : ''}
-    </div>`;
+    </a>`;
   }).join('');
 }
 function openConversation(toUser) {
@@ -2417,13 +2475,17 @@ function msgKeydown(e, toUser) {
 // ══════════════════════════════════════════════════════════════
 // 3-NOKTA MENÜ
 // ══════════════════════════════════════════════════════════════
-function togglePostMenu(id) {
+function togglePostMenu(id, triggerBtn) {
   closeAllMenus();
   const el = document.getElementById(id);
-  if (el) el.classList.toggle('open');
+  if (el) {
+    el.classList.toggle('open');
+    if (triggerBtn) triggerBtn.setAttribute('aria-expanded', el.classList.contains('open') ? 'true' : 'false');
+  }
 }
 function closeAllMenus() {
   document.querySelectorAll('.post-menu-dropdown.open').forEach(el => el.classList.remove('open'));
+  document.querySelectorAll('.post-menu-btn[aria-expanded="true"]').forEach(btn => btn.setAttribute('aria-expanded', 'false'));
 }
 document.addEventListener('click', e => {
   if (!e.target.closest('.post-menu-wrap')) closeAllMenus();
@@ -2473,10 +2535,24 @@ document.addEventListener('input', e => {
 });
 // Escape ile kapat
 document.addEventListener('keydown', e => {
+  if (activeModal && e.key === 'Tab') {
+    const focusable = [...activeModal.querySelectorAll(focusableSelector)].filter(el => !el.disabled);
+    if (focusable.length) {
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
   if (e.key === 'Escape') {
     // Modal kapat
     const openOverlay = document.querySelector('.overlay.open');
-    if (openOverlay) { openOverlay.classList.remove('open'); return; }
+    if (openOverlay) { closeModal(openOverlay.id); return; }
     // Sayfaları kapat (ters sıra)
     const pages = ['postDetailPage','messagesPage','profilePage','threadPage'];
     for (const id of pages) {
@@ -2580,8 +2656,12 @@ document.getElementById('panelAkis').addEventListener('scroll', () => {
 document.getElementById('feedTabs').addEventListener('click', e => {
   const btn = e.target.closest('.feed-tab');
   if (!btn) return;
-  document.querySelectorAll('.feed-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.feed-tab').forEach(t => {
+    t.classList.remove('active');
+    t.setAttribute('aria-selected', 'false');
+  });
   btn.classList.add('active');
+  btn.setAttribute('aria-selected', 'true');
   const panelId = 'panel' + btn.dataset.panel.charAt(0).toUpperCase() + btn.dataset.panel.slice(1);
   document.querySelectorAll('.feed-panel').forEach(p => p.classList.remove('active'));
   document.getElementById(panelId).classList.add('active');
@@ -2618,25 +2698,25 @@ function renderExplore() {
   // Öne çıkan: en çok görüntülenen
   const top = [...STATIC_THREADS].sort((a,b) => b.views - a.views)[0];
   document.getElementById('featuredThread').innerHTML = top ? `
-    <div class="featured-card" onclick="navigate('/thread/${escapeHtml(top.slug||String(top.id))}')"
+    <a class="featured-card" href="#" onclick="navigate('/thread/${escapeHtml(top.slug||String(top.id))}');return false;" aria-label="Öne çıkan konuya git">
       <div class="featured-tag">📌 ${escapeHtml(top.cat)}</div>
       <div class="featured-title">${escapeHtml(top.title)}</div>
       <div class="featured-preview">${escapeHtml(top.sub)}</div>
       <div class="featured-meta"><span>💬 ${top.replies} yanıt</span><span>👁 ${top.views} görüntüleme</span><span>🕐 ${top.time}</span></div>
-    </div>` : '';
+    </a>` : '';
   // Trend konular
   document.getElementById('trendTags').innerHTML = TRENDS.map(t =>
-    `<span class="trend-tag" onclick="searchTag('${escapeHtml(t)}')">${escapeHtml(t)}</span>`
+    `<button class="trend-tag" onclick="searchTag('${escapeHtml(t)}')" aria-label="${escapeHtml(t)} etiketini ara">${escapeHtml(t)}</button>`
   ).join('');
   // Aktif kullanıcılar
   document.getElementById('activeUsers').innerHTML = ACTIVE_USERS.map(u => `
-    <div class="active-user" onclick="navigate('/profile/${escapeHtml(u.name)}')"
+    <a class="active-user" href="#" onclick="navigate('/profile/${escapeHtml(u.name)}');return false;" aria-label="${escapeHtml(u.name)} profiline git">
       <div class="active-user-ava">${u.ava}</div>
       <div class="active-user-info">
         <div class="active-user-name">${escapeHtml(u.name)}</div>
         <div class="active-user-meta">${escapeHtml(u.meta)}</div>
       </div>
-    </div>`).join('');
+    </a>`).join('');
 }
 function searchTag(tag) {
   document.getElementById('searchInput').value = tag.replace('#','');
@@ -2656,14 +2736,14 @@ function renderNotifications() {
   const badge = document.getElementById('notifBadge');
   if (badge) { badge.textContent = unread; badge.style.display = unread ? 'inline-flex' : 'none'; }
   document.getElementById('notifList').innerHTML = notifData.map(n => `
-    <div class="notif-item ${n.read?'':'unread'}" onclick="readNotif(${n.id},this)">
+    <a class="notif-item ${n.read?'':'unread'}" href="#" onclick="readNotif(${n.id},this);return false;" aria-label="Bildirimi oku">
       <div class="notif-icon ${n.type}">${n.icon}</div>
       <div class="notif-body">
         <div class="notif-text">${n.text}</div>
         <div class="notif-time">${n.time}</div>
       </div>
       ${!n.read ? '<div class="notif-dot"></div>' : ''}
-    </div>`).join('');
+    </a>`).join('');
 }
 function readNotif(id, el) {
   const n = notifData.find(x => x.id === id);
@@ -2804,12 +2884,21 @@ function showMsgSidebar() {
 // MOBİL HAMBURGER MENÜ
 // ══════════════════════════════════════════════════════════════
 function toggleMobileMenu() {
-  document.getElementById('mobileMenu')?.classList.toggle('open');
+  const menu = document.getElementById('mobileMenu');
+  const btn = document.getElementById('btnHamburger');
+  menu?.classList.toggle('open');
+  const isOpen = menu?.classList.contains('open');
+  menu?.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+  btn?.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 }
 // Menü dışına tıklayınca kapat
 document.addEventListener('click', e => {
   if (!e.target.closest('#mobileMenu') && !e.target.closest('#btnHamburger')) {
-    document.getElementById('mobileMenu')?.classList.remove('open');
+    const menu = document.getElementById('mobileMenu');
+    const btn = document.getElementById('btnHamburger');
+    menu?.classList.remove('open');
+    menu?.setAttribute('aria-hidden', 'true');
+    btn?.setAttribute('aria-expanded', 'false');
   }
 });
 
