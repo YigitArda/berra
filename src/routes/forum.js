@@ -114,13 +114,26 @@ router.get('/threads/:slug', optionalAuth, async (req, res) => {
 // POST /api/forum/threads — yeni konu aç
 router.post('/threads', requireAuth, forumWriteLimiter, [
   body('title').trim().isLength({ min: 5, max: 200 }).withMessage('Başlık 5-200 karakter olmalı.'),
-  body('body').trim().isLength({ min: 10 }).withMessage('İçerik en az 10 karakter olmalı.'),
+  body('body').optional().isString(),
   body('category_id').isInt({ min: 1 }).withMessage('Geçerli bir kategori seçin.'),
+  body('images').optional().isArray({ max: 4 }).withMessage('En fazla 4 görsel.'),
+  body('images.*').optional().isString(),
+  body().custom((value) => {
+    const bodyText = typeof value?.body === 'string' ? value.body.trim() : '';
+    const images = Array.isArray(value?.images) ? value.images : [];
+    if (!bodyText && images.length === 0) throw new Error('İçerik veya görsel zorunlu.');
+    if (bodyText && bodyText.length < 10) throw new Error('İçerik en az 10 karakter olmalı.');
+    return true;
+  }),
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
 
-  const { title, body: postBody, category_id } = req.body;
+  const { title, body: rawBody, category_id } = req.body;
+  const postBody = typeof rawBody === 'string' ? rawBody.trim() : '';
+  const images = (req.body.images || []).filter((img) =>
+    typeof img === 'string' && img.startsWith('data:image/')
+  ).slice(0, 4);
   const client = await db.connect();
 
   try {
@@ -140,9 +153,9 @@ router.post('/threads', requireAuth, forumWriteLimiter, [
     const thread = threadRes.rows[0];
 
     await client.query(`
-      INSERT INTO posts (thread_id, user_id, body)
-      VALUES ($1, $2, $3)
-    `, [thread.id, req.user.id, postBody]);
+      INSERT INTO posts (thread_id, user_id, body, images)
+      VALUES ($1, $2, $3, $4)
+    `, [thread.id, req.user.id, postBody, images]);
 
     await client.query('COMMIT');
     res.status(201).json({ message: 'Konu açıldı.', slug: thread.slug });
@@ -157,9 +170,15 @@ router.post('/threads', requireAuth, forumWriteLimiter, [
 
 // POST /api/forum/threads/:slug/posts — yanıt yaz
 router.post('/threads/:slug/posts', requireAuth, forumWriteLimiter, [
-  body('body').trim().isLength({ min: 1 }).withMessage('Yanıt boş olamaz.'),
+  body('body').optional().isString(),
   body('images').optional().isArray({ max: 4 }).withMessage('En fazla 4 görsel.'),
   body('images.*').optional().isString(),
+  body().custom((value) => {
+    const bodyText = typeof value?.body === 'string' ? value.body.trim() : '';
+    const images = Array.isArray(value?.images) ? value.images : [];
+    if (!bodyText && images.length === 0) throw new Error('Yanıt boş olamaz.');
+    return true;
+  }),
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
@@ -180,7 +199,7 @@ router.post('/threads/:slug/posts', requireAuth, forumWriteLimiter, [
       INSERT INTO posts (thread_id, user_id, body, images)
       VALUES ($1, $2, $3, $4)
       RETURNING id, body, images, created_at
-    `, [thread.id, req.user.id, req.body.body, images]);
+    `, [thread.id, req.user.id, typeof req.body.body === 'string' ? req.body.body.trim() : '', images]);
 
     // Konu sahibine bildirim gönder
     const threadOwner = await db.query('SELECT user_id FROM threads WHERE id = $1', [thread.id]);
