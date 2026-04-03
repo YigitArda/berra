@@ -1,5 +1,17 @@
 import { joinUrl } from './url';
 
+export class ApiError extends Error {
+  status: number;
+  payload: unknown;
+
+  constructor(message: string, status: number, payload: unknown) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.payload = payload;
+  }
+}
+
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
   const body = init?.body;
@@ -17,24 +29,8 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   });
 
   if (!res.ok) {
-    if (isJsonResponse(res)) {
-      const payload = (await res.json().catch(() => null)) as { error?: string; message?: string } | null;
-      if (payload?.error || payload?.message) {
-        throw new Error(payload.error ?? payload.message);
-      }
-    }
-
-    const bodyText = await res.text().catch(() => '');
-    const snippet = toSnippet(bodyText);
-    throw new Error(snippet ? `HTTP ${res.status}: ${snippet}` : `HTTP ${res.status}`);
-  }
-
-  if (res.status === 204) {
-    return null;
-  }
-
-  if (isJsonResponse(res)) {
-    return (await res.json()) as T;
+    const payload = (await res.json().catch(() => null)) as { error?: string; message?: string } | null;
+    throw new ApiError(payload?.error ?? payload?.message ?? `HTTP ${res.status}`, res.status, payload);
   }
 
   return (await res.text()) as T;
