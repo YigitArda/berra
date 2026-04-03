@@ -1,4 +1,4 @@
-export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000/api';
+import { joinUrl } from './url';
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
@@ -17,9 +17,25 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   });
 
   if (!res.ok) {
-    const payload = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
-    throw new Error(payload.error ?? payload.message ?? `HTTP ${res.status}`);
+    if (isJsonResponse(res)) {
+      const payload = (await res.json().catch(() => null)) as { error?: string; message?: string } | null;
+      if (payload?.error || payload?.message) {
+        throw new Error(payload.error ?? payload.message);
+      }
+    }
+
+    const bodyText = await res.text().catch(() => '');
+    const snippet = toSnippet(bodyText);
+    throw new Error(snippet ? `HTTP ${res.status}: ${snippet}` : `HTTP ${res.status}`);
   }
 
-  return (await res.json()) as T;
+  if (res.status === 204) {
+    return null;
+  }
+
+  if (isJsonResponse(res)) {
+    return (await res.json()) as T;
+  }
+
+  return (await res.text()) as T;
 }
