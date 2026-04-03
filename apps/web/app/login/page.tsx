@@ -1,16 +1,22 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { apiFetch } from '../../lib/api';
+import { sessionQueryKey } from '../../lib/auth/session';
 import { loginSchema } from './schema';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
+
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
@@ -22,6 +28,12 @@ export default function LoginPage() {
         method: 'POST',
         body: JSON.stringify(payload),
       }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: sessionQueryKey });
+      const nextPath = searchParams.get('next') ?? '/dashboard';
+      router.replace(nextPath);
+      router.refresh();
+    },
   });
 
   return (
