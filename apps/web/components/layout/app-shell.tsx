@@ -13,8 +13,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   useRealtimeNotifications();
   const unread = useAppStore((s) => s.unreadCount);
   const toastMessage = useAppStore((s) => s.toastMessage);
-  const { isAuthenticated } = useSession();
-  const logoutMutation = useLogout();
+  const setToastMessage = useAppStore((s) => s.setToastMessage);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -41,7 +40,16 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
       </header>
       {toastMessage && (
-        <div className="fixed right-4 top-4 rounded-md bg-slate-800 px-4 py-2 text-sm shadow">{toastMessage}</div>
+        <div className="fixed right-4 top-4 flex items-center gap-3 rounded-md bg-slate-800 px-4 py-2 text-sm shadow">
+          <span>{toastMessage}</span>
+          <button
+            type="button"
+            className="rounded bg-slate-700 px-2 py-1 text-xs hover:bg-slate-600"
+            onClick={() => setToastMessage(null)}
+          >
+            Kapat
+          </button>
+        </div>
       )}
       <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
     </div>

@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { FastifyRequest } from 'fastify';
 import { Roles } from '../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -8,6 +8,24 @@ import { NotificationsService } from './notifications.service';
 @Controller('notifications')
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  list(
+    @Req() req: FastifyRequest & { user: { id: number } },
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const parsedPage = Math.max(parseInt(page || '1', 10) || 1, 1);
+    const parsedLimit = Math.min(Math.max(parseInt(limit || '20', 10) || 20, 1), 100);
+    return this.notificationsService.listForUser(req.user.id, parsedPage, parsedLimit);
+  }
+
+  @Put('read-all')
+  @UseGuards(JwtAuthGuard)
+  markAllRead(@Req() req: FastifyRequest & { user: { id: number } }) {
+    return this.notificationsService.markAllRead(req.user.id);
+  }
 
   @Post('system-test')
   @UseGuards(JwtAuthGuard)
