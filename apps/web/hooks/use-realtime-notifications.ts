@@ -6,7 +6,9 @@ import { io } from 'socket.io-client';
 import { NotificationsResponse, notificationsQueryKey } from '../lib/notifications';
 import { useAppStore } from '../store/app-store';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL ?? 'http://localhost:4000';
+type NotificationPayload = {
+  message: string;
+};
 
 export function useRealtimeNotifications() {
   const queryClient = useQueryClient();

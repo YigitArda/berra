@@ -1,4 +1,5 @@
-'use client';
+import { requireServerSession } from '../../lib/auth/server';
+import { NotificationsClient } from './notifications-client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';

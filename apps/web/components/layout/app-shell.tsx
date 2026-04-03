@@ -2,9 +2,12 @@
 
 import Link from 'next/link';
 import { ReactNode } from 'react';
+import { useLogout } from '../../hooks/use-logout';
 import { useRealtimeNotifications } from '../../hooks/use-realtime-notifications';
+import { useSession } from '../../hooks/use-session';
 import { useAppStore } from '../../store/app-store';
 import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
 
 export function AppShell({ children }: { children: ReactNode }) {
   useRealtimeNotifications();
@@ -23,6 +26,17 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Link href="/notifications" className="ml-auto flex items-center gap-2">
             Bildirimler {unread > 0 && <Badge>{unread}</Badge>}
           </Link>
+          {isAuthenticated ? (
+            <Button
+              type="button"
+              onClick={() => logoutMutation.mutate()}
+              disabled={logoutMutation.isPending}
+            >
+              {logoutMutation.isPending ? 'Çıkış yapılıyor...' : 'Çıkış'}
+            </Button>
+          ) : (
+            <Link href="/login">Giriş</Link>
+          )}
         </nav>
       </header>
       {toastMessage && (
