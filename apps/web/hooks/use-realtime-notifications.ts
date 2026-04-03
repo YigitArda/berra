@@ -2,20 +2,57 @@
 
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { getSocket, releaseSocket } from '../lib/socket';
-import { patchNotificationCreated } from './use-notifications';
+import { NotificationsResponse, notificationsQueryKey } from '../lib/notifications';
+import { releaseSocket, SOCKET_EVENTS, subscribeSocketEvent } from '../lib/socket';
 import { useAppStore } from '../store/app-store';
+
+type NotificationCreatedPayload = {
+  message: string;
+  userId?: number;
+  notificationId?: number;
+};
 
 export function useRealtimeNotifications() {
   const queryClient = useQueryClient();
   const setToastMessage = useAppStore((s) => s.setToastMessage);
 
   useEffect(() => {
-    const socket = getSocket();
     let toastTimer: ReturnType<typeof setTimeout> | null = null;
-
-    socket.on('notification.created', (payload: { message: string; notificationId?: number }) => {
-      patchNotificationCreated(queryClient, payload);
+    const unsubscribe = subscribeSocketEvent<NotificationCreatedPayload>(SOCKET_EVENTS.notificationCreated, (payload) => {
+      queryClient.setQueryData<NotificationsResponse>(notificationsQueryKey, (current) => {
+        if (!current) {
+          return {
+            notifications: [
+              {
+                id: payload.notificationId ?? -Date.now(),
+                type: 'SYSTEM',
+                message: payload.message,
+                link: null,
+                is_read: false,
+                created_at: new Date().toISOString(),
+              },
+            ],
+            unread: 1,
+            page: 1,
+            limit: 20,
+          };
+        }
+        return {
+          ...current,
+          unread: current.unread + 1,
+          notifications: [
+            ...current.notifications,
+            {
+              id: payload.notificationId ?? -Date.now(),
+              type: 'SYSTEM',
+              message: payload.message,
+              link: null,
+              is_read: false,
+              created_at: new Date().toISOString(),
+            },
+          ],
+        };
+      });
 
       setToastMessage(payload.message);
       if (toastTimer) clearTimeout(toastTimer);
@@ -25,9 +62,9 @@ export function useRealtimeNotifications() {
     });
 
     return () => {
-      if (toastTimer) clearTimeout(toastTimer);
-      socket.off('notification.created');
+      unsubscribe();
       releaseSocket();
+      if (toastTimer) clearTimeout(toastTimer);
     };
   }, [queryClient, setToastMessage]);
 }
