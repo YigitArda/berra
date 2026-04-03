@@ -2,6 +2,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
+import { DataState } from '../../components/data-state';
+import { EmptyState } from '../../components/empty-state';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
@@ -19,6 +21,8 @@ export default function SearchPage() {
     enabled,
   });
 
+  const items = searchQuery.data?.items ?? [];
+
   return (
     <div className="grid gap-4">
       <Card>
@@ -28,14 +32,34 @@ export default function SearchPage() {
           <Button onClick={() => setSubmitted(q)}>Ara</Button>
         </div>
       </Card>
-      <div className="grid gap-2">
-        {(searchQuery.data?.results ?? []).map((item) => (
-          <Card key={item.id}>
-            <p className="font-semibold">#{item.id}</p>
-            <p>{item.title}</p>
-          </Card>
-        ))}
-      </div>
+
+      {!enabled ? (
+        <EmptyState
+          title="Aramaya başlayın"
+          description="Sonuçları görmek için en az 2 karakterlik bir terim girin."
+        />
+      ) : (
+        <DataState
+          isLoading={searchQuery.isLoading}
+          isError={searchQuery.isError}
+          isEmpty={items.length === 0}
+          errorMessage={`Arama sonuçları alınamadı. Lütfen tekrar deneyin. ${searchQuery.error instanceof Error ? `(${searchQuery.error.message})` : ''}`}
+          emptyTitle="Sonuç bulunamadı"
+          emptyDescription="Farklı bir anahtar kelime ile tekrar arama yapabilirsiniz."
+          onRetry={() => {
+            void searchQuery.refetch();
+          }}
+        >
+          <div className="grid gap-2">
+            {items.map((item) => (
+              <Card key={item.id}>
+                <p className="font-semibold">#{item.id}</p>
+                <p>{item.body}</p>
+              </Card>
+            ))}
+          </div>
+        </DataState>
+      )}
     </div>
   );
 }
