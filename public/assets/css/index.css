@@ -84,7 +84,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 .thread-ava{width:34px;height:34px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:grid;place-items:center;font-size:.82rem;font-weight:700;color:var(--text2);flex-shrink:0;}
 .thread-info{min-width:0;}
 .thread-title-row{display:flex;align-items:flex-start;gap:5px;overflow:hidden;}
-.thread-title{font-size:var(--thread-title-size);font-weight:700;color:var(--text);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-clamp:2;transition:color var(--t);}
+.thread-title{font-size:.9rem;font-weight:700;color:var(--text);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;transition:color var(--t);}
 .thread-row:hover .thread-title{color:var(--acc2);}
 .tag{display:inline-flex;align-items:center;font-size:.65rem;font-weight:700;padding:2px 6px;border-radius:var(--r-full);flex-shrink:0;letter-spacing:.2px;}
 /* Kategori etiket renkleri */
@@ -96,9 +96,9 @@ body { background:var(--bg); color:var(--text); font-family:var(--font); font-si
 .tag-cat[data-cat="ariza"]{background:rgba(170,120,230,.1);color:#b07ee8;border-color:rgba(170,120,230,.25);}
 .tag-pin{background:rgba(240,165,0,.12);color:var(--amber);border:1px solid rgba(240,165,0,.25);}
 .tag-lock{background:rgba(74,144,217,.12);color:var(--blue);border:1px solid rgba(74,144,217,.25);}
-.thread-meta2{font-size:var(--thread-meta-size);color:var(--text3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.thread-stat{text-align:right;font-size:var(--thread-counter-size);font-weight:700;color:var(--text2);font-variant-numeric:tabular-nums;}
-.thread-stat small{display:block;font-size:var(--thread-counter-label-size);font-weight:400;color:var(--text3);margin-top:1px;}
+.thread-meta2{font-size:.7rem;color:var(--text2);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85;}
+.thread-stat{text-align:center;font-size:.82rem;font-weight:700;color:var(--text2);}
+.thread-stat small{display:block;font-size:.65rem;font-weight:400;color:var(--text3);margin-top:1px;}
 .thread-time-col{text-align:center;font-size:.7rem;color:var(--text3);line-height:1.4;}
 
 /* SAĞ — PANEL */
@@ -487,6 +487,8 @@ body.modal-open .modal-backdrop.open{opacity:1;pointer-events:all;}
   .post-detail-text { font-size: .95rem; }
   .modal-content { margin: 10px; border-radius: var(--r-lg); }
   .page-inner { padding: 12px; }
+  .thread-title { -webkit-line-clamp: 1; font-size: .85rem; }
+  .thread-meta2 { font-size: .68rem; }
 }
 @media (max-width: 760px) {
   .nav-right .nav-optional { display: none; }
