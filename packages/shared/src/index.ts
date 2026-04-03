@@ -22,3 +22,13 @@ export type SystemNotificationJob = {
   message: string;
   link?: string;
 };
+
+export type FeedPost = {
+  id: number;
+  body: string;
+  like_count: number;
+  comment_count: number;
+  created_at: string;
+  username: string;
+  avatar_url: string | null;
+};

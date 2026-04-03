@@ -16,6 +16,7 @@ export default async function HomePage() {
       <p>Bu uygulama, mevcut frontend&apos;in modüler TypeScript/Next.js geçiş başlangıcıdır.</p>
       <p><strong>Durum:</strong> {apiHealth}</p>
       <p><Link href="/login">Yeni auth akışını test et</Link></p>
+      <p><Link href="/feed">Yeni feed akışını test et</Link></p>
     </main>
   );
 }

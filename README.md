@@ -30,6 +30,8 @@ npm run build:web
 - Queue altyapısı için `apps/api` tarafına BullMQ + Redis tabanlı `QueueService` eklendi.
 - `POST /api/notifications/system-test` endpointi ile bildirim job'ı kuyruğa atılabilir hale geldi.
 - Ayrı worker başlangıcı için `npm run worker:api` script'i eklendi.
+- Feed modülü Nest tarafına taşındı: `GET /api/feed`, `POST /api/feed`, `POST/DELETE /api/feed/:id/like`, `GET /api/feed/:id/comments`, `POST /api/feed/:id/comment`.
+- Next.js tarafına `/feed` test sayfası eklendi.
 
 Legacy Express uygulaması hâlâ çalışır:
 
