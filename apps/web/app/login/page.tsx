@@ -1,7 +1,8 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '../../components/ui/button';
@@ -9,9 +10,16 @@ import { Card } from '../../components/ui/card';
 import { FormField } from '../../components/ui/form-field';
 import { Input } from '../../components/ui/input';
 import { apiFetch } from '../../lib/api';
+import { sessionQueryKey } from '../../lib/auth/session';
 import { loginSchema } from './schema';
 
+const loginFields = ['email', 'password'] as const;
+
 export default function LoginPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
+
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
@@ -19,10 +27,16 @@ export default function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: (payload: z.infer<typeof loginSchema>) =>
-      apiFetch<{ message?: string }>('/auth/login', {
+      apiFetch<AuthResponse>('/auth/login', {
         method: 'POST',
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload satisfies LoginRequest),
       }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: sessionQueryKey });
+      const nextPath = searchParams.get('next') ?? '/dashboard';
+      router.replace(nextPath);
+      router.refresh();
+    },
   });
 
   const emailError = form.formState.errors.email?.message;
@@ -58,8 +72,7 @@ export default function LoginPage() {
           {loginMutation.isPending ? 'Gönderiliyor...' : 'Giriş yap'}
         </Button>
       </form>
-      {loginMutation.isError && <p className="mt-2 text-sm text-red-400">{(loginMutation.error as Error).message}</p>}
-      {loginMutation.isSuccess && <p className="mt-2 text-sm text-emerald-400">Giriş başarılı.</p>}
+      {loginMutation.isSuccess && <p className="mt-2 text-sm text-emerald-400">Giriş başarılı, yönlendiriliyorsunuz...</p>}
     </Card>
   );
 }

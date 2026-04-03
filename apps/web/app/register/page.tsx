@@ -2,6 +2,8 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '../../components/ui/button';
@@ -9,6 +11,7 @@ import { Card } from '../../components/ui/card';
 import { FormField } from '../../components/ui/form-field';
 import { Input } from '../../components/ui/input';
 import { apiFetch } from '../../lib/api';
+import type { AuthResponse, RegisterRequest } from '@berra/shared';
 
 const registerSchema = z.object({
   username: z.string().min(3, 'Kullanıcı adı en az 3 karakter olmalı.'),
@@ -16,7 +19,11 @@ const registerSchema = z.object({
   password: z.string().min(6, 'Şifre en az 6 karakter olmalı.'),
 });
 
+const registerFields = ['username', 'email', 'password'] as const;
+
 export default function RegisterPage() {
+  const router = useRouter();
+  const [generalError, setGeneralError] = useState<string | null>(null);
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: { username: '', email: '', password: '' },
@@ -24,10 +31,18 @@ export default function RegisterPage() {
 
   const registerMutation = useMutation({
     mutationFn: (payload: z.infer<typeof registerSchema>) =>
-      apiFetch<{ message?: string }>('/auth/register', {
+      apiFetch<AuthResponse>('/auth/register', {
         method: 'POST',
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload satisfies RegisterRequest),
       }),
+    onSuccess: () => {
+      setGeneralError(null);
+      router.push('/dashboard');
+    },
+    onError: (error) => {
+      const message = applyBackendErrors(error, form.setError, registerFields);
+      setGeneralError(message);
+    },
   });
 
   const usernameError = form.formState.errors.username?.message;
@@ -74,6 +89,7 @@ export default function RegisterPage() {
           {registerMutation.isPending ? 'Kaydediliyor...' : 'Kayıt ol'}
         </Button>
       </form>
+      {registerMutation.isSuccess && <p className="mt-2 text-sm text-emerald-400">Kayıt başarılı, yönlendiriliyorsunuz...</p>}
     </Card>
   );
 }

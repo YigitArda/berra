@@ -10,17 +10,23 @@ export type AuthUser = {
   role: 'user' | 'mod' | 'admin';
 };
 
-export type AuthSuccess = {
+export type LoginRequest = {
+  email: string;
+  password: string;
+};
+
+export type RegisterRequest = {
+  username: string;
+  email: string;
+  password: string;
+};
+
+export type AuthResponse = {
   message: string;
   user: AuthUser;
 };
 
-export type SystemNotificationJob = {
-  userId: number;
-  type: 'system';
-  message: string;
-  link?: string;
-};
+export type AuthSuccess = AuthResponse;
 
 export type FeedPost = {
   id: number;
@@ -32,13 +38,23 @@ export type FeedPost = {
   avatar_url: string | null;
 };
 
-export type PublicProfile = {
-  id: number;
-  username: string;
-  bio: string | null;
-  avatar_url: string | null;
-  role: 'user' | 'mod' | 'admin';
-  created_at: string;
+export type CreateFeedRequest = {
+  body: string;
+};
+
+export type FeedListResponse = {
+  posts: FeedPost[];
+  page: number;
+  limit: number;
+  total: number;
+};
+
+export type FeedCreateResponse = {
+  post: {
+    id: number;
+    body: string;
+    created_at: string;
+  };
 };
 
 export type SearchThreadResult = {
@@ -51,6 +67,36 @@ export type SearchThreadResult = {
   author: string;
   category_name: string;
   rank: number;
+};
+
+export type SearchRequest = {
+  q: string;
+  filters?: string;
+  page?: number;
+};
+
+export type SearchResponse = {
+  results: SearchThreadResult[];
+  query: string;
+  page: number;
+  total: number;
+  limit: number;
+};
+
+export type SystemNotificationJob = {
+  userId: number;
+  type: 'system';
+  message: string;
+  link?: string;
+};
+
+export type PublicProfile = {
+  id: number;
+  username: string;
+  bio: string | null;
+  avatar_url: string | null;
+  role: 'user' | 'mod' | 'admin';
+  created_at: string;
 };
 
 export type ApiError = {

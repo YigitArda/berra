@@ -1,14 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
+import type { SearchResponse } from '../../../../packages/shared/src';
 
 @Injectable()
 export class SearchService {
   constructor(private readonly db: DatabaseService) {}
 
-  async searchThreads(query: string, filters?: string, page = 1) {
-    if (query.length < 2 || query.length > 200) return { results: [], query, page, total: 0 };
-
+  async searchThreads(query: string, filters?: string, page = 1): Promise<SearchResponse> {
     const limit = 20;
+
+    if (query.length < 2 || query.length > 200) {
+      return { results: [], query, page, total: 0, limit };
+    }
     const offset = (page - 1) * limit;
     const filterParts = (filters || '').split(',').map((s) => s.trim()).filter(Boolean);
 
