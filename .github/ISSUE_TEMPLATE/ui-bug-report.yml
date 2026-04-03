@@ -1,0 +1,73 @@
+name: UI Bug Report
+description: Arayüzdeki hataları standart bir formatta raporlamak için kullanın.
+title: "[UI Bug] "
+labels: ["bug", "ui"]
+body:
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Öncelik
+      options:
+        - P0 (Akış kırıcı)
+        - P1 (Workaround var)
+        - P2 (Görsel/UX)
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: Reproduction adımları
+      description: Adım adım yazın.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_result
+    attributes:
+      label: Beklenen sonuç
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual_result
+    attributes:
+      label: Gerçekleşen sonuç
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Tarayıcı
+      placeholder: Chrome 123 / Safari 17 / Firefox 124
+    validations:
+      required: true
+
+  - type: input
+    id: viewport
+    attributes:
+      label: Viewport
+      placeholder: 390x844 (mobile) / 1440x900 (desktop)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: auth_state
+    attributes:
+      label: Auth durumu
+      options:
+        - Logged out
+        - Logged in
+    validations:
+      required: true
+
+  - type: textarea
+    id: artifacts
+    attributes:
+      label: Ekran kaydı / screenshot linki
+      description: Mümkünse Loom veya ekran görüntüsü bağlantısı paylaşın.

@@ -21,10 +21,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   useRealtimeNotifications();
   const { isAuthenticated } = useSession();
   const logoutMutation = useLogout();
-  const notificationsQuery = useNotifications();
+  useNotifications();
 
   const localBadgeCount = useAppStore((s) => s.localBadgeCount);
-  const setLocalBadgeCount = useAppStore((s) => s.setLocalBadgeCount);
   const toastMessage = useAppStore((s) => s.toastMessage);
   const clearToast = useAppStore((s) => s.clearToast);
 
@@ -51,15 +50,22 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="border-b border-slate-800">
         <nav className="mx-auto flex max-w-5xl items-center gap-2 px-4 py-3">
           {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className={navLinkClass(item.href)}>
+            <Link
+              key={item.href}
+              href={item.href}
+              className={navLinkClass(item.href)}
+              aria-current={pathname === item.href ? 'page' : undefined}
+            >
               {item.label}
             </Link>
           ))}
           <Link
             href="/notifications"
-            className="ml-auto flex items-center gap-2 rounded-md border border-transparent px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:border-slate-700 hover:bg-slate-900 hover:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+            className={`ml-auto flex items-center gap-2 ${navLinkClass('/notifications')}`}
+            aria-current={pathname === '/notifications' ? 'page' : undefined}
           >
-            Bildirimler {localBadgeCount > 0 && <Badge>{localBadgeCount}</Badge>}
+            Bildirimler{' '}
+            {localBadgeCount > 0 && <Badge>{formatNotificationBadgeCount(localBadgeCount)}</Badge>}
           </Link>
           {isAuthenticated ? (
             <Button
@@ -70,7 +76,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               {logoutMutation.isPending ? 'Çıkış yapılıyor...' : 'Çıkış'}
             </Button>
           ) : (
-            <Link href="/login">Giriş</Link>
+            <Link href="/login" className={navLinkClass('/login')} aria-current={pathname === '/login' ? 'page' : undefined}>
+              Giriş
+            </Link>
           )}
         </nav>
       </header>
