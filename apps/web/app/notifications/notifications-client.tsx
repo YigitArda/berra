@@ -17,8 +17,8 @@ import { useAppStore } from '../../store/app-store';
 export function NotificationsClient() {
   const { isLoading: isSessionLoading } = useRequireAuth();
   const queryClient = useQueryClient();
-  const unread = useAppStore((s) => s.unreadCount);
-  const setUnreadCount = useAppStore((s) => s.setUnreadCount);
+  const unread = useAppStore((s) => s.localBadgeCount);
+  const setUnreadCount = useAppStore((s) => s.setLocalBadgeCount);
 
   const notificationsQuery = useQuery({
     queryKey: notificationsQueryKey,
