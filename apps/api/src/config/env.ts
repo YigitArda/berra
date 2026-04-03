@@ -5,9 +5,12 @@ const apiEnvSchema = z.object({
   PORT: z.coerce.number().default(4000),
   HOST: z.string().default('0.0.0.0'),
   APP_URL: z.string().url().default('http://localhost:3000'),
+  CORS_ORIGINS: z.string().optional(),
   JWT_SECRET: z.string().min(16),
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().url(),
+  RATE_LIMIT_MAX: z.coerce.number().default(200),
+  RATE_LIMIT_WINDOW: z.string().default('1 minute'),
 });
 
 export type ValidatedApiEnv = z.infer<typeof apiEnvSchema>;

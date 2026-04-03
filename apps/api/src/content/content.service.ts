@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { sanitizeText } from '../common/utils/sanitize';
 import { DatabaseService } from '../database/database.service';
 
 @Injectable()
@@ -19,11 +20,12 @@ export class ContentService {
   }
 
   async create(userId: number, body: string) {
+    const cleanBody = sanitizeText(body, 500);
     const { rows } = await this.db.query(
       `INSERT INTO feed_posts (user_id, body)
        VALUES ($1, $2)
        RETURNING id, body, created_at`,
-      [userId, body],
+      [userId, cleanBody],
     );
     return { item: rows[0] };
   }

@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { sanitizeText } from '../common/utils/sanitize';
 import { DatabaseService } from '../database/database.service';
 
 @Injectable()
@@ -35,6 +36,7 @@ export class FeedService {
   }
 
   async create(userId: number, body: string) {
+    const cleanBody = sanitizeText(body, 500);
     const { rows } = await this.db.query<{
       id: number;
       body: string;
@@ -43,7 +45,7 @@ export class FeedService {
       `INSERT INTO feed_posts (user_id, body)
        VALUES ($1, $2)
        RETURNING id, body, created_at`,
-      [userId, body],
+      [userId, cleanBody],
     );
 
     return { post: rows[0] };
@@ -101,6 +103,7 @@ export class FeedService {
   }
 
   async createComment(feedId: number, userId: number, text: string, username: string) {
+    const cleanText = sanitizeText(text, 300);
     const post = await this.db.query<{ id: number }>('SELECT id FROM feed_posts WHERE id = $1', [feedId]);
     if (!post.rows.length) throw new NotFoundException('Gönderi bulunamadı.');
 
@@ -112,7 +115,7 @@ export class FeedService {
       `INSERT INTO feed_comments (feed_post_id, user_id, body)
        VALUES ($1, $2, $3)
        RETURNING id, body, created_at`,
-      [feedId, userId, text],
+      [feedId, userId, cleanText],
     );
 
     await this.db.query('UPDATE feed_posts SET comment_count = comment_count + 1 WHERE id = $1', [feedId]);

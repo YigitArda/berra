@@ -3,6 +3,7 @@ import { ConflictException, ForbiddenException, Injectable, UnauthorizedExceptio
 import { ConfigService } from '@nestjs/config';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { sanitizeText } from '../common/utils/sanitize';
 import { DatabaseService } from '../database/database.service';
 
 type AuthUser = { id: number; username: string; role: 'user' | 'mod' | 'admin' };
@@ -35,9 +36,12 @@ export class AuthService {
   }
 
   async register(username: string, email: string, password: string, userAgent?: string, ipAddress?: string) {
+    const cleanUsername = sanitizeText(username, 40);
+    const cleanEmail = sanitizeText(email, 200).toLowerCase();
+
     const exists = await this.db.query<{ id: number }>(
       'SELECT id FROM users WHERE email = $1 OR username = $2 LIMIT 1',
-      [email.toLowerCase(), username],
+      [cleanEmail, cleanUsername],
     );
 
     if (exists.rows.length > 0) {
@@ -49,7 +53,7 @@ export class AuthService {
       `INSERT INTO users (username, email, password_hash)
        VALUES ($1, $2, $3)
        RETURNING id, username, role`,
-      [username, email.toLowerCase(), hash],
+      [cleanUsername, cleanEmail, hash],
     );
 
     const user = rows[0];
@@ -60,13 +64,14 @@ export class AuthService {
   }
 
   async login(email: string, password: string, userAgent?: string, ipAddress?: string) {
+    const cleanEmail = sanitizeText(email, 200).toLowerCase();
     const { rows } = await this.db.query<{
       id: number;
       username: string;
       role: 'user' | 'mod' | 'admin';
       password_hash: string;
       is_banned: boolean;
-    }>('SELECT id, username, role, password_hash, is_banned FROM users WHERE email = $1', [email.toLowerCase()]);
+    }>('SELECT id, username, role, password_hash, is_banned FROM users WHERE email = $1', [cleanEmail]);
 
     if (!rows.length) throw new UnauthorizedException('Email veya şifre hatalı.');
 
@@ -98,13 +103,16 @@ export class AuthService {
               u.username, u.role, u.is_banned
        FROM user_sessions s
        JOIN users u ON u.id = s.user_id
-       WHERE s.revoked_at IS NULL
        ORDER BY s.created_at DESC
-       LIMIT 30`,
+       LIMIT 100`,
     );
 
     const match = await this.findMatchingSession(rows, rawRefreshToken);
     if (!match) throw new UnauthorizedException('Geçersiz refresh token.');
+    if (match.revoked_at) {
+      await this.db.query('UPDATE user_sessions SET revoked_at = NOW() WHERE user_id = $1 AND revoked_at IS NULL', [match.user_id]);
+      throw new UnauthorizedException('Refresh token tekrar kullanımı algılandı. Lütfen tekrar giriş yapın.');
+    }
 
     if (match.is_banned) throw new ForbiddenException('Hesabınız askıya alınmış.');
     if (new Date(match.expires_at).getTime() < Date.now()) {
@@ -121,12 +129,12 @@ export class AuthService {
   }
 
   private async findMatchingSession(
-    sessions: Array<{ id: number; refresh_token_hash: string }>,
+    sessions: Array<{ id: number; refresh_token_hash: string; [k: string]: unknown }>,
     rawRefreshToken: string,
   ) {
     for (const s of sessions) {
       const ok = await bcrypt.compare(rawRefreshToken, s.refresh_token_hash);
-      if (ok) return s as any;
+      if (ok) return s;
     }
     return null;
   }

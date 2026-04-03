@@ -19,6 +19,13 @@ describe('Health (e2e)', () => {
   it('/api/health (GET)', async () => {
     const res = await request(app.getHttpServer()).get('/api/health');
     expect(res.status).toBe(200);
-    expect(res.body.status).toBe('ok');
+    expect(['ok', 'degraded']).toContain(res.body.status);
+    expect(res.body.checks).toBeDefined();
+  });
+
+  it('/api/health/metrics (GET)', async () => {
+    const res = await request(app.getHttpServer()).get('/api/health/metrics');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('process_uptime_seconds');
   });
 });
