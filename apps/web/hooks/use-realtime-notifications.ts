@@ -2,12 +2,14 @@
 
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { io } from 'socket.io-client';
 import { NotificationsResponse, notificationsQueryKey } from '../lib/notifications';
+import { releaseSocket, SOCKET_EVENTS, subscribeSocketEvent } from '../lib/socket';
 import { useAppStore } from '../store/app-store';
 
-type NotificationPayload = {
+type NotificationCreatedPayload = {
   message: string;
+  userId?: number;
+  notificationId?: number;
 };
 
 export function useRealtimeNotifications() {
@@ -15,10 +17,8 @@ export function useRealtimeNotifications() {
   const setToastMessage = useAppStore((s) => s.setToastMessage);
 
   useEffect(() => {
-    const socket = io(SOCKET_URL, { withCredentials: true });
     let toastTimer: ReturnType<typeof setTimeout> | null = null;
-
-    socket.on('notification.created', (payload: { message: string; notificationId?: number }) => {
+    const unsubscribe = subscribeSocketEvent<NotificationCreatedPayload>(SOCKET_EVENTS.notificationCreated, (payload) => {
       queryClient.setQueryData<NotificationsResponse>(notificationsQueryKey, (current) => {
         if (!current) {
           return {
@@ -65,8 +65,9 @@ export function useRealtimeNotifications() {
     });
 
     return () => {
+      unsubscribe();
+      releaseSocket();
       if (toastTimer) clearTimeout(toastTimer);
-      socket.disconnect();
     };
   }, [queryClient, setToastMessage]);
 }

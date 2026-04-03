@@ -2,6 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { Queue, Worker } from 'bullmq';
 import IORedis from 'ioredis';
 import { Pool } from 'pg';
+import { REALTIME_EVENT } from '../../../../packages/shared/src';
 import { JOB_NAMES, QUEUE_NAMES } from './queue.constants';
 
 const config = new ConfigService();
@@ -17,8 +18,8 @@ const db = new Pool({
 });
 
 type RealtimeEnvelope =
-  | { event: 'notification.created'; payload: { userId: number; notificationId: number; message: string } }
-  | { event: 'content.updated'; payload: { contentId: number; action: 'updated'; entityRoom?: string } };
+  | { event: typeof REALTIME_EVENT.notificationCreated; payload: { userId: number; notificationId: number; message: string } }
+  | { event: typeof REALTIME_EVENT.contentUpdated; payload: { contentId: number; action: 'updated'; entityRoom?: string } };
 
 async function publishRealtime(envelope: RealtimeEnvelope) {
   await realtimePublisher.publish('realtime.events', JSON.stringify(envelope));
@@ -55,7 +56,7 @@ const notificationsWorker = new Worker(
       const notificationId = rows[0]?.id;
       if (notificationId) {
         await publishRealtime({
-          event: 'notification.created',
+          event: REALTIME_EVENT.notificationCreated,
           payload: { userId: payload.userId, notificationId, message: payload.message },
         });
       }
@@ -88,7 +89,7 @@ const mediaProcessingWorker = new Worker(
         [payload.contentId],
       );
       await publishRealtime({
-        event: 'content.updated',
+        event: REALTIME_EVENT.contentUpdated,
         payload: { contentId: payload.contentId, action: 'updated', entityRoom: `content:${payload.contentId}` },
       });
     }
