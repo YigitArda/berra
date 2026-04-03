@@ -9,10 +9,11 @@
     "migrate": "node scripts/migrate.js",
     "dev:legacy": "nodemon src/app.js",
     "start:legacy": "node src/app.js",
-    "dev:api": "npm run dev -w @berra/api",
-    "dev:web": "npm run dev -w @berra/web",
-    "build:api": "npm run build -w @berra/api",
-    "build:web": "npm run build -w @berra/web"
+    "dev:api": "npm --prefix apps/api run dev",
+    "dev:web": "npm --prefix apps/web run dev",
+    "build:api": "npm --prefix apps/api run build",
+    "build:web": "npm --prefix apps/web run build",
+    "worker:api": "npm --prefix apps/api run worker"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -35,9 +36,5 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ]
+  "private": true
 }

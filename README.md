@@ -6,7 +6,7 @@ Türkiye'nin araba topluluk platformu — Forum + Akış + Araçlar.
 
 ## Yeni Mimari (Migration Başlangıcı)
 
-Bu repo artık **workspaces** ile aşağıdaki başlangıç yapısını içerir:
+Bu repo yeni mimari geçişi için aşağıdaki başlangıç yapısını içerir:
 
 - `apps/api`: NestJS + Fastify + TypeScript (yeni API iskeleti)
 - `apps/web`: Next.js + TypeScript (yeni frontend iskeleti)
@@ -29,7 +29,7 @@ npm run build:web
 - Next.js tarafında `/login` sayfası ile yeni auth endpointlerini test edecek istemci formu eklendi.
 - Queue altyapısı için `apps/api` tarafına BullMQ + Redis tabanlı `QueueService` eklendi.
 - `POST /api/notifications/system-test` endpointi ile bildirim job'ı kuyruğa atılabilir hale geldi.
-- Ayrı worker başlangıcı için `npm run worker -w @berra/api` script'i eklendi.
+- Ayrı worker başlangıcı için `npm run worker:api` script'i eklendi.
 
 Legacy Express uygulaması hâlâ çalışır:
 
