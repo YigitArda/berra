@@ -1,10 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { useRequireAuth } from '../../hooks/use-require-auth';
-import { useCreateFeedPost, useFeed } from '../../hooks/use-feed';
+import { DataState } from '../../components/data-state';
+import { InlineAlert } from '../../components/feedback/InlineAlert';
+import { Skeleton } from '../../components/feedback/Skeleton';
+import { resolveFeedbackErrorMessage } from '../../components/feedback/messages';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
+import { useRequireAuth } from '../../hooks/use-require-auth';
+import { apiFetch } from '../../lib/api';
+
+type FeedPost = {
+  id: number;
+  body: string;
+  like_count: number;
+  comment_count: number;
+  created_at: string;
+  username: string;
+};
 
 export function FeedClient() {
   const [body, setBody] = useState('');
@@ -14,7 +27,7 @@ export function FeedClient() {
   const createMutation = useCreateFeedPost(() => setBody(''));
 
   if (isSessionLoading) {
-    return <p>Oturum doğrulanıyor...</p>;
+    return <Skeleton title="Oturum doğrulanıyor..." lines={2} />;
   }
 
   return (
@@ -33,21 +46,39 @@ export function FeedClient() {
           placeholder="Ne düşünüyorsun?"
           maxLength={500}
           rows={3}
-          className="rounded-md border border-slate-700 bg-slate-900 p-3"
+          disabled={createMutation.isPending}
+          className="rounded-md border border-slate-700 bg-slate-900 p-3 disabled:opacity-60"
         />
-        <Button type="submit" disabled={createMutation.isPending}>Paylaş</Button>
+        <Button type="submit" disabled={createMutation.isPending || body.trim().length === 0}>
+          {createMutation.isPending ? 'Paylaşılıyor...' : 'Paylaş'}
+        </Button>
       </form>
-      {createMutation.isError && <p className="mb-3 text-red-400">{toUserMessage(createMutation.error)}</p>}
-      {postsQuery.isError && <p className="mb-3 text-red-400">{toUserMessage(postsQuery.error)}</p>}
-      <div className="grid gap-3">
-        {(postsQuery.data?.posts ?? []).map((post) => (
-          <Card key={post.id}>
-            <div className="font-bold">{post.username}</div>
-            <p>{post.body}</p>
-            <small>♥ {post.like_count} · 💬 {post.comment_count}</small>
-          </Card>
-        ))}
-      </div>
+
+      {createMutation.isError && (
+        <InlineAlert className="mb-3" variant="error" message={resolveFeedbackErrorMessage(createMutation.error)} />
+      )}
+
+      <DataState
+        isLoading={postsQuery.isLoading}
+        isError={postsQuery.isError}
+        isEmpty={postsQuery.isSuccess && (postsQuery.data?.posts.length ?? 0) === 0}
+        error={postsQuery.error}
+        loadingTitle="Gönderiler yükleniyor..."
+        emptyTitle="Henüz gönderi yok"
+        emptyDescription="İlk gönderiyi paylaşarak feed'i başlatın."
+        onRetry={() => postsQuery.refetch()}
+        isRetrying={postsQuery.isRefetching}
+      >
+        <div className="grid gap-3">
+          {(postsQuery.data?.posts ?? []).map((post) => (
+            <Card key={post.id}>
+              <div className="font-bold">{post.username}</div>
+              <p>{post.body}</p>
+              <small>♥ {post.like_count} · 💬 {post.comment_count}</small>
+            </Card>
+          ))}
+        </div>
+      </DataState>
     </div>
   );
 }
