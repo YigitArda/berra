@@ -113,3 +113,29 @@ npm run dev:legacy
 |-------|---------------|--------------------|
 | POST  | /api/score    | Alınır mı skoru    |
 | GET   | /api/score/stats | İstatistikler   |
+
+
+## Staging Altyapısı
+
+Bu repoda staging için temel deploy altyapısı eklendi:
+
+- `docker-compose.staging.yml`: Postgres + Redis + API + Worker + Web servisleri
+- `apps/api/Dockerfile`, `apps/web/Dockerfile`: üretim imajı build dosyaları
+- `deploy/k8s/*`: namespace/deployment/service/ingress manifestleri
+- `.github/workflows/staging.yml`: staging build/doğrulama workflow
+- `.env.staging.example`: staging ortam değişken örneği
+
+### Local staging smoke
+
+```bash
+docker compose -f docker-compose.staging.yml up --build
+```
+
+### K8s apply
+
+```bash
+kubectl apply -f deploy/k8s/namespace.yaml
+kubectl apply -f deploy/k8s/api-deployment.yaml
+kubectl apply -f deploy/k8s/web-deployment.yaml
+kubectl apply -f deploy/k8s/ingress.yaml
+```
