@@ -6,6 +6,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '../../../components/ui/badge';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
+import { useToggleBookmark } from '../../../hooks/use-bookmarks';
+import { useReportContent } from '../../../hooks/use-report';
 import { useSession } from '../../../hooks/use-session';
 import { apiFetch } from '../../../lib/api';
 import { pushRecentThread } from '../../../lib/recent-threads';
@@ -47,6 +49,7 @@ export function ThreadClient({ slug }: { slug: string }) {
   const { isAuthenticated } = useSession();
   const [replyBody, setReplyBody] = useState('');
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   const threadQuery = useQuery({
     queryKey: ['thread', slug],
@@ -86,6 +89,8 @@ export function ThreadClient({ slug }: { slug: string }) {
     },
     onSuccess: () => setIsFollowing((prev) => !prev),
   });
+  const bookmarkMutation = useToggleBookmark(threadQuery.data?.thread.id ?? 0);
+  const reportMutation = useReportContent();
 
   const canReply = isAuthenticated && !threadQuery.data?.thread.is_locked;
   const posts = threadQuery.data?.posts ?? [];
@@ -115,6 +120,16 @@ export function ThreadClient({ slug }: { slug: string }) {
                 disabled={!isAuthenticated || followThreadMutation.isPending}
               >
                 {isFollowing ? 'Takibi bırak' : 'Bu konuyu takip et'}
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setIsBookmarked((prev) => !prev);
+                  bookmarkMutation.mutate(!isBookmarked);
+                }}
+                disabled={!isAuthenticated || bookmarkMutation.isPending}
+              >
+                {isBookmarked ? '🔖 Kaydedildi' : '🔖 Kaydet'}
               </Button>
             </div>
             <p className="mt-2 text-sm text-slate-300">
@@ -146,6 +161,13 @@ export function ThreadClient({ slug }: { slug: string }) {
               </div>
               <p className="whitespace-pre-wrap text-slate-100">{post.body}</p>
               <small className="mt-2 block text-slate-400">♥ {post.like_count}</small>
+              <button
+                type="button"
+                className="mt-2 text-xs text-slate-300 underline"
+                onClick={() => reportMutation.mutate({ targetType: 'post', targetId: post.id, reason: 'diğer' })}
+              >
+                Şikayet Et
+              </button>
             </Card>
           ))}
         </div>
