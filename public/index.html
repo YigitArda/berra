@@ -1526,7 +1526,7 @@ body.light .profile-header { background: var(--bg2); }
       <div class="thread-stat">${escapeHtml(String(t.replies))}<small>yanıt</small></div>
       <div class="thread-stat">${escapeHtml(String(t.views))}<small>görüntü</small></div>
       <div class="thread-time-col">${escapeHtml(t.time)}<br><span style="font-size:.67rem">${escapeHtml(t.author)}</span></div>`;
-          row.addEventListener('click', () => navigate('/thread/' + (t.slug || t.id)));
+          row.addEventListener('click', () => openThread(t.id, t.slug || ''));
           el.appendChild(row);
         });
       }
@@ -1535,21 +1535,32 @@ body.light .profile-header { background: var(--bg2); }
       let currentThread = null;
 
       function openThread(id, slug) {
+        const numericSlugId =
+          typeof slug === 'string' && /^\d+$/.test(slug) ? parseInt(slug, 10) : null;
+        const threadId = id || numericSlugId;
+        const threadSlug = numericSlugId ? '' : slug;
         document.getElementById('threadPage').classList.add('open');
         document.getElementById('threadPage').scrollTop = 0;
         document.getElementById('threadDetailContent').innerHTML =
           '<div style="padding:20px;color:var(--text3)">Yükleniyor...</div>';
-        if (!history.state?.path?.startsWith('/thread')) navigate('/thread/' + (slug || id), false);
-        // Önce statik listede bak
-        const local = slug
-          ? STATIC_THREADS.find((x) => x.slug === slug) || threads.find((x) => x.id === id)
-          : threads.find((x) => x.id === id);
+        if (!history.state?.path?.startsWith('/thread')) {
+          navigate('/thread/' + (threadId || threadSlug), false);
+        }
+        // Önce ID'ye göre bul, slug çakışmalarında doğru konuyu aç
+        const local = threadId
+          ? threads.find((x) => x.id === threadId)
+          : threadSlug
+            ? threads.find((x) => x.slug === threadSlug)
+            : null;
         if (local && local.slug) {
           loadThreadBySlug(local.slug, local);
-        } else if (slug) {
-          loadThreadBySlug(slug, null);
+        } else if (threadSlug) {
+          loadThreadBySlug(threadSlug, null);
+        } else if (threadId) {
+          loadThreadById(threadId);
         } else {
-          loadThreadById(id);
+          document.getElementById('threadDetailContent').innerHTML =
+            '<div style="padding:20px;color:var(--accent)">Konu bulunamadı.</div>';
         }
       }
 
@@ -1653,7 +1664,7 @@ body.light .profile-header { background: var(--bg2); }
             if (replyBtn) {
               replyBtn.onclick = async () => {
                 const txt = document.getElementById('replyInput').value.trim();
-                if (!txt) return;
+                if (!txt && replyImages.length === 0) return;
                 if (!user) {
                   showToast('Yanıtlamak için giriş yap.', 'err');
                   return;
@@ -1680,6 +1691,7 @@ body.light .profile-header { background: var(--bg2); }
                     images: [...replyImages],
                   };
                   replyImages = [];
+                  renderReplyImages();
                   document.getElementById('postsList').appendChild(renderPost(newPost));
                   document.getElementById('replyInput').value = '';
                   replyBtn.textContent = 'Yanıtla';
@@ -1710,6 +1722,7 @@ body.light .profile-header { background: var(--bg2); }
       }
 
       function renderPost(p) {
+        const postText = p.text ? `<div class="post-text">${escapeHtml(p.text)}</div>` : '';
         const imgsHtml =
           p.images && p.images.length
             ? '<div class="post-images">' +
@@ -1736,7 +1749,7 @@ body.light .profile-header { background: var(--bg2); }
     <div class="post-body">
       <button class="post-author post-like-btn" onclick="openProfile('${escapeHtml(p.author)}')" aria-label="${escapeHtml(p.author)} profiline git">${escapeHtml(p.author)}</button>
       <span class="post-time">${escapeHtml(p.time)}</span>
-      <div class="post-text">${escapeHtml(p.text)}</div>
+      ${postText}
       ${imgsHtml}${prevHtml}
       <div class="post-actions">
         <button class="post-like-btn ${p.liked ? 'liked' : ''}" onclick="likePost(${p.id},this)">♥ ${escapeHtml(String(p.likes))}</button>
@@ -1868,6 +1881,10 @@ body.light .profile-header { background: var(--bg2); }
         const isPinned = !!p.pinned;
         const isLocked = !!p.locked;
         const menuId = 'pm-' + p.id;
+        const cardClass = `${isPinned ? ' pinned' : ''}${isLocked ? ' locked' : ''}`;
+        const badge = isPinned
+          ? '<div class="feed-item-badge badge-announce">📌 Sabit konu</div>'
+          : '';
         return `<div class="feed-item${cardClass}" id="fi-${p.id}" style="animation-delay:${delay}s" data-post-id="${p.id}" tabindex="0" role="button" aria-label="Gönderiyi aç">
     <div class="feed-item-top">
       <div class="feed-ava ${avaColor(p.author)}">${escapeHtml(p.ava)}</div>
@@ -1916,7 +1933,7 @@ body.light .profile-header { background: var(--bg2); }
         )
           return;
         const p = feedData.find((x) => x.id === id);
-        navigate('/thread/' + (p?.slug || id));
+        openThread(id, p?.slug || '');
       }
       document.addEventListener('click', (e) => {
         const card = e.target.closest('.feed-item[data-post-id]');
@@ -1934,7 +1951,7 @@ body.light .profile-header { background: var(--bg2); }
 
       function openThreadFromFeed(id) {
         const p = feedData.find((x) => x.id === id);
-        navigate('/thread/' + (p?.slug || id));
+        openThread(id, p?.slug || '');
       }
 
       function toggleComments(id, btn, forceOpen) {
@@ -2162,7 +2179,7 @@ document.getElementById('doReg').addEventListener('click', async () => {
   const pass     = document.getElementById('r_pass').value;
   const errEl    = document.getElementById('regErr');
   if (!username || !email || !pass) { showErr(errEl, 'Tüm alanları doldur.'); return; }
-  if (pass.length < 6) { showErr(errEl, 'Şifre en az 6 karakter olmalı.'); return; }
+  if (pass.length < 8) { showErr(errEl, 'Şifre en az 8 karakter olmalı.'); return; }
   const btn = document.getElementById('doReg');
   btn.innerHTML = '<span class="spinner"></span>';
   try {
@@ -2186,14 +2203,19 @@ document.getElementById('doNewThread').addEventListener('click', async () => {
   const body  = document.getElementById('nt_body').value.trim();
   const cat   = document.getElementById('nt_cat').value;
   const errEl = document.getElementById('ntErr');
-  if (!title || !body) { showErr(errEl, 'Başlık ve içerik zorunlu.'); return; }
+  if (!title || (!body && ntImages.length === 0)) { showErr(errEl, 'Başlık ve içerik veya fotoğraf zorunlu.'); return; }
   if (title.length < 5) { showErr(errEl, 'Başlık en az 5 karakter olmalı.'); return; }
 
   const btn = document.getElementById('doNewThread');
   btn.innerHTML = '<span class="spinner"></span>';
 
   try {
-    const data = await apiCall('/api/forum/threads', 'POST', { title, body, category_id: parseInt(cat) });
+    const data = await apiCall('/api/forum/threads', 'POST', {
+      title,
+      body,
+      images: ntImages,
+      category_id: parseInt(cat),
+    });
     if (data.error || data.errors) {
       showErr(errEl, data.error || data.errors[0].msg);
       btn.textContent = 'Konuyu Yayınla'; return;
@@ -2348,7 +2370,7 @@ document.getElementById('doReset').addEventListener('click', async () => {
   const password = document.getElementById('f_newpass').value;
   const errEl = document.getElementById('forgotErr');
   if (!token || !password) { showErr(errEl, 'Kod ve yeni şifre gerekli.'); return; }
-  if (password.length < 6) { showErr(errEl, 'Şifre en az 6 karakter olmalı.'); return; }
+  if (password.length < 8) { showErr(errEl, 'Şifre en az 8 karakter olmalı.'); return; }
   const data = await apiCall('/api/auth/reset-password', 'POST', { token, password });
   if (data.error) { showErr(errEl, data.error); return; }
   showToast('Şifre değiştirildi!', 'ok');
@@ -3702,6 +3724,13 @@ function renderProfileHeader(data) {
         ).join('');
       }
       function searchTag(tag) {
+        document.querySelectorAll('.feed-tab').forEach((t) => {
+          const isActive = t.dataset.panel === 'akis';
+          t.classList.toggle('active', isActive);
+          t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+        document.querySelectorAll('.feed-panel').forEach((p) => p.classList.remove('active'));
+        document.getElementById('panelAkis')?.classList.add('active');
         document.getElementById('searchInput').value = tag.replace('#', '');
         document.getElementById('searchInput').dispatchEvent(new Event('input'));
       }
@@ -3714,6 +3743,7 @@ function renderProfileHeader(data) {
           icon: '♥',
           text: '<strong>Turbo_Berk</strong> gönderini beğendi',
           time: '5 dk',
+          link: '/thread/4',
           read: false,
         },
         {
@@ -3722,6 +3752,7 @@ function renderProfileHeader(data) {
           icon: '💬',
           text: '<strong>dizel_ahmet</strong> gönderine yorum yazdı: "Ben 2 yıl önce geçtim..."',
           time: '18 dk',
+          link: '/thread/3',
           read: false,
         },
         {
@@ -3730,6 +3761,7 @@ function renderProfileHeader(data) {
           icon: '⭐',
           text: 'Yeni rozet kazandın: <strong>İlk Paylaşım</strong>',
           time: '1 saat',
+          link: '/profile/rozetler',
           read: false,
         },
         {
@@ -3738,6 +3770,7 @@ function renderProfileHeader(data) {
           icon: '♥',
           text: '<strong>elif_yilmaz</strong> ve 3 kişi daha gönderini beğendi',
           time: '2 saat',
+          link: '/thread/6',
           read: true,
         },
         {
@@ -3746,6 +3779,7 @@ function renderProfileHeader(data) {
           icon: '💬',
           text: '<strong>Murat_K</strong> konuna yanıt yazdı',
           time: '3 saat',
+          link: '/thread/1',
           read: true,
         },
       ];
@@ -3778,6 +3812,7 @@ function renderProfileHeader(data) {
           el.querySelector('.notif-dot')?.remove();
           renderNotifications();
         }
+        if (n?.link) navigate(n.link);
       }
       function markAllRead() {
         notifData.forEach((n) => (n.read = true));
