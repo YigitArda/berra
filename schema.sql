@@ -239,6 +239,71 @@ CREATE TABLE IF NOT EXISTS feed_comments (
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Takip sistemi (kullanıcı / thread / model)
+CREATE TABLE IF NOT EXISTS user_follows (
+  follower_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  following_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (follower_id, following_id),
+  CHECK (follower_id <> following_id)
+);
+
+CREATE TABLE IF NOT EXISTS thread_follows (
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  thread_id INTEGER NOT NULL REFERENCES threads(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (user_id, thread_id)
+);
+
+-- Marka / model merkezi
+CREATE TABLE IF NOT EXISTS car_models (
+  id SERIAL PRIMARY KEY,
+  brand VARCHAR(100) NOT NULL,
+  model VARCHAR(100) NOT NULL,
+  slug VARCHAR(180) UNIQUE NOT NULL,
+  generation VARCHAR(120),
+  description TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS car_model_follows (
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  car_model_id INTEGER NOT NULL REFERENCES car_models(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (user_id, car_model_id)
+);
+
+CREATE TABLE IF NOT EXISTS thread_models (
+  thread_id INTEGER NOT NULL REFERENCES threads(id) ON DELETE CASCADE,
+  car_model_id INTEGER NOT NULL REFERENCES car_models(id) ON DELETE CASCADE,
+  PRIMARY KEY (thread_id, car_model_id)
+);
+
+CREATE TABLE IF NOT EXISTS model_chronic_issues (
+  id SERIAL PRIMARY KEY,
+  car_model_id INTEGER NOT NULL REFERENCES car_models(id) ON DELETE CASCADE,
+  title VARCHAR(140) NOT NULL,
+  body TEXT,
+  severity SMALLINT NOT NULL DEFAULT 2 CHECK (severity BETWEEN 1 AND 5),
+  created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Etiket sistemi
+CREATE TABLE IF NOT EXISTS tags (
+  id SERIAL PRIMARY KEY,
+  slug VARCHAR(80) UNIQUE NOT NULL,
+  name VARCHAR(80) UNIQUE NOT NULL,
+  usage_count INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS thread_tags (
+  thread_id INTEGER NOT NULL REFERENCES threads(id) ON DELETE CASCADE,
+  tag_id INTEGER NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (thread_id, tag_id)
+);
+
 
 -- Kullanıcı aktiviteleri (audit/activity)
 CREATE TABLE IF NOT EXISTS activities (
@@ -318,6 +383,13 @@ CREATE INDEX IF NOT EXISTS idx_posts_user       ON posts (user_id);
 CREATE INDEX IF NOT EXISTS idx_posts_created    ON posts (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_threads_user     ON threads (user_id);
 CREATE INDEX IF NOT EXISTS idx_threads_created  ON threads (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_thread_follows_thread ON thread_follows (thread_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_user_follows_following ON user_follows (following_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_car_models_slug ON car_models (slug);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_car_models_brand_model_generation
+  ON car_models (LOWER(brand), LOWER(model), LOWER(COALESCE(generation, '')));
+CREATE INDEX IF NOT EXISTS idx_tags_usage ON tags (usage_count DESC, slug);
+CREATE INDEX IF NOT EXISTS idx_thread_tags_tag ON thread_tags (tag_id, thread_id);
 CREATE INDEX IF NOT EXISTS idx_threads_slug     ON threads (slug);
 CREATE INDEX IF NOT EXISTS idx_feed_user        ON feed_posts (user_id);
 CREATE INDEX IF NOT EXISTS idx_post_likes_post  ON post_likes (post_id);
