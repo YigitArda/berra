@@ -8,16 +8,7 @@ import { resolveFeedbackErrorMessage } from '../../components/feedback/messages'
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { useRequireAuth } from '../../hooks/use-require-auth';
-import { apiFetch } from '../../lib/api';
-
-type FeedPost = {
-  id: number;
-  body: string;
-  like_count: number;
-  comment_count: number;
-  created_at: string;
-  username: string;
-};
+import { useFeed, useCreateFeedPost } from '../../hooks/use-feed';
 
 export function FeedClient() {
   const [body, setBody] = useState('');

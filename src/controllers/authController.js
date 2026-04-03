@@ -166,11 +166,8 @@ async function forgotPassword(req, res) {
     );
 
     // Not: Gerçek mail gönderimi için nodemailer vb. gerekir
-    // Şimdilik token'ı döndürüyoruz (production'da mail gönderilir)
     return res.json({
       message: 'Sıfırlama kodu oluşturuldu.',
-      // Production'da bu satır kaldırılacak — sadece dev için:
-      resetToken: process.env.NODE_ENV !== 'production' ? resetToken : undefined,
     });
   } catch (err) {
     console.error('forgotPassword error:', err);
@@ -182,7 +179,7 @@ async function forgotPassword(req, res) {
 async function resetPassword(req, res) {
   const { token, password } = req.body;
   if (!token || !password) return res.status(422).json({ error: 'Token ve yeni şifre gerekli.' });
-  if (password.length < 6) return res.status(422).json({ error: 'Şifre en az 6 karakter olmalı.' });
+  if (password.length < 8) return res.status(422).json({ error: 'Şifre en az 8 karakter olmalı.' });
 
   try {
     const { rows } = await db.query(

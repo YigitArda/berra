@@ -9,7 +9,10 @@ router.put('/users/:id/role', requireAuth, requireAdmin, async (req, res) => {
   if (!['user', 'mod', 'admin'].includes(role)) {
     return res.status(422).json({ error: 'Geçersiz rol. user / mod / admin olmalı.' });
   }
-  const userId = parseInt(req.params.id);
+  const userId = parseInt(req.params.id, 10);
+  if (!userId || isNaN(userId)) {
+    return res.status(400).json({ error: 'Geçersiz kullanıcı ID.' });
+  }
   if (userId === req.user.id) {
     return res.status(400).json({ error: 'Kendi rolünüzü değiştiremezsiniz.' });
   }
@@ -30,7 +33,10 @@ router.put('/users/:id/ban', requireAuth, async (req, res) => {
   if (!['mod', 'admin'].includes(req.user.role)) {
     return res.status(403).json({ error: 'Bu işlem için yetkiniz yok.' });
   }
-  const userId = parseInt(req.params.id);
+  const userId = parseInt(req.params.id, 10);
+  if (!userId || isNaN(userId)) {
+    return res.status(400).json({ error: 'Geçersiz kullanıcı ID.' });
+  }
   if (userId === req.user.id) {
     return res.status(400).json({ error: 'Kendinizi banlayamazsınız.' });
   }
@@ -51,20 +57,23 @@ router.put('/users/:id/ban', requireAuth, async (req, res) => {
 router.get('/users', requireAuth, requireAdmin, async (req, res) => {
   const { q, page = 1 } = req.query;
   const limit  = 30;
-  const offset = (Math.max(parseInt(page), 1) - 1) * limit;
+  const offset = (Math.max(parseInt(page, 10) || 1, 1) - 1) * limit;
   let where  = '';
   const params = [limit, offset];
   if (q) {
-    params.push(`%${q}%`);
-    where = `WHERE username ILIKE $${params.length} OR email ILIKE $${params.length}`;
+    const pattern = `%${q}%`;
+    params.push(pattern);   // $3 — username
+    params.push(pattern);   // $4 — email
+    where = `WHERE username ILIKE $${params.length - 1} OR email ILIKE $${params.length}`;
   }
   try {
     const { rows } = await db.query(
       `SELECT id, username, email, role, is_banned, created_at FROM users ${where} ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
       params
     );
-    const total = await db.query(`SELECT COUNT(*) FROM users ${where}`, params.slice(2));
-    res.json({ users: rows, total: parseInt(total.rows[0].count), page: parseInt(page), limit });
+    const countParams = params.slice(2);
+    const total = await db.query(`SELECT COUNT(*) FROM users ${where}`, countParams);
+    res.json({ users: rows, total: parseInt(total.rows[0].count, 10), page: parseInt(page, 10), limit });
   } catch (err) {
     res.status(500).json({ error: 'Sunucu hatası.' });
   }
