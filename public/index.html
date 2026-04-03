@@ -674,68 +674,34 @@ body.light .profile-header { background: var(--bg2); }
   <button id="btnScoreMobile" onclick="document.getElementById('btnScore').click();toggleMobileMenu()">🧮 Alınır mı?</button>
 </div>
 
+<div
+  class="mobile-primary-tabs"
+  id="mobilePrimaryTabs"
+  role="tablist"
+  aria-label="Ana görünüm seçimi"
+>
+  <button
+    class="primary-tab active"
+    data-primary="forum"
+    id="primaryTabForum"
+    role="tab"
+    aria-selected="true"
+  >
+    💬 Forum
+  </button>
+  <button
+    class="primary-tab"
+    data-primary="content"
+    id="primaryTabContent"
+    role="tab"
+    aria-selected="false"
+  >
+    ⚡ İçerik
+  </button>
+</div>
+
 <!-- ANA LAYOUT -->
-<div class="layout">
-  <!-- SOL: KONULAR -->
-  <div class="panel-left">
-    <div class="panel-left-top">
-      <span class="panel-left-title">💬 Forum</span>
-      <button class="btn btn-accent btn-sm" id="btnNewThread">+ Yeni Konu</button>
-    </div>
-    <div class="cat-bar">
-      <button class="cat-tab active" data-cat="all" aria-label="Tüm kategoriler">Tümü <span class="cat-count" id="cnt-all">0</span></button>
-      <button class="cat-tab" data-cat="genel" aria-label="Genel kategorisi">💬 Genel <span class="cat-count" id="cnt-genel">0</span></button>
-      <button class="cat-tab" data-cat="ilk" aria-label="İlk Araba kategorisi">⭐ İlk Araba <span class="cat-count" id="cnt-ilk">0</span></button>
-      <button class="cat-tab" data-cat="modifiye" aria-label="Modifiye kategorisi">🔧 Modifiye <span class="cat-count" id="cnt-modifiye">0</span></button>
-      <button class="cat-tab" data-cat="ilan" aria-label="İlan kategorisi">👁 İlan <span class="cat-count" id="cnt-ilan">0</span></button>
-      <button class="cat-tab" data-cat="ariza" aria-label="Arıza kategorisi">🛠 Arıza <span class="cat-count" id="cnt-ariza">0</span></button>
-    </div>
-    <!-- Mobil menü -->
-    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
-      <a href="#">Forum</a>
-      <a href="sanayi.html">🏭 Sanayi</a>
-      <a href="ozellikler.html">🔧 Bakım &amp; Galeri</a>
-      <a href="rehber.html">📖 Rehber</a>
-      <a href="karsilastir.html">⚖️ Karşılaştır</a>
-      <button
-        id="btnScoreMobile"
-        onclick="
-          document.getElementById('btnScore').click();
-          toggleMobileMenu();
-        "
-      >
-        🧮 Alınır mı?
-      </button>
-    </div>
-
-    <div
-      class="mobile-primary-tabs"
-      id="mobilePrimaryTabs"
-      role="tablist"
-      aria-label="Ana görünüm seçimi"
-    >
-      <button
-        class="primary-tab active"
-        data-primary="forum"
-        id="primaryTabForum"
-        role="tab"
-        aria-selected="true"
-      >
-        💬 Forum
-      </button>
-      <button
-        class="primary-tab"
-        data-primary="content"
-        id="primaryTabContent"
-        role="tab"
-        aria-selected="false"
-      >
-        ⚡ İçerik
-      </button>
-    </div>
-
-    <!-- ANA LAYOUT -->
-    <div class="layout forum-priority" id="mainLayout">
+<div class="layout forum-priority" id="mainLayout">
       <!-- SOL: KONULAR -->
       <div class="panel-left">
         <div class="panel-left-top">
