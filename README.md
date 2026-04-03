@@ -8,7 +8,7 @@ Türkiye'nin araba topluluk platformu — Forum + Akış + Araçlar.
 ## Aktif kullanıcı arayüzü
 
 - **Production hedefi:** Next.js (`apps/web`) tam geçiş.
-- **Legacy arayüz:** `ACTIVE_UI=legacy` ile geri dönüş (rollback) amaçlı korunur.
+- **Legacy arayüz:** `ACTIVE_UI=legacy` verilirse geri dönüş (rollback) amaçlı kullanılabilir (varsayılan artık `next`).
 
 ### Geliştirme komutları (arayüze göre)
 

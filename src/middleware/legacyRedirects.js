@@ -60,7 +60,7 @@ function mapTargetPath(target, reqPath) {
 function legacyRedirects(req, res, next) {
   if (req.method !== 'GET') return next();
 
-  const activeUi = (process.env.ACTIVE_UI || 'legacy').toLowerCase();
+  const activeUi = (process.env.ACTIVE_UI || 'next').toLowerCase();
   if (activeUi !== 'next') return next();
 
   const nextBase = process.env.NEXT_APP_URL;
