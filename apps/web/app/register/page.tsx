@@ -8,6 +8,7 @@ import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { apiFetch } from '../../lib/api';
+import type { AuthResponse, RegisterRequest } from '@berra/shared';
 
 const registerSchema = z.object({
   username: z.string().min(3),
@@ -23,9 +24,9 @@ export default function RegisterPage() {
 
   const registerMutation = useMutation({
     mutationFn: (payload: z.infer<typeof registerSchema>) =>
-      apiFetch<{ message?: string }>('/auth/register', {
+      apiFetch<AuthResponse>('/auth/register', {
         method: 'POST',
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload satisfies RegisterRequest),
       }),
   });
 
