@@ -14,4 +14,11 @@ export class JobsController {
   demoEmail() {
     return this.jobsService.enqueueDemoEmail();
   }
+
+  @Post('demo-media')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  demoMedia() {
+    return this.jobsService.enqueueDemoMedia(1, 1);
+  }
 }

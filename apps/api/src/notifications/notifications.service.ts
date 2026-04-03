@@ -1,13 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { NotificationsGateway } from '../realtime/notifications.gateway';
 import { QueueService } from '../queue/queue.service';
 
 @Injectable()
 export class NotificationsService {
-  constructor(
-    private readonly queueService: QueueService,
-    private readonly notificationsGateway: NotificationsGateway,
-  ) {}
+  constructor(private readonly queueService: QueueService) {}
 
   async sendSystemNotification(userId: number, message: string) {
     const job = await this.queueService.enqueueNotification({
@@ -15,8 +11,6 @@ export class NotificationsService {
       type: 'system',
       message,
     });
-
-    this.notificationsGateway.emitSystemNotification({ userId, message });
 
     return job;
   }

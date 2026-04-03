@@ -13,4 +13,13 @@ export class JobsService {
     });
     return { message: 'Demo email job queued', jobId: job.id };
   }
+
+  async enqueueDemoMedia(contentId: number, userId: number) {
+    const job = await this.queueService.enqueueMediaProcessing({
+      contentId,
+      userId,
+      sourceUrl: `https://cdn.example.com/raw/${contentId}.jpg`,
+    });
+    return { message: 'Demo media job queued', jobId: job.id };
+  }
 }

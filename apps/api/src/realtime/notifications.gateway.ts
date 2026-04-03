@@ -38,6 +38,10 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection 
       const subClient = pubClient.duplicate();
       await Promise.all([pubClient.ping(), subClient.ping()]);
       this.server.adapter(createAdapter(pubClient, subClient));
+      subClient.subscribe('realtime.events');
+      subClient.on('message', (_channel, message) => {
+        this.forwardRedisEvent(message);
+      });
       this.logger.log('Socket.IO Redis adapter ready');
     } catch (err) {
       this.logger.warn(`Redis adapter init skipped: ${(err as Error).message}`);
@@ -79,6 +83,25 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection 
 
   emitMessageReceived(payload: { userId: number; fromUserId?: number; message: string }) {
     this.server.to(`user:${payload.userId}`).emit('message.received', payload);
+  }
+
+  private forwardRedisEvent(message: string) {
+    try {
+      const envelope = JSON.parse(message) as
+        | { event: 'notification.created'; payload: { userId: number; notificationId: number; message: string } }
+        | { event: 'content.updated'; payload: { contentId: number; action: 'created' | 'updated'; entityRoom?: string } };
+
+      if (envelope.event === 'notification.created') {
+        this.emitNotificationCreated(envelope.payload);
+        return;
+      }
+
+      if (envelope.event === 'content.updated') {
+        this.emitContentUpdated(envelope.payload);
+      }
+    } catch (err) {
+      this.logger.warn(`Realtime event parse failed: ${(err as Error).message}`);
+    }
   }
 
   private authenticateClient(client: Socket) {
