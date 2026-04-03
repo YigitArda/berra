@@ -1,46 +1,21 @@
 import { API_BASE, getApiBaseFallbackMessage, hasApiBase } from './env';
 import { joinApiUrl } from './url';
 
-export type ApiErrorModel = {
-  code: string;
-  message: string;
-  status: number;
-};
+export const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE ?? process.env.API_BASE ?? 'http://localhost:4000/api';
 
-export const API_BASE = joinUrl(process.env.NEXT_PUBLIC_API_BASE ?? process.env.API_BASE ?? '', '');
-
-export function getHealthEndpoint(): string | null {
-  return API_BASE ? `${API_BASE}/health` : null;
+export function getHealthEndpoint(): string {
+  return joinUrl(API_BASE, '/health');
 }
 
 export class ApiError extends Error {
-  public readonly code: string;
-  public readonly status: number;
-  public readonly payload: unknown;
-
-  constructor(model: ApiErrorModel, payload: unknown) {
-    super(model.message);
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly payload?: unknown,
+  ) {
+    super(message);
     this.name = 'ApiError';
-    this.code = model.code;
-    this.status = model.status;
-    this.payload = payload;
-  }
-}
-
-function isJsonResponse(res: Response): boolean {
-  const contentType = res.headers.get('Content-Type')?.toLowerCase() ?? '';
-  return contentType.includes('application/json');
-}
-
-function normalizeApiError(payload: unknown, status: number): ApiErrorModel {
-  const fallback: ApiErrorModel = {
-    code: `HTTP_${status}`,
-    message: `HTTP ${status}`,
-    status,
-  };
-
-  if (!payload || typeof payload !== 'object') {
-    return fallback;
   }
 
   const data = payload as {
@@ -76,15 +51,15 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     headers.set('Content-Type', 'application/json');
   }
 
-  const res = await fetch(joinApiUrl(API_BASE, path), {
+  const res = await fetch(joinUrl(API_BASE, path), {
     ...init,
     credentials: 'include',
     headers,
   });
 
   if (!res.ok) {
-    const payload = isJsonResponse(res) ? await res.json().catch(() => null) : null;
-    throw new ApiError(normalizeApiError(payload, res.status), payload);
+    const payload = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
+    throw new ApiError(payload.error ?? payload.message ?? `HTTP ${res.status}`, res.status, payload);
   }
 
   if (res.status === 204) {

@@ -2,23 +2,11 @@ const bcrypt = require('bcryptjs');
 const jwt    = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const db     = require('../../config/db');
-
-function getAuthCookieOptions() {
-  return {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 gün (ms)
-  };
-}
-
-function getAuthCookieClearOptions() {
-  return {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-  };
-}
+const {
+  ACCESS_COOKIE_NAME,
+  ACCESS_COOKIE_MAX_AGE_MS,
+  buildCookieOptions,
+} = require('../utils/authCookies');
 
 // Token oluştur ve sadece httpOnly cookie'ye yaz
 function issueToken(res, user) {
@@ -27,7 +15,7 @@ function issueToken(res, user) {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   });
 
-  res.cookie('token', token, getAuthCookieOptions());
+  res.cookie(ACCESS_COOKIE_NAME, token, buildCookieOptions(ACCESS_COOKIE_MAX_AGE_MS));
 }
 
 // POST /api/auth/register
@@ -115,13 +103,13 @@ async function login(req, res) {
 
 // POST /api/auth/logout
 function logout(req, res) {
-  res.clearCookie('token', getAuthCookieClearOptions());
+  res.clearCookie(ACCESS_COOKIE_NAME, buildCookieOptions());
   return res.json({ message: 'Çıkış yapıldı.' });
 }
 
 // POST /api/auth/refresh — mevcut token geçerliyse yeni token ver
 async function refresh(req, res) {
-  const token = req.cookies?.token;
+  const token = req.cookies?.[ACCESS_COOKIE_NAME];
   if (!token) return res.status(401).json({ error: 'Oturum çerezi bulunamadı.' });
 
   try {
