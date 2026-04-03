@@ -21,7 +21,7 @@ export default function FeedPage() {
 
   const postsQuery = useQuery({
     queryKey: ['feed', 1],
-    queryFn: () => apiFetch<{ posts: FeedPost[] }>('/feed?page=1'),
+    queryFn: async () => (await apiFetch<{ posts: FeedPost[] }>('/feed?page=1')) ?? { posts: [] },
   });
 
   const createMutation = useMutation({

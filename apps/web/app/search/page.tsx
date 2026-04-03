@@ -19,7 +19,8 @@ export default function SearchPage() {
 
   const searchQuery = useQuery({
     queryKey: ['search', submitted],
-    queryFn: () => apiFetch<{ items: SearchResult[] }>(`/search?q=${encodeURIComponent(submitted)}&page=1`),
+    queryFn: async () =>
+      (await apiFetch<{ items: SearchResult[] }>(`/search?q=${encodeURIComponent(submitted)}&page=1`)) ?? { items: [] },
     enabled,
   });
 
