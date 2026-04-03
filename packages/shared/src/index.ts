@@ -53,6 +53,14 @@ export type SearchThreadResult = {
   rank: number;
 };
 
+export type SearchResponse<TItem = SearchThreadResult> = {
+  results: TItem[];
+  query: string;
+  page: number;
+  total: number;
+  limit: number;
+};
+
 export type ApiError = {
   statusCode: number;
   path: string;
