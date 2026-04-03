@@ -11,6 +11,7 @@ const apiEnvSchema = z.object({
   REDIS_URL: z.string().url(),
   RATE_LIMIT_MAX: z.coerce.number().default(200),
   RATE_LIMIT_WINDOW: z.string().default('1 minute'),
+  LEGACY_API_ORIGIN: z.string().url().optional(),
 });
 
 export type ValidatedApiEnv = z.infer<typeof apiEnvSchema>;

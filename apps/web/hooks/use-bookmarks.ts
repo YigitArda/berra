@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '../lib/api';
 
 export function useBookmarks() {
+  // CUTOVER_PROXY: `/bookmarks` requests go through Nest API and are proxied during migration.
   return useQuery({
     queryKey: ['bookmarks'],
     queryFn: () => apiFetch<{ bookmarks: Array<{ id: number; bookmark_id: number; title: string; slug: string; category_name: string; created_at: string }> }>('/bookmarks?page=1'),

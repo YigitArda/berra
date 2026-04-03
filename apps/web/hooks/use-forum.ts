@@ -16,6 +16,7 @@ type ForumThread = {
 };
 
 export function useForum(category: string, page: number) {
+  // CUTOVER_PROXY: `/forum/*` requests go through Nest API and are proxied during migration.
   const query = category === 'all'
     ? `/forum/threads?page=${page}`
     : `/forum/threads?category=${encodeURIComponent(category)}&page=${page}`;
