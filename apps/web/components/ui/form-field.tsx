@@ -1,24 +1,81 @@
-import { ReactNode } from 'react';
+import React from 'react';
+import { Children, cloneElement, isValidElement, ReactElement, ReactNode } from 'react';
 import { cn } from '../../lib/cn';
+
+const formMessageVariants = {
+  helper: 'text-slate-400',
+  error: 'text-red-400',
+  success: 'text-emerald-400',
+} as const;
+
+type FormMessageVariant = keyof typeof formMessageVariants;
+
+type FormMessageProps = {
+  id?: string;
+  variant?: FormMessageVariant;
+  children: ReactNode;
+};
+
+export function FormMessage({ id, variant = 'helper', children }: FormMessageProps) {
+  return (
+    <p id={id} className={cn('text-xs', formMessageVariants[variant])}>
+      {children}
+    </p>
+  );
+}
 
 type FormFieldProps = {
   id: string;
   label: string;
   helperText?: string;
   errorText?: string;
-  children: ReactNode;
+  successText?: string;
+  children: ReactElement;
   className?: string;
 };
 
-export function FormField({ id, label, helperText, errorText, children, className }: FormFieldProps) {
+export function FormField({ id, label, helperText, errorText, successText, children, className }: FormFieldProps) {
+  const messageIds = [helperText ? `${id}-hint` : null, errorText ? `${id}-error` : null, successText ? `${id}-success` : null]
+    .filter(Boolean)
+    .join(' ');
+
+  const child = Children.only(children);
+
+  if (!isValidElement(child)) {
+    throw new Error('FormField requires a valid React element as its child.');
+  }
+
+  const childProps = child.props as {
+    id?: string;
+    'aria-describedby'?: string;
+    'aria-invalid'?: boolean;
+  };
+
+  const ariaDescribedBy = [childProps['aria-describedby'], messageIds].filter(Boolean).join(' ') || undefined;
+
+  const enhancedChild = cloneElement(child, {
+    id,
+    'aria-describedby': ariaDescribedBy,
+    'aria-invalid': errorText ? true : childProps['aria-invalid'],
+  });
+
   return (
     <div className={cn('grid gap-1.5', className)}>
       <label htmlFor={id} className="text-sm font-medium text-slate-100">
         {label}
       </label>
-      {children}
-      {helperText && <p id={`${id}-hint`} className="text-xs text-slate-400">{helperText}</p>}
-      {errorText && <p id={`${id}-error`} className="text-xs text-red-400">{errorText}</p>}
+      {enhancedChild}
+      {helperText && <FormMessage id={`${id}-hint`}>{helperText}</FormMessage>}
+      {errorText && (
+        <FormMessage id={`${id}-error`} variant="error">
+          {errorText}
+        </FormMessage>
+      )}
+      {successText && (
+        <FormMessage id={`${id}-success`} variant="success">
+          {successText}
+        </FormMessage>
+      )}
     </div>
   );
 }

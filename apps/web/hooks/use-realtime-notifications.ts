@@ -6,7 +6,7 @@ import { NotificationsResponse, notificationsQueryKey } from '../lib/notificatio
 import { getSocket, releaseSocket } from '../lib/socket';
 import { useAppStore } from '../store/app-store';
 
-type NotificationPayload = {
+type NotificationCreatedPayload = {
   message: string;
   notificationId?: number;
 };

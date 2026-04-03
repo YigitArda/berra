@@ -2,8 +2,21 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiError, API_BASE, apiFetch } from '../api';
 
 describe('apiFetch', () => {
+  beforeEach(async () => {
+    vi.resetModules();
+    vi.stubEnv('API_BASE', 'http://localhost:4000/api');
+
+    const apiModule = await import('../api');
+    const urlModule = await import('../url');
+
+    apiFetch = apiModule.apiFetch;
+    apiBase = apiModule.API_BASE;
+    joinApiUrl = urlModule.joinApiUrl;
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
   });
 
   it('returns parsed JSON response for JSON payloads', async () => {
@@ -14,12 +27,15 @@ describe('apiFetch', () => {
       }),
     );
 
-    await expect(apiFetch<{ ok: boolean }>('/health')).resolves.toEqual({ ok: true });
+    await expect(apiFetch<{ ok: boolean }>('/health', { body: JSON.stringify({ ping: true }) })).resolves.toEqual({ ok: true });
 
-    expect(fetchSpy).toHaveBeenCalledWith(`${API_BASE}/health`, {
+    const [url, init] = fetchSpy.mock.calls[0] ?? [];
+    expect(url).toBe(`${API_BASE}/health`);
+    expect(init).toMatchObject({
       credentials: 'include',
       headers: new Headers(),
     });
+    expect(new Headers((init as RequestInit).headers).get('Content-Type')).toBe('application/json');
   });
 
   it('returns plain text for non-JSON successful responses', async () => {

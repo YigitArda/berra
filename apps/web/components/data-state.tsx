@@ -1,15 +1,20 @@
 import { ReactNode } from 'react';
-import { ErrorState } from './error-state';
-import { EmptyState } from './empty-state';
+import { EmptyState } from './feedback/EmptyState';
+import { ErrorState } from './feedback/ErrorState';
+import { Skeleton } from './feedback/Skeleton';
+import { resolveFeedbackErrorMessage } from './feedback/messages';
 
 type DataStateProps = {
   isLoading: boolean;
   isError: boolean;
   isEmpty: boolean;
-  errorMessage: string;
+  error: unknown;
   emptyTitle: string;
   emptyDescription?: string;
+  loadingTitle?: string;
+  skeletonLines?: number;
   onRetry?: () => void;
+  isRetrying?: boolean;
   children: ReactNode;
 };
 
@@ -17,18 +22,21 @@ export function DataState({
   isLoading,
   isError,
   isEmpty,
-  errorMessage,
+  error,
   emptyTitle,
   emptyDescription,
+  loadingTitle,
+  skeletonLines,
   onRetry,
+  isRetrying,
   children,
 }: DataStateProps) {
   if (isLoading) {
-    return <p className="text-sm text-slate-300">Yükleniyor...</p>;
+    return <Skeleton title={loadingTitle} lines={skeletonLines} />;
   }
 
   if (isError) {
-    return <ErrorState message={errorMessage} onRetry={onRetry} />;
+    return <ErrorState message={resolveFeedbackErrorMessage(error)} onRetry={onRetry} isRetrying={isRetrying} />;
   }
 
   if (isEmpty) {

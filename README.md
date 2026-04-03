@@ -4,6 +4,72 @@ Türkiye'nin araba topluluk platformu — Forum + Akış + Araçlar.
 
 > **Not:** Aktif legacy uygulama depo kökünde yer alır. `package.json`, `scripts/migrate.js` ve `schema.sql` dosyaları bu kök dizin için kanonik kaynaktır; yanlışlıkla alt klasörlerde çalışmayın.
 
+
+## Aktif kullanıcı arayüzü
+
+- **Production'da aktif arayüz:** Legacy (`public/` + `src/app.js`).
+- **Yeni arayüz:** Next.js (`apps/web`) — geçiş aşamasında, sayfa bazlı devreye alınır.
+
+### Geliştirme komutları (arayüze göre)
+
+**Legacy arayüzü geliştirme (aktif):**
+
+```bash
+npm run dev:legacy
+npm run start:legacy
+```
+
+**Next arayüzü geliştirme (migration):**
+
+```bash
+npm run dev:web
+npm run build:web
+```
+
+## Route matrisi (Next vs Legacy)
+
+| URL pattern | Legacy (`public/`) | Next (`apps/web`) | Durum |
+|---|---|---|---|
+| `/` | ✅ `index.html` / SPA ana ekran | ✅ `app/page.tsx` | İki arayüzde de var |
+| `/index.html` | ✅ statik giriş | ✅ `/`'e redirect | Next tarafında kalıcı yönlendirme var |
+| `/login` | ⚠️ modal/SPA akışı | ✅ `app/login/page.tsx` | Next karşılığı hazır |
+| `/register` | ⚠️ modal/SPA akışı | ✅ `app/register/page.tsx` | Next karşılığı hazır |
+| `/feed` | ⚠️ SPA içinde feed paneli | ✅ `app/feed/page.tsx` | Next karşılığı hazır |
+| `/search` | ⚠️ navbar içi arama | ✅ `app/search/page.tsx` | Next karşılığı hazır |
+| `/notifications` | ⚠️ SPA panel | ✅ `app/notifications/page.tsx` | Next karşılığı hazır |
+| `/dashboard` | ❌ ayrı route yok | ✅ `app/dashboard/page.tsx` | Sadece Next |
+| `/post/:id` | ✅ SPA post detail route | ✅ `/items/:id` (`app/items/[id]/page.tsx`) | Kalıcı yönlendirme planlandı |
+| `/thread/:slug` | ✅ SPA thread route | ❌ | Legacy-only |
+| `/profile/:username` | ✅ SPA profile route | ❌ | Legacy-only |
+| `/messages` , `/messages/:username` | ✅ SPA messages route | ❌ | Legacy-only |
+| `/rehber.html` | ✅ statik sayfa | ❌ | Legacy-only |
+| `/sanayi.html` | ✅ statik sayfa | ❌ | Legacy-only |
+| `/karsilastir.html` | ✅ statik sayfa | ❌ | Legacy-only |
+| `/ozellikler.html` | ✅ statik sayfa | ❌ | Legacy-only |
+
+## Legacy -> Next kalıcı redirect planı
+
+- Next uygulaması içinde aşağıdaki kalıcı (`301`) yönlendirmeler tanımlandı:
+  - `/index.html` -> `/`
+  - `/post/:id` -> `/items/:id`
+- Legacy Express için de kontrollü plan eklendi:
+  - `ACTIVE_UI=next` ve `NEXT_APP_URL` tanımlıysa aynı redirect'ler legacy katmanda da `301` döner.
+  - Varsayılan (`ACTIVE_UI=legacy`) durumda mevcut davranış korunur.
+
+## Auth/session cookie kuralları (Legacy + Next için sabit)
+
+Her iki backend'de de cookie politikası hizalandı:
+
+- Access cookie adı: `token`
+- Refresh cookie adı: `refresh_token`
+- `httpOnly: true`
+- `sameSite: lax`
+- `secure: NODE_ENV=production`
+- `path: /`
+- Access maxAge: **15 dakika**
+- Refresh maxAge: **14 gün**
+
+
 ## Yeni Mimari (Migration Başlangıcı)
 
 Bu repo yeni mimari geçişi için aşağıdaki başlangıç yapısını içerir:

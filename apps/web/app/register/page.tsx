@@ -4,7 +4,7 @@ import React from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -26,6 +26,7 @@ const registerFields = ['username', 'email', 'password'] as const;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [generalError, setGeneralError] = useState<string | null>(null);
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -40,11 +41,21 @@ export default function RegisterPage() {
       }),
     onSuccess: () => {
       setGeneralError(null);
-      router.push('/dashboard');
+      const nextCandidate = searchParams.get('next');
+      const nextPath = nextCandidate?.startsWith('/') ? nextCandidate : '/dashboard';
+      router.replace(nextPath);
+      router.refresh();
     },
     onError: (error) => {
       const message = applyBackendErrors(error, form.setError, registerFields);
-      setGeneralError(message);
+      const normalized = message.toLowerCase();
+
+      if (normalized.includes('network') || normalized.includes('fetch')) {
+        setGeneralError('Network error. Lütfen bağlantınızı kontrol edip tekrar deneyin.');
+        return;
+      }
+
+      setGeneralError('Auth failed. Girdiğiniz bilgileri kontrol edip tekrar deneyin.');
     },
   });
 
@@ -55,7 +66,16 @@ export default function RegisterPage() {
   return (
     <Card className="mx-auto max-w-md">
       <h1 className="mb-4 text-2xl font-bold">Kayıt Ol</h1>
-      <form onSubmit={form.handleSubmit((values) => registerMutation.mutate(values))} className="grid gap-4">
+      <form
+        onSubmit={form.handleSubmit((values) => registerMutation.mutate(values))}
+        className="grid gap-4"
+        aria-busy={registerMutation.isPending}
+      >
+        {generalError && (
+          <p role="alert" className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+            {generalError}
+          </p>
+        )}
         <FormField id="username" label="Kullanıcı adı" helperText="Profilinizde görünecek ad." errorText={usernameError}>
           <Input
             id="username"
@@ -88,7 +108,7 @@ export default function RegisterPage() {
           />
         </FormField>
 
-        <Button type="submit" disabled={registerMutation.isPending}>
+        <Button type="submit" disabled={registerMutation.isPending} aria-busy={registerMutation.isPending}>
           {registerMutation.isPending ? 'Kaydediliyor...' : 'Kayıt ol'}
         </Button>
       </form>
