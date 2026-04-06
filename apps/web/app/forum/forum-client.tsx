@@ -61,12 +61,12 @@ export function ForumClient() {
           {(forumQuery.data?.threads ?? []).map((thread) => (
             <Card key={thread.id}>
               <Link href={`/thread/${thread.slug}`} className="text-lg font-semibold hover:underline">{thread.title}</Link>
-              <p className="mt-1 text-sm text-slate-400">{thread.author} · {formatRelativeTime(thread.created_at)}</p>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{thread.author} · {formatRelativeTime(thread.created_at)}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {thread.is_pinned && <Badge variant="neutral">Sabit</Badge>}
                 {thread.is_locked && <Badge variant="outline">Kilitli</Badge>}
               </div>
-              <p className="mt-2 text-xs text-slate-400">💬 {thread.reply_count} · 👁 {thread.view_count}</p>
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">💬 {thread.reply_count} · 👁 {thread.view_count}</p>
             </Card>
           ))}
         </div>

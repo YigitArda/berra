@@ -89,7 +89,7 @@ export function NotificationsClient() {
     <div className="grid gap-4">
       <Card>
         <h1 className="text-2xl font-bold">Bildirim Merkezi v2</h1>
-        <p className="mt-2 text-slate-300">Okunmamış: {unread}</p>
+        <p className="mt-2 text-slate-600 dark:text-slate-300">Okunmamış: {unread}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {(['all', 'follow', 'reply', 'like', 'model'] as NotificationTab[]).map((tab) => (
             <Button
@@ -135,8 +135,8 @@ export function NotificationsClient() {
                     <Badge variant="outline" size="sm">{item.type}</Badge>
                     {!item.is_read && <Badge variant="success" size="sm">Yeni</Badge>}
                   </div>
-                  <p>{item.message}</p>
-                  <p className="mt-1 text-xs text-slate-400">{formatRelativeTime(item.created_at)}</p>
+                  <p className="text-slate-900 dark:text-slate-100">{item.message}</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{formatRelativeTime(item.created_at)}</p>
                 </div>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">

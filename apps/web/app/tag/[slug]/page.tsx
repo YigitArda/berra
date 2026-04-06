@@ -18,17 +18,17 @@ export default function TagLandingPage({ params }: { params: { slug: string } })
   return (
     <div className="grid gap-4">
       <Card>
-        <h1 className="text-2xl font-bold">#{params.slug}</h1>
-        <p className="mt-1 text-sm text-slate-300">Tag landing sayfası (SEO + keşif).</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">#{params.slug}</h1>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Tag landing sayfası (SEO + keşif).</p>
       </Card>
 
       <div className="grid gap-3">
         {(threadsQuery.data?.threads ?? []).map((thread) => (
           <Card key={thread.id}>
-            <Link href={`/thread/${thread.slug}`} className="text-lg font-semibold hover:underline">
+            <Link href={`/thread/${thread.slug}`} className="text-lg font-semibold text-slate-900 hover:underline dark:text-slate-100">
               {thread.title}
             </Link>
-            <p className="mt-2 text-xs text-slate-400">👁 {thread.view_count} · 💬 {thread.reply_count}</p>
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">👁 {thread.view_count} · 💬 {thread.reply_count}</p>
           </Card>
         ))}
       </div>

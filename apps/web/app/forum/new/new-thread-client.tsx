@@ -19,7 +19,7 @@ export function NewThreadClient() {
 
   return (
     <Card>
-      <h1 className="mb-4 text-2xl font-bold">Yeni Konu</h1>
+      <h1 className="mb-4 text-2xl font-bold text-slate-900 dark:text-slate-100">Yeni Konu</h1>
       <form
         className="grid gap-3"
         onSubmit={(e) => {
@@ -41,7 +41,7 @@ export function NewThreadClient() {
         <FormField id="category" label="Kategori">
           <select
             id="category"
-            className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
           >
@@ -53,7 +53,7 @@ export function NewThreadClient() {
           </select>
         </FormField>
         <FormField id="body" label="İçerik">
-          <textarea id="body" rows={8} value={body} onChange={(e) => setBody(e.target.value)} className="rounded-md border border-slate-700 bg-slate-900 p-3 w-full" />
+          <textarea id="body" rows={8} value={body} onChange={(e) => setBody(e.target.value)} className="w-full rounded-md border border-slate-300 bg-white p-3 text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500" />
         </FormField>
         <Button type="submit" disabled={!title.trim() || !body.trim() || createThread.isPending}>
           {createThread.isPending ? 'Gönderiliyor...' : 'Konu Aç'}

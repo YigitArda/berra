@@ -16,7 +16,7 @@ export function ErrorState({
   isRetrying = false,
 }: ErrorStateProps) {
   return (
-    <Card className="border-red-900/50 bg-red-950/30 text-red-100">
+    <Card className="border-red-200 bg-red-50 text-red-900 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-100">
       <p className="text-sm">{message}</p>
       {onRetry && (
         <Button className="mt-3" onClick={onRetry} disabled={isRetrying}>

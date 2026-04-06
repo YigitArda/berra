@@ -91,7 +91,7 @@ function CarForm({
 }) {
   return (
     <Card>
-      <h2 className="mb-3 text-lg font-semibold">{label}</h2>
+      <h2 className="mb-3 text-lg font-semibold text-slate-900 dark:text-slate-100">{label}</h2>
       <div className="grid gap-2">
         <FormField id={`${label}-brand`} label="Marka">
           <Input id={`${label}-brand`} value={car.brand} onChange={(e) => setCar({ ...car, brand: e.target.value })} />
@@ -113,7 +113,7 @@ function CarForm({
             id={`${label}-fuel`}
             value={car.fuel}
             onChange={(e) => setCar({ ...car, fuel: e.target.value as FuelType })}
-            className="rounded-md border border-slate-700 bg-slate-900 px-3 py-2"
+            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
           >
             <option value="Benzin">Benzin</option>
             <option value="Dizel">Dizel</option>
@@ -126,7 +126,7 @@ function CarForm({
             id={`${label}-transmission`}
             value={car.transmission}
             onChange={(e) => setCar({ ...car, transmission: e.target.value as Transmission })}
-            className="rounded-md border border-slate-700 bg-slate-900 px-3 py-2"
+            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
           >
             <option value="Otomatik">Otomatik</option>
             <option value="Manuel">Manuel</option>
@@ -155,8 +155,8 @@ export default function ComparePage() {
   return (
     <div className="grid gap-4">
       <Card>
-        <h1 className="text-2xl font-bold">⚖️ Araç Karşılaştırma</h1>
-        <p className="mt-1 text-sm text-slate-300">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">⚖️ Araç Karşılaştırma</h1>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
           Yaş (3), KM (3), Fiyat/Değer (2), Marka Güvenilirliği (2), Yakıt (1), Şanzıman (0.6)
           üzerinden toplam skor hesaplanır.
         </p>
@@ -183,7 +183,7 @@ export default function ComparePage() {
               <h3 className="text-lg font-semibold">{left.brand} {left.model}</h3>
               <p className="mt-2 text-3xl font-bold">{leftResult.total}</p>
               <p className="mt-1">{leftResult.verdict}</p>
-              <ul className="mt-3 list-disc pl-5 text-sm text-slate-300">
+              <ul className="mt-3 list-disc pl-5 text-sm text-slate-600 dark:text-slate-300">
                 <li>Yaş puanı: {leftResult.details.ageScore}</li>
                 <li>KM puanı: {leftResult.details.kmScore}</li>
                 <li>Fiyat/değer: {leftResult.details.valueScore}</li>
@@ -196,7 +196,7 @@ export default function ComparePage() {
               <h3 className="text-lg font-semibold">{right.brand} {right.model}</h3>
               <p className="mt-2 text-3xl font-bold">{rightResult.total}</p>
               <p className="mt-1">{rightResult.verdict}</p>
-              <ul className="mt-3 list-disc pl-5 text-sm text-slate-300">
+              <ul className="mt-3 list-disc pl-5 text-sm text-slate-600 dark:text-slate-300">
                 <li>Yaş puanı: {rightResult.details.ageScore}</li>
                 <li>KM puanı: {rightResult.details.kmScore}</li>
                 <li>Fiyat/değer: {rightResult.details.valueScore}</li>

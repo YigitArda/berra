@@ -28,7 +28,7 @@ export default function EditProfilePage() {
 
   return (
     <Card>
-      <h1 className="mb-4 text-2xl font-bold">Profili Düzenle</h1>
+      <h1 className="mb-4 text-2xl font-bold text-slate-900 dark:text-slate-100">Profili Düzenle</h1>
       <form
         className="grid gap-3"
         onSubmit={(e) => {
@@ -44,9 +44,9 @@ export default function EditProfilePage() {
             maxLength={300}
             value={bio}
             onChange={(e) => { setBio(e.target.value); setSaved(false); }}
-            className="rounded-md border border-slate-700 bg-slate-900 p-3 w-full"
+            className="w-full rounded-md border border-slate-300 bg-white p-3 text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
           />
-          <p className="text-right text-xs text-slate-400">{bio.length}/300</p>
+          <p className="text-right text-xs text-slate-500 dark:text-slate-400">{bio.length}/300</p>
         </FormField>
         <Button type="submit" disabled={update.isPending}>{update.isPending ? 'Kaydediliyor...' : 'Kaydet'}</Button>
       </form>

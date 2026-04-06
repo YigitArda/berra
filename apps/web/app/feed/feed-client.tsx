@@ -90,7 +90,7 @@ function FeedPostCard({ post }: FeedPostCardProps) {
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               rows={2}
-              className="rounded border border-slate-700 bg-slate-900 p-2"
+              className="rounded border border-slate-300 bg-white p-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
               placeholder="Yorum yaz..."
             />
             <Button type="submit" size="sm" disabled={!commentText.trim() || createCommentMutation.isPending}>
@@ -170,7 +170,7 @@ export function FeedClient() {
         }}
         className="mb-5 grid gap-2"
       >
-        <label htmlFor="feed-body" className="text-sm text-slate-300">
+        <label htmlFor="feed-body" className="text-sm text-slate-600 dark:text-slate-300">
           Yeni gönderi
         </label>
         <textarea
@@ -181,7 +181,7 @@ export function FeedClient() {
           maxLength={500}
           rows={3}
           disabled={createMutation.isPending}
-          className="rounded-md border border-slate-700 bg-slate-900 p-3 disabled:opacity-60"
+          className="rounded-md border border-slate-300 bg-white p-3 text-slate-900 placeholder:text-slate-400 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
         />
         <p className="text-right text-xs text-slate-400">{body.length}/500</p>
         <Button type="submit" disabled={createMutation.isPending || body.trim().length === 0}>

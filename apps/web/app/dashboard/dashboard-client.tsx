@@ -24,7 +24,7 @@ export function DashboardClient() {
   return (
     <div className="grid gap-4">
       <Card>
-        <h1 className="text-2xl font-bold">Hoş geldin, {user?.username}</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Hoş geldin, {user?.username}</h1>
         <div className="mt-2 flex items-center gap-2">
           <Badge variant="outline">Rol: {user?.role ?? 'user'}</Badge>
           <Badge variant="neutral">Okunmamış bildirim: {unread || notifications.unreadCount}</Badge>
@@ -38,7 +38,7 @@ export function DashboardClient() {
             {(feed.data?.posts ?? []).slice(0, 5).map((post) => (
               <div key={post.id} className="rounded border border-slate-700 p-2">
                 <p className="text-sm font-semibold">{post.username}</p>
-                <p className="text-sm text-slate-300">{post.body}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">{post.body}</p>
               </div>
             ))}
           </div>

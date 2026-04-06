@@ -4,8 +4,8 @@ import { cn } from '../../lib/cn';
 
 export const buttonVariants = {
   primary: 'bg-primary text-white hover:opacity-90',
-  secondary: 'bg-slate-700 text-slate-100 hover:bg-slate-600',
-  ghost: 'bg-transparent text-slate-100 hover:bg-slate-800',
+  secondary: 'bg-slate-200 text-slate-900 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600',
+  ghost: 'bg-transparent text-slate-700 hover:bg-slate-200 dark:text-slate-100 dark:hover:bg-slate-800',
 } as const;
 
 export const buttonSizes = {

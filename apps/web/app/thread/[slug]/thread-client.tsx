@@ -133,7 +133,7 @@ export function ThreadClient({ slug }: { slug: string }) {
                 {isBookmarked ? '🔖 Kaydedildi' : '🔖 Kaydet'}
               </Button>
             </div>
-            <p className="mt-2 text-sm text-slate-300">
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
               👁 {threadQuery.data.thread.view_count} · 💬 {threadQuery.data.thread.reply_count} · 👥 {threadQuery.data.thread.followers ?? 0}
             </p>
             {headingBadges.length > 0 && (
@@ -157,11 +157,11 @@ export function ThreadClient({ slug }: { slug: string }) {
           {posts.map((post) => (
             <Card key={post.id}>
               <div className="mb-2 flex items-center justify-between text-sm text-slate-400">
-                <span className="font-semibold text-slate-200">{post.username}</span>
-                <span>{new Date(post.created_at).toLocaleString('tr-TR')}</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">{post.username}</span>
+                <span className="text-slate-500 dark:text-slate-400">{new Date(post.created_at).toLocaleString('tr-TR')}</span>
               </div>
-              <p className="whitespace-pre-wrap text-slate-100">{post.body}</p>
-              <small className="mt-2 block text-slate-400">♥ {post.like_count}</small>
+              <p className="whitespace-pre-wrap text-slate-800 dark:text-slate-100">{post.body}</p>
+              <small className="mt-2 block text-slate-500 dark:text-slate-400">♥ {post.like_count}</small>
               <button
                 type="button"
                 className="mt-2 text-xs text-slate-300 underline"
@@ -191,8 +191,8 @@ export function ThreadClient({ slug }: { slug: string }) {
             >
               {createReplyMutation.isPending ? 'Gönderiliyor...' : 'Yanıtla'}
             </Button>
-            {!isAuthenticated && <span className="text-sm text-slate-400">Yanıt için oturum gerekli.</span>}
-            {threadQuery.data?.thread.is_locked && <span className="text-sm text-amber-300">Konu kilitli.</span>}
+            {!isAuthenticated && <span className="text-sm text-slate-500 dark:text-slate-400">Yanıt için oturum gerekli.</span>}
+            {threadQuery.data?.thread.is_locked && <span className="text-sm text-amber-600 dark:text-amber-300">Konu kilitli.</span>}
           </div>
         </Card>
       </div>

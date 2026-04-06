@@ -3,9 +3,9 @@ import { ReactNode } from 'react';
 import { cn } from '../../lib/cn';
 
 export const cardVariants = {
-  default: 'border-slate-700/80 bg-surface shadow-sm shadow-black/20',
-  outline: 'border-slate-600/80 bg-transparent shadow-none',
-  elevated: 'border-slate-700/80 bg-slate-900 shadow-md shadow-black/25',
+  default: 'border-slate-200 bg-white shadow-sm dark:border-slate-700/80 dark:bg-surface dark:shadow-black/20',
+  outline: 'border-slate-300 bg-transparent shadow-none dark:border-slate-600/80',
+  elevated: 'border-slate-200 bg-white shadow-md dark:border-slate-700/80 dark:bg-slate-900 dark:shadow-black/25',
 } as const;
 
 export const cardSizes = {

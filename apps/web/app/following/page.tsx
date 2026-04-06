@@ -31,13 +31,13 @@ export default function FollowingPage() {
   return (
     <div className="grid gap-4">
       <Card>
-        <h1 className="text-2xl font-bold">Takip akışı</h1>
-        <p className="mt-1 text-sm text-slate-300">Takip ettiklerinden gelen içerikler ve tartışmalar.</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Takip akışı</h1>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Takip ettiklerinden gelen içerikler ve tartışmalar.</p>
         <div className="mt-3 flex gap-2">
-          <button type="button" onClick={() => setActiveTab('feed')} className={`rounded px-3 py-1.5 text-sm ${activeTab === 'feed' ? 'bg-primary text-white' : 'bg-slate-800'}`}>
+          <button type="button" onClick={() => setActiveTab('feed')} className={`rounded px-3 py-1.5 text-sm ${activeTab === 'feed' ? 'bg-primary text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300'}`}>
             Gönderiler
           </button>
-          <button type="button" onClick={() => setActiveTab('threads')} className={`rounded px-3 py-1.5 text-sm ${activeTab === 'threads' ? 'bg-primary text-white' : 'bg-slate-800'}`}>
+          <button type="button" onClick={() => setActiveTab('threads')} className={`rounded px-3 py-1.5 text-sm ${activeTab === 'threads' ? 'bg-primary text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300'}`}>
             Konular
           </button>
         </div>
@@ -47,9 +47,9 @@ export default function FollowingPage() {
         <div className="grid gap-3">
           {(feedQuery.data?.posts ?? []).map((post) => (
             <Card key={post.id}>
-              <p className="text-sm font-semibold">{post.username}</p>
-              <p className="mt-1 text-sm text-slate-300">{post.body}</p>
-              <p className="mt-2 text-xs text-slate-400">♥ {post.like_count} · 💬 {post.comment_count}</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{post.username}</p>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{post.body}</p>
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">♥ {post.like_count} · 💬 {post.comment_count}</p>
             </Card>
           ))}
         </div>
@@ -59,7 +59,7 @@ export default function FollowingPage() {
         <div className="grid gap-3">
           {(threadsQuery.data?.threads ?? []).map((thread) => (
             <Card key={thread.id}>
-              <Link href={`/thread/${thread.slug}`} className="text-base font-semibold hover:underline">
+              <Link href={`/thread/${thread.slug}`} className="text-base font-semibold text-slate-900 hover:underline dark:text-slate-100">
                 {thread.title}
               </Link>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -67,7 +67,7 @@ export default function FollowingPage() {
                   <Badge key={tag} variant="outline">#{tag}</Badge>
                 ))}
               </div>
-              <p className="mt-2 text-xs text-slate-400">💬 {thread.reply_count}</p>
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">💬 {thread.reply_count}</p>
             </Card>
           ))}
         </div>

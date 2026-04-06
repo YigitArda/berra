@@ -89,14 +89,14 @@ export function SearchClient() {
               <Card key={item.id}>
                 {type === 'threads' ? (
                   <>
-                    <p className="font-semibold">{item.title || item.body}</p>
-                    <p className="text-sm text-slate-400">{item.category_name || 'Kategori yok'} · 💬 {item.reply_count ?? 0}</p>
-                    {item.username && <p className="text-sm text-slate-300">Yazar: {item.username}</p>}
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">{item.title || item.body}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{item.category_name || 'Kategori yok'} · 💬 {item.reply_count ?? 0}</p>
+                    {item.username && <p className="text-sm text-slate-600 dark:text-slate-300">Yazar: {item.username}</p>}
                   </>
                 ) : (
                     <>
-                      <p className="font-semibold">{item.username || item.title || `#${item.id}`}</p>
-                      <p className="text-sm text-slate-300">{item.bio || item.body || 'Bio bulunmuyor.'}</p>
+                      <p className="font-semibold text-slate-900 dark:text-slate-100">{item.username || item.title || `#${item.id}`}</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-300">{item.bio || item.body || 'Bio bulunmuyor.'}</p>
                     </>
                 )}
               </Card>

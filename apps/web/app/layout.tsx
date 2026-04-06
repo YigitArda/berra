@@ -4,8 +4,8 @@ import { Providers } from '../components/layout/providers';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'berra web',
-  description: 'Yeni Next.js tabanlı arayüz migration iskeleti',
+  title: 'arabalariseviyoruz.com - Türkiye\'nin Araba Topluluğu',
+  description: 'Türkiye\'nin araba topluluğu: forum, feed, model merkezi, sanayi rehberi ve araç karşılaştırma.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

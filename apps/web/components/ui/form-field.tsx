@@ -61,7 +61,7 @@ export function FormField({ id, label, helperText, errorText, successText, child
 
   return (
     <div className={cn('grid gap-1.5', className)}>
-      <label htmlFor={id} className="text-sm font-medium text-slate-100">
+      <label htmlFor={id} className="text-sm font-medium text-slate-900 dark:text-slate-100">
         {label}
       </label>
       {enhancedChild}

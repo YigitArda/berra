@@ -15,8 +15,8 @@ export function ProfileClient({ username }: { username: string }) {
 
   const isMe = useMemo(() => session?.user?.username === username, [session?.user?.username, username]);
 
-  if (profileQuery.isError) return <Card>Profil yüklenemedi. Lütfen sayfayı yenileyin.</Card>;
-  if (!profileQuery.data) return <Card>Profil yükleniyor...</Card>;
+  if (profileQuery.isError) return <Card><p className="text-slate-900 dark:text-slate-100">Profil yüklenemedi. Lütfen sayfayı yenileyin.</p></Card>;
+  if (!profileQuery.data) return <Card><p className="text-slate-900 dark:text-slate-100">Profil yükleniyor...</p></Card>;
 
   const { user, threads, posts } = profileQuery.data;
   const initials = user.username.slice(0, 2).toUpperCase();
@@ -34,7 +34,7 @@ export function ProfileClient({ username }: { username: string }) {
           </div>
           {isMe && <Link href="/profile/me/edit"><Button>Düzenle</Button></Link>}
         </div>
-        <p className="mt-3 text-sm text-slate-300">{user.bio || 'Henüz bio girilmemiş.'}</p>
+        <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">{user.bio || 'Henüz bio girilmemiş.'}</p>
       </Card>
 
       <Card>
@@ -46,7 +46,7 @@ export function ProfileClient({ username }: { username: string }) {
         {tab === 'posts' && (
           <div className="grid gap-2">
             {posts.length === 0 ? (
-              <p className="text-sm text-slate-400">Henüz gönderi yok.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Henüz gönderi yok.</p>
             ) : (
               posts.map((post) => (
                 <div key={post.id} className="rounded border border-slate-700 p-3 text-sm">
@@ -64,7 +64,7 @@ export function ProfileClient({ username }: { username: string }) {
         {tab === 'threads' && (
           <div className="grid gap-2">
             {threads.length === 0 ? (
-              <p className="text-sm text-slate-400">Henüz konu açılmamış.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Henüz konu açılmamış.</p>
             ) : (
               threads.map((thread) => (
                 <Link key={thread.id} href={`/thread/${thread.slug}`} className="rounded border border-slate-700 p-3 text-sm hover:border-slate-500">

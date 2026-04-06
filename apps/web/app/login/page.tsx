@@ -66,7 +66,7 @@ export default function LoginPage() {
         aria-busy={loginMutation.isPending}
       >
         {generalError && (
-          <p role="alert" className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+          <p role="alert" className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
             {generalError}
           </p>
         )}
@@ -96,7 +96,7 @@ export default function LoginPage() {
           {loginMutation.isPending ? 'Gönderiliyor...' : 'Giriş yap'}
         </Button>
       </form>
-      {loginMutation.isSuccess && <p className="mt-2 text-sm text-emerald-400">Giriş başarılı, yönlendiriliyorsunuz...</p>}
+      {loginMutation.isSuccess && <p className="mt-2 text-sm text-emerald-600 dark:text-emerald-400">Giriş başarılı, yönlendiriliyorsunuz...</p>}
     </Card>
   );
 }

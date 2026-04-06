@@ -72,7 +72,7 @@ export default function RegisterPage() {
         aria-busy={registerMutation.isPending}
       >
         {generalError && (
-          <p role="alert" className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+          <p role="alert" className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
             {generalError}
           </p>
         )}
@@ -112,8 +112,7 @@ export default function RegisterPage() {
           {registerMutation.isPending ? 'Kaydediliyor...' : 'Kayıt ol'}
         </Button>
       </form>
-      {generalError && <p className="mt-2 text-sm text-red-400">{generalError}</p>}
-      {registerMutation.isSuccess && <p className="mt-2 text-sm text-emerald-400">Kayıt başarılı.</p>}
+      {registerMutation.isSuccess && <p className="mt-2 text-sm text-emerald-600 dark:text-emerald-400">Kayıt başarılı.</p>}
     </Card>
   );
 }

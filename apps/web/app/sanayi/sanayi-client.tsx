@@ -25,12 +25,12 @@ export function SanayiClient() {
     <div className="grid gap-4">
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold">Sanayi / İşletme Rehberi</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Sanayi / İşletme Rehberi</h1>
           <Button onClick={() => setIsModalOpen(true)} disabled={!isAuthenticated}>İşletme Ekle</Button>
         </div>
         {!isAuthenticated && <p className="mt-2 text-sm text-slate-400">İşletme eklemek için giriş yapmalısın.</p>}
         <div className="mt-3 flex flex-wrap gap-2">
-          <select className="rounded border border-slate-700 bg-slate-900 px-3 py-2" value={category} onChange={(e) => setCategory(e.target.value)}>
+          <select className="rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" value={category} onChange={(e) => setCategory(e.target.value)}>
             <option value="">Tüm kategoriler</option>
             {categories.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
@@ -52,10 +52,10 @@ export function SanayiClient() {
         <div className="grid gap-3 md:grid-cols-2">
           {(businessesQuery.data?.businesses ?? []).map((item) => (
             <Card key={item.id}>
-              <h2 className="text-lg font-semibold">{item.name}</h2>
-              <p className="text-sm text-slate-400">{item.category} · {item.city}</p>
-              <p className="mt-2 text-sm">⭐ {item.avg_rating} · 📞 {item.phone || '-'}</p>
-              <p className="text-xs text-slate-400">⏱ {item.open_time || '--'} - {item.close_time || '--'}</p>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{item.name}</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">{item.category} · {item.city}</p>
+              <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">⭐ {item.avg_rating} · 📞 {item.phone || '-'}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">⏱ {item.open_time || '--'} - {item.close_time || '--'}</p>
             </Card>
           ))}
         </div>
@@ -63,7 +63,7 @@ export function SanayiClient() {
 
       {isModalOpen && (
         <Card>
-          <h2 className="text-lg font-semibold">İşletme Ekle (onay bekler)</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">İşletme Ekle (onay bekler)</h2>
           <form
             className="mt-3 grid gap-3"
             onSubmit={(e) => {
@@ -78,7 +78,7 @@ export function SanayiClient() {
           >
             <FormField id="b-name" label="İşletme adı"><Input id="b-name" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} /></FormField>
             <FormField id="b-category" label="Kategori">
-              <select id="b-category" className="rounded border border-slate-700 bg-slate-900 px-3 py-2" value={form.category} onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}>
+              <select id="b-category" className="rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" value={form.category} onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}>
                 {categories.map((item) => <option key={item} value={item}>{item}</option>)}
               </select>
             </FormField>

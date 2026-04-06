@@ -28,17 +28,17 @@ export default function ModelsPage() {
   return (
     <div className="grid gap-4">
       <Card>
-        <h1 className="text-2xl font-bold">Marka / Model merkezi</h1>
-        <p className="mt-2 text-sm text-slate-300">Model bazlı içerik, takip ve kronik sorun takibi.</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Marka / Model merkezi</h1>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Model bazlı içerik, takip ve kronik sorun takibi.</p>
       </Card>
       <div className="grid gap-3 sm:grid-cols-2">
         {(modelsQuery.data?.models ?? []).map((item) => (
           <Card key={item.id}>
-            <Link className="text-lg font-semibold hover:underline" href={`/models/${item.slug}`}>
+            <Link className="text-lg font-semibold text-slate-900 hover:underline dark:text-slate-100" href={`/models/${item.slug}`}>
               {item.brand} {item.model}
             </Link>
-            {item.generation && <p className="mt-1 text-sm text-slate-400">Jenerasyon: {item.generation}</p>}
-            {item.description && <p className="mt-2 text-sm text-slate-300">{item.description}</p>}
+            {item.generation && <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Jenerasyon: {item.generation}</p>}
+            {item.description && <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{item.description}</p>
           </Card>
         ))}
       </div>
