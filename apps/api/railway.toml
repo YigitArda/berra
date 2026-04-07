@@ -1,7 +1,0 @@
-[build]
-builder = "dockerfile"
-dockerfilePath = "Dockerfile.api"
-
-[deploy]
-startCommand = "node apps/api/dist/main.js"
-healthcheckPath = "/health"
