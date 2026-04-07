@@ -5,4 +5,3 @@ dockerfilePath = "Dockerfile.api"
 [deploy]
 startCommand = "node apps/api/dist/main.js"
 healthcheckPath = "/health"
-healthcheckTimeout = 100
