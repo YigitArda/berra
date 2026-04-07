@@ -1,0 +1,48 @@
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy all package files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY apps/api/package.json ./apps/api/
+COPY apps/shared/package.json ./apps/shared/
+COPY packages ./packages/
+
+# Copy prisma schema
+COPY apps/api/prisma ./apps/api/prisma/
+
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source
+COPY apps/api ./apps/api
+COPY apps/shared ./apps/shared
+
+# Build
+RUN pnpm --filter @berra/api run build
+
+# Production
+FROM node:20-alpine
+WORKDIR /app
+
+RUN npm install -g pnpm
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY apps/api/package.json ./apps/api/
+COPY apps/shared/package.json ./apps/shared/
+COPY packages ./packages/
+COPY apps/api/prisma ./apps/api/prisma/
+
+RUN pnpm install --prod --frozen-lockfile
+
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/apps/shared/dist ./apps/shared/dist
+
+RUN cd apps/api && pnpm prisma generate
+
+WORKDIR /app/apps/api
+EXPOSE 3000
+
+CMD ["node", "dist/main.js"]
