@@ -1,21 +1,6 @@
 [build]
   command = "npm install --ignore-scripts && cd apps/web && pnpm install && pnpm run build"
-  publish = "apps/web/.next"
+  publish = "apps/web/dist"
 
 [build.environment]
   NODE_VERSION = "20"
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-
-[functions.___netlify-handler]
-  included_files = [
-    "apps/web/node_modules/styled-jsx/**/*",
-    "node_modules/styled-jsx/**/*"
-  ]
-
-[functions.___netlify-odb-handler]
-  included_files = [
-    "apps/web/node_modules/styled-jsx/**/*",
-    "node_modules/styled-jsx/**/*"
-  ]
