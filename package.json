@@ -13,6 +13,8 @@
     "dev:web": "npm --prefix apps/web run dev",
     "build:api": "npm --prefix apps/api run build",
     "build:web": "npm --prefix apps/web run build",
+    "render:build": "pnpm install --frozen-lockfile && pnpm --filter @berra/api prisma:generate && pnpm --filter @berra/api build",
+    "render:start": "pnpm --filter @berra/api start",
     "worker:api": "npm --prefix apps/api run worker",
     "prepare": "husky install",
     "build": "turbo run build",

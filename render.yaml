@@ -1,0 +1,67 @@
+# Render Blueprint Configuration for NestJS API
+# This file enables "Blueprint" deployment on Render
+# See: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: berra-api
+    runtime: node
+    region: frankfurt # Change to your preferred region: oregon, ohio, frankfurt, singapore, etc.
+    plan: free # Change to: starter, standard, etc. based on your needs
+    rootDir: apps/api
+    buildCommand: |
+      # Install pnpm globally
+      npm install -g pnpm
+      # Install root dependencies first (for monorepo)
+      pnpm install --frozen-lockfile
+      # Generate Prisma client
+      pnpm prisma generate
+      # Build the API
+      pnpm build
+    startCommand: pnpm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: DATABASE_URL
+        sync: false # Set this manually in Render dashboard
+      - key: JWT_SECRET
+        sync: false # Set this manually in Render dashboard
+      - key: REDIS_URL
+        sync: false # Optional: Set if using Redis for BullMQ
+      - key: WEB_URL
+        sync: false # Optional: Frontend URL for CORS
+    healthCheckPath: /health
+    autoDeploy: true
+
+# Optional: Add a background worker service if needed
+#  - type: worker
+#    name: berra-worker
+#    runtime: node
+#    region: frankfurt
+#    plan: free
+#    rootDir: apps/api
+#    buildCommand: |
+#      npm install -g pnpm
+#      pnpm install --frozen-lockfile
+#      pnpm prisma generate
+#      pnpm build
+#    startCommand: pnpm worker
+#    envVars:
+#      - key: NODE_ENV
+#        value: production
+#      - key: DATABASE_URL
+#        sync: false
+#      - key: JWT_SECRET
+#        sync: false
+#      - key: REDIS_URL
+#        sync: false
+#    autoDeploy: true
+
+# Optional: PostgreSQL database
+# databases:
+#   - name: berra-db
+#     region: frankfurt
+#     plan: free
+#     postgresMajorVersion: 15
