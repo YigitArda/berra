@@ -1,4 +1,4 @@
-import { ReactElement, ReactNode } from 'react';
+import { cloneElement, ReactElement, ReactNode } from 'react';
 import { cn } from '../../lib/cn';
 
 const formMessageVariants = {
@@ -48,7 +48,7 @@ export function FormField({ id, label, helperText, errorText, successText, child
       <label htmlFor={id} className="text-sm font-medium text-slate-900 dark:text-slate-100">
         {label}
       </label>
-      {React.cloneElement(children, { ...children.props, ...enhancedProps })}
+      {cloneElement(children, { ...children.props, ...enhancedProps })}
       {helperText && !errorText && <FormMessage id={`${id}-hint`}>{helperText}</FormMessage>}
       {errorText && (
         <FormMessage id={`${id}-error`} variant="error">
