@@ -1,6 +1,8 @@
 import { API_BASE, getApiBaseFallbackMessage, hasApiBase } from './env';
 import { joinApiUrl } from './url';
 
+export { API_BASE };
+
 export class ApiError extends Error {
   status: number;
   payload: unknown;

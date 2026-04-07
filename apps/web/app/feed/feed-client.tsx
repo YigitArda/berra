@@ -5,7 +5,6 @@ import { DataState } from '../../components/data-state';
 import { InlineAlert } from '../../components/feedback/InlineAlert';
 import { Skeleton } from '../../components/feedback/Skeleton';
 import { resolveFeedbackErrorMessage } from '../../components/feedback/messages';
-import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { useRequireAuth } from '../../hooks/use-require-auth';
