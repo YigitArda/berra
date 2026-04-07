@@ -1,6 +1,7 @@
 'use client';
 
 
+import { use } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { Card } from '../../../components/ui/card';
@@ -10,8 +11,8 @@ type ThreadsResponse = {
   threads: Array<{ id: number; slug: string; title: string; reply_count: number; view_count: number }>;
 };
 
-export default function TagLandingPage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+export default function TagLandingPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
   const threadsQuery = useQuery({
     queryKey: ['tag', slug],
     queryFn: () => apiFetch<ThreadsResponse>(`/forum/threads?tag=${slug}&page=1`),
