@@ -39,17 +39,13 @@ export function FormField({ id, label, helperText, errorText, successText, child
     .filter(Boolean)
     .join(' ');
 
-  const child = Children.only(children);
+  const child = Children.only(children) as ReactElement<{id?: string; 'aria-describedby'?: string; 'aria-invalid'?: boolean}>;
 
   if (!isValidElement(child)) {
     throw new Error('FormField requires a valid React element as its child.');
   }
 
-  const childProps = child.props as {
-    id?: string;
-    'aria-describedby'?: string;
-    'aria-invalid'?: boolean;
-  };
+  const childProps = child.props;
 
   const ariaDescribedBy = [childProps['aria-describedby'], messageIds].filter(Boolean).join(' ') || undefined;
 
