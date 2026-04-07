@@ -1,4 +1,4 @@
-import { cloneElement, ReactElement, ReactNode } from 'react';
+import { ReactElement, ReactNode } from 'react';
 import { cn } from '../../lib/cn';
 
 const formMessageVariants = {
@@ -23,32 +23,36 @@ export function FormMessage({ id, variant = 'helper', children }: FormMessagePro
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type FormFieldProps = {
   id: string;
   label: string;
   helperText?: string;
   errorText?: string;
   successText?: string;
-  children: ReactElement;
+  children: ReactElement<any>;
   className?: string;
 };
 
 export function FormField({ id, label, helperText, errorText, successText, children, className }: FormFieldProps) {
   const messageId = errorText ? `${id}-error` : helperText ? `${id}-hint` : successText ? `${id}-success` : undefined;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const enhancedProps: any = {
-    id,
-    'aria-describedby': messageId,
-    'aria-invalid': errorText ? true : undefined,
-  };
-
   return (
     <div className={cn('grid gap-1.5', className)}>
       <label htmlFor={id} className="text-sm font-medium text-slate-900 dark:text-slate-100">
         {label}
       </label>
-      {cloneElement(children, { ...children.props, ...enhancedProps })}
+      <div>
+        {/* React 19'da cloneElement yerine props'ları direkt geçiyoruz */}
+        {children && (
+          <children.type
+            {...children.props}
+            id={id}
+            aria-describedby={messageId}
+            aria-invalid={errorText ? true : undefined}
+          />
+        )}
+      </div>
       {helperText && !errorText && <FormMessage id={`${id}-hint`}>{helperText}</FormMessage>}
       {errorText && (
         <FormMessage id={`${id}-error`} variant="error">
