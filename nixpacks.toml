@@ -1,10 +1,2 @@
-# Railway Nixpacks configuration for monorepo
-# This file tells Railway how to build the Next.js app
-
-[phases.build]
-cmds = [
-    "cd apps/web && npm install && npm run build"
-]
-
-[start]
-cmd = "cd apps/web && npm start"
+# Railway Nixpacks configuration for the legacy root service (src/app.js)
+# API ve Web servisleri icin apps/api/railway.toml ve apps/web/railway.toml kullanin.
