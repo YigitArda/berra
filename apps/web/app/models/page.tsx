@@ -38,7 +38,7 @@ export default function ModelsPage() {
               {item.brand} {item.model}
             </Link>
             {item.generation && <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Jenerasyon: {item.generation}</p>}
-            {item.description && <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{item.description}</p>
+            {item.description && <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{item.description}</p>}
           </Card>
         ))}
       </div>
