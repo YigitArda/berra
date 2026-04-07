@@ -2,6 +2,10 @@ import Link from 'next/link';
 import { requireServerSession } from '../../../lib/auth/server';
 import { Card } from '../../../components/ui/card';
 
+export function generateStaticParams() {
+  return [];
+}
+
 export default async function MessageThreadPage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
   await requireServerSession(`/messages/${username}`);
