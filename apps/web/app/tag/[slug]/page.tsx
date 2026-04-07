@@ -1,5 +1,6 @@
 'use client';
 
+import { use } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { Card } from '../../../components/ui/card';
@@ -9,16 +10,17 @@ type ThreadsResponse = {
   threads: Array<{ id: number; slug: string; title: string; reply_count: number; view_count: number }>;
 };
 
-export default function TagLandingPage({ params }: { params: { slug: string } }) {
+export default function TagLandingPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
   const threadsQuery = useQuery({
-    queryKey: ['tag', params.slug],
-    queryFn: () => apiFetch<ThreadsResponse>(`/forum/threads?tag=${params.slug}&page=1`),
+    queryKey: ['tag', slug],
+    queryFn: () => apiFetch<ThreadsResponse>(`/forum/threads?tag=${slug}&page=1`),
   });
 
   return (
     <div className="grid gap-4">
       <Card>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">#{params.slug}</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">#{slug}</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Tag landing sayfası (SEO + keşif).</p>
       </Card>
 

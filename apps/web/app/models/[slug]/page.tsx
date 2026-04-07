@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Badge } from '../../../components/ui/badge';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
+import { use } from 'react';
 import { useSession } from '../../../hooks/use-session';
 import { apiFetch } from '../../../lib/api';
 
@@ -19,14 +20,15 @@ type ModelDetailResponse = {
   chronic_issues: Array<{ id: number; title: string; body: string | null; severity: number }>;
 };
 
-export default function ModelDetailPage({ params }: { params: { slug: string } }) {
+export default function ModelDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { isAuthenticated } = useSession();
   const [isFollowing, setIsFollowing] = useState(false);
+  const { slug } = use(params);
 
   const modelQuery = useQuery({
-    queryKey: ['models', params.slug],
+    queryKey: ['models', slug],
     // CUTOVER_PROXY: `/discovery/*` requests go through Nest API and are proxied during migration.
-    queryFn: () => apiFetch<ModelDetailResponse>(`/discovery/models/${params.slug}`),
+    queryFn: () => apiFetch<ModelDetailResponse>(`/discovery/models/${slug}`),
   });
 
   const followMutation = useMutation({
