@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactElement, ReactNode } from 'react';
 import { cn } from '../../lib/cn';
 
 const formMessageVariants = {
@@ -29,7 +29,7 @@ type FormFieldProps = {
   helperText?: string;
   errorText?: string;
   successText?: string;
-  children: ReactNode;
+  children: ReactElement;
   className?: string;
 };
 
@@ -41,16 +41,15 @@ export function FormField({ id, label, helperText, errorText, successText, child
       <label htmlFor={id} className="text-sm font-medium text-slate-900 dark:text-slate-100">
         {label}
       </label>
-      <div>
-        {React.isValidElement(children) 
-          ? React.cloneElement(children as React.ReactElement, {
-              id,
-              'aria-describedby': messageId,
-              'aria-invalid': errorText ? true : undefined,
-            })
-          : children
-        }
-      </div>
+      {React.cloneElement(
+        children,
+        {
+          ...children.props,
+          id,
+          'aria-describedby': messageId,
+          'aria-invalid': errorText ? true : undefined,
+        } as any
+      )}
       {helperText && !errorText && <FormMessage id={`${id}-hint`}>{helperText}</FormMessage>}
       {errorText && (
         <FormMessage id={`${id}-error`} variant="error">
