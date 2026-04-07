@@ -36,20 +36,19 @@ type FormFieldProps = {
 export function FormField({ id, label, helperText, errorText, successText, children, className }: FormFieldProps) {
   const messageId = errorText ? `${id}-error` : helperText ? `${id}-hint` : successText ? `${id}-success` : undefined;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const enhancedProps: any = {
+    id,
+    'aria-describedby': messageId,
+    'aria-invalid': errorText ? true : undefined,
+  };
+
   return (
     <div className={cn('grid gap-1.5', className)}>
       <label htmlFor={id} className="text-sm font-medium text-slate-900 dark:text-slate-100">
         {label}
       </label>
-      {React.cloneElement(
-        children,
-        {
-          ...children.props,
-          id,
-          'aria-describedby': messageId,
-          'aria-invalid': errorText ? true : undefined,
-        } as any
-      )}
+      {React.cloneElement(children, { ...children.props, ...enhancedProps })}
       {helperText && !errorText && <FormMessage id={`${id}-hint`}>{helperText}</FormMessage>}
       {errorText && (
         <FormMessage id={`${id}-error`} variant="error">
