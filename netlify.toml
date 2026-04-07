@@ -1,5 +1,5 @@
 [build]
-  command = "npm install --ignore-scripts && cd apps/web && npm install && npm run build"
+  command = "npm install --ignore-scripts && cd apps/web && pnpm install && pnpm run build"
   publish = "apps/web/.next"
 
 [build.environment]
