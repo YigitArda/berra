@@ -9,7 +9,9 @@
   package = "@netlify/plugin-nextjs"
 
 [functions.___netlify-handler]
-  external_node_modules = ["styled-jsx"]
+  node_bundler = "nft"
+  included_files = ["node_modules/styled-jsx/**/*", "apps/web/node_modules/styled-jsx/**/*"]
 
 [functions.___netlify-odb-handler]
-  external_node_modules = ["styled-jsx"]
+  node_bundler = "nft"
+  included_files = ["node_modules/styled-jsx/**/*", "apps/web/node_modules/styled-jsx/**/*"]
