@@ -4,10 +4,13 @@ WORKDIR /app
 # Install pnpm
 RUN npm install -g pnpm
 
-# Copy all package files
+# Copy root package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+
+# Copy API package.json
 COPY apps/api/package.json ./apps/api/
-COPY apps/shared/package.json ./apps/shared/
+
+# Copy packages (if exists)
 COPY packages ./packages/
 
 # Copy prisma schema
@@ -18,7 +21,6 @@ RUN pnpm install --frozen-lockfile
 
 # Copy source
 COPY apps/api ./apps/api
-COPY apps/shared ./apps/shared
 
 # Build
 RUN pnpm --filter @berra/api run build
@@ -31,15 +33,12 @@ RUN npm install -g pnpm
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY apps/api/package.json ./apps/api/
-COPY apps/shared/package.json ./apps/shared/
 COPY packages ./packages/
 COPY apps/api/prisma ./apps/api/prisma/
 
 RUN pnpm install --prod --frozen-lockfile
 
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
-COPY --from=builder /app/apps/shared/dist ./apps/shared/dist
-
 RUN cd apps/api && pnpm prisma generate
 
 WORKDIR /app/apps/api
