@@ -1,20 +1,42 @@
-FROM node:20-alpine AS deps
+FROM node:20-alpine AS builder
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci --omit=dev
 
-FROM node:20-alpine AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+COPY prisma ./prisma/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
 COPY . .
-RUN npm run build
 
-FROM node:20-alpine AS runner
+# Build application
+RUN pnpm run build
+
+# Production stage
+FROM node:20-alpine
 WORKDIR /app
-ENV NODE_ENV=production
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=build /app/dist ./dist
-COPY package*.json ./
-EXPOSE 4000
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+COPY prisma ./prisma/
+
+# Install production dependencies only
+RUN pnpm install --prod --frozen-lockfile
+
+# Copy built files from builder
+COPY --from=builder /app/dist ./dist
+
+# Generate Prisma client
+RUN pnpm prisma generate
+
+EXPOSE 3000
+
 CMD ["node", "dist/main.js"]
