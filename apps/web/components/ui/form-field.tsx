@@ -39,20 +39,18 @@ export function FormField({ id, label, helperText, errorText, successText, child
     .filter(Boolean)
     .join(' ');
 
-  const child = Children.only(children) as ReactElement<{id?: string; 'aria-describedby'?: string; 'aria-invalid'?: boolean}>;
+  const child = Children.only(children);
 
   if (!isValidElement(child)) {
     throw new Error('FormField requires a valid React element as its child.');
   }
 
-  const childProps = child.props;
+  const ariaDescribedBy = messageIds || undefined;
 
-  const ariaDescribedBy = [childProps['aria-describedby'], messageIds].filter(Boolean).join(' ') || undefined;
-
-  const enhancedChild = cloneElement(child, {
+  const enhancedChild = cloneElement(child as ReactElement, {
     id,
     'aria-describedby': ariaDescribedBy,
-    'aria-invalid': errorText ? true : childProps['aria-invalid'],
+    'aria-invalid': errorText ? true : undefined,
   });
 
   return (
