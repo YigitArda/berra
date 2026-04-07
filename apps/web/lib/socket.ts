@@ -1,7 +1,7 @@
 'use client';
 
 import { io, Socket } from 'socket.io-client';
-import { REALTIME_EVENT, type RealtimeEventName } from '@berra/shared';
+import { REALTIME_EVENT, type RealtimeEventName } from './types';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL ?? 'http://localhost:4000';
 const IS_DEV = process.env.NODE_ENV !== 'production';

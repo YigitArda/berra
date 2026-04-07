@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import type { SearchResponse } from '@berra/shared';
+import type { SearchResponse } from '../lib/types';
 import { apiFetch } from '../lib/api';
 
 export function useSearch(submittedQuery: string) {

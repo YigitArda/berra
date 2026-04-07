@@ -1,0 +1,22 @@
+# Railway için Next.js Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Monorepo root'dan package.json kopyala
+COPY ../../package*.json ./
+COPY ../../pnpm*.yaml ./
+COPY ../../turbo.json ./
+
+# Install dependencies
+RUN npm install
+
+# Web app dosyalarını kopyala
+COPY . .
+
+# Build
+RUN npm run build
+
+EXPOSE 3000
+
+CMD ["npm", "start"]

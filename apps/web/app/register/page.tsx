@@ -14,7 +14,7 @@ import { FormField } from '../../components/ui/form-field';
 import { Input } from '../../components/ui/input';
 import { apiFetch } from '../../lib/api';
 import { applyBackendErrors } from '../../lib/form-errors';
-import type { AuthResponse, RegisterRequest } from '@berra/shared';
+import type { AuthResponse, RegisterRequest } from '../../lib/types';
 
 const registerSchema = z.object({
   username: z.string().min(3, 'Kullanıcı adı en az 3 karakter olmalı.'),

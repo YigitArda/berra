@@ -8,7 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import type { AuthResponse, LoginRequest } from '@berra/shared';
+import type { AuthResponse, LoginRequest } from '../../lib/types';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { FormField } from '../../components/ui/form-field';

@@ -1,21 +1,14 @@
-FROM node:20-alpine AS deps
+FROM node:20-alpine
 WORKDIR /app
+
+# Monorepo root'dan install
 COPY package*.json ./
-RUN npm ci
+COPY turbo.json ./
+RUN npm install
 
-FROM node:20-alpine AS build
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-RUN npm run build
+# Web app build
+COPY apps/web ./apps/web
+RUN cd apps/web && npm run build
 
-FROM node:20-alpine AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-ENV PORT=3000
-COPY --from=build /app/.next ./.next
-COPY --from=build /app/public ./public
-COPY --from=build /app/package*.json ./
-COPY --from=deps /app/node_modules ./node_modules
 EXPOSE 3000
-CMD ["npm", "run", "start"]
+CMD ["node", "apps/web/dist/server.js"]
