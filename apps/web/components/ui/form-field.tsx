@@ -23,13 +23,13 @@ export function FormMessage({ id, variant = 'helper', children }: FormMessagePro
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type FormFieldProps = {
   id: string;
   label: string;
   helperText?: string;
   errorText?: string;
   successText?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   children: ReactElement<any>;
   className?: string;
 };
