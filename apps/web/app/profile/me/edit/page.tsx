@@ -46,8 +46,8 @@ export default function EditProfilePage() {
             onChange={(e) => { setBio(e.target.value); setSaved(false); }}
             className="w-full rounded-md border border-slate-300 bg-white p-3 text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
           />
-          <p className="text-right text-xs text-slate-500 dark:text-slate-400">{bio.length}/300</p>
         </FormField>
+        <p className="text-right text-xs text-slate-500 dark:text-slate-400">{bio.length}/300</p>
         <Button type="submit" disabled={update.isPending}>{update.isPending ? 'Kaydediliyor...' : 'Kaydet'}</Button>
       </form>
       {update.isError && (
