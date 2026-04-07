@@ -36,6 +36,12 @@ jobs:
           cd apps/web
           npm run build
 
+      - name: Add .nojekyll
+        run: |
+          cd apps/web/dist
+          touch .nojekyll
+          echo "berrasenicokseviyorum.com" > CNAME
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
