@@ -4,14 +4,3 @@
 
 [build.environment]
   NODE_VERSION = "20"
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-
-[functions.___netlify-handler]
-  node_bundler = "nft"
-  included_files = ["node_modules/styled-jsx/**/*", "apps/web/node_modules/styled-jsx/**/*"]
-
-[functions.___netlify-odb-handler]
-  node_bundler = "nft"
-  included_files = ["node_modules/styled-jsx/**/*", "apps/web/node_modules/styled-jsx/**/*"]
