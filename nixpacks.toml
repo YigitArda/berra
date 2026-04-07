@@ -1,15 +1,10 @@
-[phases.setup]
-nixPkgs = ["nodejs_20"]
-
-[phases.install]
-cmds = [
-  "npm install --omit=dev --no-audit --no-fund"
-]
+# Railway Nixpacks configuration for monorepo
+# This file tells Railway how to build the Next.js app
 
 [phases.build]
 cmds = [
-  "echo 'No build step required for legacy runtime'"
+    "cd apps/web && npm install && npm run build"
 ]
 
 [start]
-cmd = "node src/app.js"
+cmd = "cd apps/web && npm start"
