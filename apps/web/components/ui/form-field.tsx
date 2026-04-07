@@ -1,5 +1,4 @@
-import React from 'react';
-import { Children, cloneElement, isValidElement, ReactElement, ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 import { cn } from '../../lib/cn';
 
 const formMessageVariants = {
@@ -30,36 +29,29 @@ type FormFieldProps = {
   helperText?: string;
   errorText?: string;
   successText?: string;
-  children: ReactElement;
+  children: ReactNode;
   className?: string;
 };
 
 export function FormField({ id, label, helperText, errorText, successText, children, className }: FormFieldProps) {
-  const messageIds = [helperText ? `${id}-hint` : null, errorText ? `${id}-error` : null, successText ? `${id}-success` : null]
-    .filter(Boolean)
-    .join(' ');
-
-  const child = Children.only(children);
-
-  if (!isValidElement(child)) {
-    throw new Error('FormField requires a valid React element as its child.');
-  }
-
-  const ariaDescribedBy = messageIds || undefined;
-
-  const enhancedChild = cloneElement(child as ReactElement, {
-    id,
-    'aria-describedby': ariaDescribedBy,
-    'aria-invalid': errorText ? true : undefined,
-  });
+  const messageId = errorText ? `${id}-error` : helperText ? `${id}-hint` : successText ? `${id}-success` : undefined;
 
   return (
     <div className={cn('grid gap-1.5', className)}>
       <label htmlFor={id} className="text-sm font-medium text-slate-900 dark:text-slate-100">
         {label}
       </label>
-      {enhancedChild}
-      {helperText && <FormMessage id={`${id}-hint`}>{helperText}</FormMessage>}
+      <div>
+        {React.isValidElement(children) 
+          ? React.cloneElement(children as React.ReactElement, {
+              id,
+              'aria-describedby': messageId,
+              'aria-invalid': errorText ? true : undefined,
+            })
+          : children
+        }
+      </div>
+      {helperText && !errorText && <FormMessage id={`${id}-hint`}>{helperText}</FormMessage>}
       {errorText && (
         <FormMessage id={`${id}-error`} variant="error">
           {errorText}
