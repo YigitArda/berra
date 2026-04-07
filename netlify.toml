@@ -1,9 +1,10 @@
 [build]
-  command = "npm install && cd apps/web && npm run build"
+  command = "npm install && cd apps/web && npm install && npm run build"
   publish = "apps/web/.next"
 
 [build.environment]
   NODE_VERSION = "20"
+  NPM_FLAGS = "--legacy-peer-deps"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
