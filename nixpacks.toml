@@ -1,10 +1,17 @@
-# Railway Nixpacks configuration for monorepo
-# This file tells Railway how to build the Next.js app
+[phases.setup]
+nixPkgs = ["nodejs_20", "pnpm"]
+
+[phases.install]
+cmds = ["pnpm install --no-frozen-lockfile"]
 
 [phases.build]
 cmds = [
-    "cd apps/web && npm install && npm run build"
+  "cd apps/api && pnpm prisma generate",
+  "cd apps/api && pnpm build"
 ]
 
+[phases.setup.env]
+NIXPACKS_PATH = "/app/node_modules/.bin:$NIXPACKS_PATH"
+
 [start]
-cmd = "cd apps/web && npm start"
+cmd = "cd apps/api && pnpm start"
