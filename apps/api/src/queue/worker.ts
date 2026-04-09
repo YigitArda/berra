@@ -2,7 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { Queue, Worker } from 'bullmq';
 import IORedis from 'ioredis';
 import { Pool } from 'pg';
-import { REALTIME_EVENT } from '../../../../packages/shared/src';
+import { REALTIME_EVENT } from '../shared';
 import { JOB_NAMES, QUEUE_NAMES } from './queue.constants';
 
 const config = new ConfigService();

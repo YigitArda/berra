@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto';
 import { ConflictException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import { sanitizeText } from '../common/utils/sanitize';
 import { DatabaseService } from '../database/database.service';
 

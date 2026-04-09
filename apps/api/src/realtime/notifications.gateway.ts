@@ -12,9 +12,9 @@ import {
 import { createAdapter } from '@socket.io/redis-adapter';
 import { FastifyRequest } from 'fastify';
 import IORedis from 'ioredis';
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import { Server, Socket } from 'socket.io';
-import { REALTIME_EVENT } from '../../../../packages/shared/src';
+import { REALTIME_EVENT } from '../shared';
 
 @WebSocketGateway({
   cors: {
@@ -110,7 +110,7 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection 
       ? client.handshake.auth.token
       : null;
 
-    const cookieToken = this.extractCookieToken(client.request as FastifyRequest);
+    const cookieToken = this.extractCookieToken(client.request as unknown as FastifyRequest);
     const token = cookieToken || bearer;
     if (!token) return null;
 

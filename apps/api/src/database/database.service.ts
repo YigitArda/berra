@@ -14,7 +14,7 @@ export class DatabaseService implements OnModuleDestroy {
     });
   }
 
-  query<T = unknown>(text: string, params: unknown[] = []): Promise<QueryResult<T>> {
+  query<T extends Record<string, any> = Record<string, any>>(text: string, params: unknown[] = []): Promise<QueryResult<T>> {
     return this.pool.query<T>(text, params);
   }
 

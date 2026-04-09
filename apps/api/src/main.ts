@@ -2,9 +2,9 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
-import cookie from '@fastify/cookie';
-import helmet from '@fastify/helmet';
-import rateLimit from '@fastify/rate-limit';
+import * as cookie from '@fastify/cookie';
+import * as helmet from '@fastify/helmet';
+import * as rateLimit from '@fastify/rate-limit';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { validateEnv } from './config/env';
@@ -18,9 +18,9 @@ async function bootstrap() {
     new FastifyAdapter({ logger: true }),
   );
 
-  await app.register(cookie);
+  await app.register(cookie as any);
   const isProd = process.env.NODE_ENV === 'production';
-  await app.register(helmet, {
+  await app.register(helmet as any, {
     contentSecurityPolicy: isProd
       ? {
           directives: {
@@ -37,7 +37,7 @@ async function bootstrap() {
       : false,
     crossOriginResourcePolicy: { policy: 'cross-origin' },
   });
-  await app.register(rateLimit, {
+  await app.register(rateLimit as any, {
     global: true,
     max: Number(process.env.RATE_LIMIT_MAX ?? 200),
     timeWindow: process.env.RATE_LIMIT_WINDOW ?? '1 minute',
