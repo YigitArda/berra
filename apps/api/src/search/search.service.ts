@@ -38,7 +38,7 @@ export class SearchService {
 
     const whereSql = where.join(' AND ');
 
-    const { rows } = await this.db.query(
+    const { rows } = await this.db.query<SearchResult>(
       `SELECT
          t.id, t.title, t.slug, t.reply_count, t.view_count, t.created_at,
          u.username AS author,

@@ -16,8 +16,8 @@ export class AuthService {
   ) {}
 
   private signAccessToken(user: AuthUser): string {
-    return jwt.sign(user, this.configService.getOrThrow<string>('JWT_SECRET'), {
-      expiresIn: this.configService.get<string>('JWT_EXPIRES_IN', '15m'),
+    return jwt.sign(user, this.configService.getOrThrow('JWT_SECRET'), {
+      expiresIn: this.configService.get('JWT_EXPIRES_IN', '15m') as jwt.SignOptions['expiresIn'],
     });
   }
 
