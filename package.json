@@ -55,6 +55,7 @@
     "node": ">=18.0.0"
   },
   "private": true,
+  "packageManager": "npm@10.2.4",
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
       "eslint --fix",

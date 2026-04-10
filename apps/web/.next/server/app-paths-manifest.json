@@ -1,0 +1,18 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/bookmarks/page": "app/bookmarks/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/feed/page": "app/feed/page.js",
+  "/following/page": "app/following/page.js",
+  "/forum/new/page": "app/forum/new/page.js",
+  "/forum/page": "app/forum/page.js",
+  "/karsilastir/page": "app/karsilastir/page.js",
+  "/login/page": "app/login/page.js",
+  "/notifications/page": "app/notifications/page.js",
+  "/ozellikler/page": "app/ozellikler/page.js",
+  "/page": "app/page.js",
+  "/register/page": "app/register/page.js",
+  "/rehber/page": "app/rehber/page.js",
+  "/sanayi/page": "app/sanayi/page.js",
+  "/search/page": "app/search/page.js"
+}

@@ -1,13 +1,29 @@
+'use client';
+
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { Card } from '../components/ui/card';
-import { getServerSession } from '../lib/auth/server';
+import { useSession } from '../hooks/use-session';
+import { Skeleton } from '../components/feedback/Skeleton';
 
-export default async function HomePage() {
-  const session = await getServerSession();
+export default function HomePage() {
+  const router = useRouter();
+  const { session, isLoading } = useSession();
 
+  useEffect(() => {
+    if (session?.user) {
+      router.replace('/feed');
+    }
+  }, [session, router]);
+
+  if (isLoading) {
+    return <Skeleton title="Yükleniyor..." lines={3} />;
+  }
+
+  // If user is logged in, don't render the landing page (redirect handled in useEffect)
   if (session?.user) {
-    redirect('/feed');
+    return null;
   }
 
   return (

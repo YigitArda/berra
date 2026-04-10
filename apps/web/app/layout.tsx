@@ -8,9 +8,19 @@ export const metadata: Metadata = {
   description: 'Türkiye\'nin araba topluluğu: forum, feed, model merkezi, sanayi rehberi ve araç karşılaştırma.',
 };
 
+// Runtime API URL - build sonrası değiştirilebilir
+const RUNTIME_API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="tr" className="dark" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.__API_BASE__ = "${RUNTIME_API_BASE}";`,
+          }}
+        />
+      </head>
       <body>
         <script
           dangerouslySetInnerHTML={{

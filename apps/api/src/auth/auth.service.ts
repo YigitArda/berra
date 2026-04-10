@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto';
 import { ConflictException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import bcrypt from 'bcryptjs';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { sanitizeText } from '../common/utils/sanitize';
 import { DatabaseService } from '../database/database.service';
 
@@ -16,9 +16,9 @@ export class AuthService {
   ) {}
 
   private signAccessToken(user: AuthUser): string {
-    return jwt.sign(user, this.configService.getOrThrow('JWT_SECRET'), {
-      expiresIn: this.configService.get('JWT_EXPIRES_IN', '15m') as jwt.SignOptions['expiresIn'],
-    });
+    const secret = this.configService.getOrThrow<string>('JWT_SECRET');
+    const expiresIn = this.configService.get<string>('JWT_EXPIRES_IN', '15m') as jwt.SignOptions['expiresIn'];
+    return jwt.sign(user, secret, { expiresIn } as jwt.SignOptions);
   }
 
   private async issueRefreshToken(userId: number, userAgent?: string, ipAddress?: string) {

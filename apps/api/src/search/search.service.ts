@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
-import type { SearchResponse } from '../shared';
+import type { SearchResponse, SearchResult } from '../shared';
 
 @Injectable()
 export class SearchService {

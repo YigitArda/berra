@@ -1,7 +1,15 @@
-import { requireServerSession } from '../../../lib/auth/server';
-import { NewThreadClient } from './new-thread-client';
+'use client';
 
-export default async function NewThreadPage() {
-  await requireServerSession('/forum/new');
+import { useRequireAuth } from '../../../hooks/use-require-auth';
+import { NewThreadClient } from './new-thread-client';
+import { Skeleton } from '../../../components/feedback/Skeleton';
+
+export default function NewThreadPage() {
+  const { isLoading } = useRequireAuth();
+
+  if (isLoading) {
+    return <Skeleton title="Oturum doğrulanıyor..." lines={3} />;
+  }
+
   return <NewThreadClient />;
 }

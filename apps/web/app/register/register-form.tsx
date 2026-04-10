@@ -1,23 +1,29 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import Link from 'next/link';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { FormField } from '../../components/ui/form-field';
 import { Input } from '../../components/ui/input';
-import { apiFetch } from '../../lib/api';
+import { apiFetch, ApiError } from '../../lib/api';
 import { applyBackendErrors } from '../../lib/form-errors';
+import { sessionQueryKey } from '../../lib/auth/session';
 import type { AuthResponse, RegisterRequest } from '../../lib/types';
 
 const registerSchema = z.object({
-  username: z.string().min(3, 'Kullanıcı adı en az 3 karakter olmalı.'),
-  email: z.string().email('Geçerli bir email girin.'),
-  password: z.string().min(6, 'Şifre en az 6 karakter olmalı.'),
+  username: z
+    .string()
+    .min(3, 'Kullanıcı adı en az 3 karakter olmalı.')
+    .max(40, 'Kullanıcı adı en fazla 40 karakter olabilir.')
+    .regex(/^[a-zA-Z0-9_]+$/, 'Sadece harf, rakam ve alt çizgi kullanılabilir.'),
+  email: z.string().email('Geçerli bir email adresi girin.'),
+  password: z.string().min(8, 'Şifre en az 8 karakter olmalı.'),
 });
 
 const registerFields = ['username', 'email', 'password'] as const;
@@ -25,6 +31,7 @@ const registerFields = ['username', 'email', 'password'] as const;
 export function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const [generalError, setGeneralError] = useState<string | null>(null);
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -37,8 +44,9 @@ export function RegisterForm() {
         method: 'POST',
         body: JSON.stringify(payload satisfies RegisterRequest),
       }),
-    onSuccess: () => {
+    onSuccess: async () => {
       setGeneralError(null);
+      await queryClient.invalidateQueries({ queryKey: sessionQueryKey });
       const nextCandidate = searchParams.get('next');
       const nextPath = nextCandidate?.startsWith('/') ? nextCandidate : '/dashboard';
       router.replace(nextPath);
@@ -47,13 +55,19 @@ export function RegisterForm() {
     onError: (error) => {
       const message = applyBackendErrors(error, form.setError, registerFields);
       const normalized = message.toLowerCase();
+      const status = error instanceof ApiError ? error.status : null;
 
       if (normalized.includes('network') || normalized.includes('fetch')) {
-        setGeneralError('Network error. Lütfen bağlantınızı kontrol edip tekrar deneyin.');
+        setGeneralError('Bağlantı hatası. İnternet bağlantınızı kontrol edip tekrar deneyin.');
         return;
       }
 
-      setGeneralError('Auth failed. Girdiğiniz bilgileri kontrol edip tekrar deneyin.');
+      if (normalized.includes('zaten kayıtlı') || normalized.includes('already') || normalized.includes('conflict') || status === 409) {
+        setGeneralError('Bu email veya kullanıcı adı zaten kayıtlı. Giriş yapmayı deneyin.');
+        return;
+      }
+
+      setGeneralError(message || 'Kayıt yapılamadı. Lütfen bilgilerinizi kontrol edip tekrar deneyin.');
     },
   });
 
@@ -95,7 +109,7 @@ export function RegisterForm() {
           />
         </FormField>
 
-        <FormField id="password" label="Şifre" helperText="Güçlü bir şifre seçin." errorText={passwordError}>
+        <FormField id="password" label="Şifre" helperText="En az 8 karakter." errorText={passwordError}>
           <Input
             id="password"
             type="password"
@@ -110,7 +124,13 @@ export function RegisterForm() {
           {registerMutation.isPending ? 'Kaydediliyor...' : 'Kayıt ol'}
         </Button>
       </form>
-      {registerMutation.isSuccess && <p className="mt-2 text-sm text-emerald-600 dark:text-emerald-400">Kayıt başarılı.</p>}
+      {registerMutation.isSuccess && <p className="mt-2 text-sm text-emerald-600 dark:text-emerald-400">Kayıt başarılı, yönlendiriliyorsunuz...</p>}
+      <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+        Zaten hesabınız var mı?{' '}
+        <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+          Giriş yapın
+        </Link>
+      </p>
     </Card>
   );
 }
