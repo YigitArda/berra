@@ -4,16 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       rollback_to:
-        description: "Optional image tag for rollback (example: sha-abc123)"
+        description: 'Optional image tag for rollback (example: sha-abc123)'
         required: false
         type: string
   push:
-    branches: ["work"]
+    branches: ['work']
 
 env:
   REGISTRY: ghcr.io
   IMAGE_PREFIX: ${{ github.repository }}
-  K8S_NAMESPACE: berra-staging
+  K8S_NAMESPACE: araba-staging
 
 jobs:
   build-and-push:
@@ -80,19 +80,19 @@ jobs:
       - name: Run DB migration job
         run: |
           kubectl -n $K8S_NAMESPACE apply -f deploy/k8s/db-migrate-job.yaml
-          kubectl -n $K8S_NAMESPACE delete job berra-db-migrate --ignore-not-found=true
-          kubectl -n $K8S_NAMESPACE create job --from=cronjob/berra-db-migrate berra-db-migrate-manual || true
-          kubectl -n $K8S_NAMESPACE wait --for=condition=complete job/berra-db-migrate-manual --timeout=300s
+          kubectl -n $K8S_NAMESPACE delete job araba-db-migrate --ignore-not-found=true
+          kubectl -n $K8S_NAMESPACE create job --from=cronjob/araba-db-migrate araba-db-migrate-manual || true
+          kubectl -n $K8S_NAMESPACE wait --for=condition=complete job/araba-db-migrate-manual --timeout=300s
 
       - name: Set rollout images
         run: |
           TAG="${{ github.event.inputs.rollback_to || needs.build-and-push.outputs.image_tag }}"
-          kubectl -n $K8S_NAMESPACE set image deployment/berra-api api=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/api:$TAG
-          kubectl -n $K8S_NAMESPACE set image deployment/berra-web web=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/web:$TAG
-          kubectl -n $K8S_NAMESPACE set image deployment/berra-worker worker=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/api:$TAG
+          kubectl -n $K8S_NAMESPACE set image deployment/araba-api api=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/api:$TAG
+          kubectl -n $K8S_NAMESPACE set image deployment/araba-web web=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/web:$TAG
+          kubectl -n $K8S_NAMESPACE set image deployment/araba-worker worker=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/api:$TAG
 
       - name: Rollout status
         run: |
-          kubectl -n $K8S_NAMESPACE rollout status deployment/berra-api --timeout=300s
-          kubectl -n $K8S_NAMESPACE rollout status deployment/berra-web --timeout=300s
-          kubectl -n $K8S_NAMESPACE rollout status deployment/berra-worker --timeout=300s
+          kubectl -n $K8S_NAMESPACE rollout status deployment/araba-api --timeout=300s
+          kubectl -n $K8S_NAMESPACE rollout status deployment/araba-web --timeout=300s
+          kubectl -n $K8S_NAMESPACE rollout status deployment/araba-worker --timeout=300s

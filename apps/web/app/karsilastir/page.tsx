@@ -1,8 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
 import { FormField } from '../../components/ui/form-field';
 import { Input } from '../../components/ui/input';
 
@@ -47,14 +47,14 @@ const transmissionScoreMap: Record<Transmission, number> = {
 
 function score(car: CarInput) {
   const age = Math.max(new Date().getFullYear() - car.year, 0);
-  const ageScore = Math.max(3 - age / 8, 0); // 3 max
-  const kmScore = Math.max(3 - car.km / 120000, 0); // 3 max
-  const valueScore = car.price > 0 ? Math.min(2, 1500000 / car.price) : 0; // 2 max
-  const brandScore = reliability[car.brand.toLowerCase()] ?? 1; // 2 max
-  const fuelScore = fuelScoreMap[car.fuel]; // 1 max
-  const transmissionScore = transmissionScoreMap[car.transmission]; // 0.6 max
+  const ageScore = Math.max(3 - age / 8, 0);
+  const kmScore = Math.max(3 - car.km / 120000, 0);
+  const valueScore = car.price > 0 ? Math.min(2, 1500000 / car.price) : 0;
+  const brandScore = reliability[car.brand.toLowerCase()] ?? 1;
+  const fuelScore = fuelScoreMap[car.fuel];
+  const transmissionScore = transmissionScoreMap[car.transmission];
   const total = ageScore + kmScore + valueScore + brandScore + fuelScore + transmissionScore;
-  const verdict = total >= 8.5 ? '✓ ALINIR' : total >= 6.5 ? '~ DÜŞÜN' : '✗ ALINMAZ';
+  const verdict = total >= 8.5 ? 'Alınır' : total >= 6.5 ? 'Düşün' : 'Alınmaz';
 
   return {
     total: Number(total.toFixed(2)),
@@ -94,26 +94,37 @@ function CarForm({
       <h2 className="mb-3 text-lg font-semibold text-slate-900 dark:text-slate-100">{label}</h2>
       <div className="grid gap-2">
         <FormField id={`${label}-brand`} label="Marka">
-          <Input id={`${label}-brand`} value={car.brand} onChange={(e) => setCar({ ...car, brand: e.target.value })} />
+          <Input value={car.brand} onChange={(e) => setCar({ ...car, brand: e.target.value })} />
         </FormField>
         <FormField id={`${label}-model`} label="Model">
-          <Input id={`${label}-model`} value={car.model} onChange={(e) => setCar({ ...car, model: e.target.value })} />
+          <Input value={car.model} onChange={(e) => setCar({ ...car, model: e.target.value })} />
         </FormField>
         <FormField id={`${label}-year`} label="Yıl">
-          <Input id={`${label}-year`} type="number" value={car.year} onChange={(e) => setCar({ ...car, year: Number(e.target.value) })} />
+          <Input
+            type="number"
+            value={car.year}
+            onChange={(e) => setCar({ ...car, year: Number(e.target.value) })}
+          />
         </FormField>
         <FormField id={`${label}-km`} label="KM">
-          <Input id={`${label}-km`} type="number" value={car.km} onChange={(e) => setCar({ ...car, km: Number(e.target.value) })} />
+          <Input
+            type="number"
+            value={car.km}
+            onChange={(e) => setCar({ ...car, km: Number(e.target.value) })}
+          />
         </FormField>
         <FormField id={`${label}-price`} label="Fiyat">
-          <Input id={`${label}-price`} type="number" value={car.price} onChange={(e) => setCar({ ...car, price: Number(e.target.value) })} />
+          <Input
+            type="number"
+            value={car.price}
+            onChange={(e) => setCar({ ...car, price: Number(e.target.value) })}
+          />
         </FormField>
         <FormField id={`${label}-fuel`} label="Yakıt tipi">
           <select
-            id={`${label}-fuel`}
             value={car.fuel}
             onChange={(e) => setCar({ ...car, fuel: e.target.value as FuelType })}
-            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
           >
             <option value="Benzin">Benzin</option>
             <option value="Dizel">Dizel</option>
@@ -123,10 +134,9 @@ function CarForm({
         </FormField>
         <FormField id={`${label}-transmission`} label="Şanzıman">
           <select
-            id={`${label}-transmission`}
             value={car.transmission}
             onChange={(e) => setCar({ ...car, transmission: e.target.value as Transmission })}
-            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
           >
             <option value="Otomatik">Otomatik</option>
             <option value="Manuel">Manuel</option>
@@ -155,10 +165,12 @@ export default function ComparePage() {
   return (
     <div className="grid gap-4">
       <Card>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">⚖️ Araç Karşılaştırma</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+          Araç Karşılaştırma
+        </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-          Yaş (3), KM (3), Fiyat/Değer (2), Marka Güvenilirliği (2), Yakıt (1), Şanzıman (0.6)
-          üzerinden toplam skor hesaplanır.
+          Yaş, KM, fiyat/değer, marka güvenilirliği, yakıt ve şanzıman üzerinden toplam skor
+          hesaplanır.
         </p>
       </Card>
 
@@ -168,7 +180,10 @@ export default function ComparePage() {
       </div>
 
       <div className="flex justify-center">
-        <Button onClick={() => setShowResult(true)} disabled={!left.brand || !left.model || !right.brand || !right.model}>
+        <Button
+          onClick={() => setShowResult(true)}
+          disabled={!left.brand || !left.model || !right.brand || !right.model}
+        >
           Karşılaştır
         </Button>
       </div>
@@ -180,7 +195,9 @@ export default function ComparePage() {
           </Card>
           <div className="grid gap-4 lg:grid-cols-2">
             <Card>
-              <h3 className="text-lg font-semibold">{left.brand} {left.model}</h3>
+              <h3 className="text-lg font-semibold">
+                {left.brand} {left.model}
+              </h3>
               <p className="mt-2 text-3xl font-bold">{leftResult.total}</p>
               <p className="mt-1">{leftResult.verdict}</p>
               <ul className="mt-3 list-disc pl-5 text-sm text-slate-600 dark:text-slate-300">
@@ -193,7 +210,9 @@ export default function ComparePage() {
               </ul>
             </Card>
             <Card>
-              <h3 className="text-lg font-semibold">{right.brand} {right.model}</h3>
+              <h3 className="text-lg font-semibold">
+                {right.brand} {right.model}
+              </h3>
               <p className="mt-2 text-3xl font-bold">{rightResult.total}</p>
               <p className="mt-1">{rightResult.verdict}</p>
               <ul className="mt-3 list-disc pl-5 text-sm text-slate-600 dark:text-slate-300">

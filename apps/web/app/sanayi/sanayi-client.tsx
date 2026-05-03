@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Card } from '../../components/ui/card';
+import { DataState } from '../../components/data-state';
 import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
 import { FormField } from '../../components/ui/form-field';
 import { Input } from '../../components/ui/input';
-import { DataState } from '../../components/data-state';
 import { useBusinesses, useSubmitBusiness } from '../../hooks/use-businesses';
 import { useSession } from '../../hooks/use-session';
 
@@ -15,7 +15,13 @@ export function SanayiClient() {
   const [category, setCategory] = useState('');
   const [city, setCity] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [form, setForm] = useState({ name: '', category: 'Motor', address: '', city: '', phone: '' });
+  const [form, setForm] = useState({
+    name: '',
+    category: 'Motor',
+    address: '',
+    city: '',
+    phone: '',
+  });
   const { isAuthenticated } = useSession();
 
   const businessesQuery = useBusinesses(category, city);
@@ -25,14 +31,30 @@ export function SanayiClient() {
     <div className="grid gap-4">
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Sanayi / İşletme Rehberi</h1>
-          <Button onClick={() => setIsModalOpen(true)} disabled={!isAuthenticated}>İşletme Ekle</Button>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            Sanayi / İşletme Rehberi
+          </h1>
+          <Button onClick={() => setIsModalOpen(true)} disabled={!isAuthenticated}>
+            İşletme Ekle
+          </Button>
         </div>
-        {!isAuthenticated && <p className="mt-2 text-sm text-slate-400">İşletme eklemek için giriş yapmalısın.</p>}
-        <div className="mt-3 flex flex-wrap gap-2">
-          <select className="rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" value={category} onChange={(e) => setCategory(e.target.value)}>
+        {!isAuthenticated && (
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            İşletme eklemek için giriş yapmalısın.
+          </p>
+        )}
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <select
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 sm:w-auto"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
             <option value="">Tüm kategoriler</option>
-            {categories.map((item) => <option key={item} value={item}>{item}</option>)}
+            {categories.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
           </select>
           <Input placeholder="Şehir" value={city} onChange={(e) => setCity(e.target.value)} />
         </div>
@@ -52,10 +74,18 @@ export function SanayiClient() {
         <div className="grid gap-3 md:grid-cols-2">
           {(businessesQuery.data?.businesses ?? []).map((item) => (
             <Card key={item.id}>
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{item.name}</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">{item.category} · {item.city}</p>
-              <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">⭐ {item.avg_rating} · 📞 {item.phone || '-'}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">⏱ {item.open_time || '--'} - {item.close_time || '--'}</p>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                {item.name}
+              </h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                {item.category} · {item.city}
+              </p>
+              <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                Puan: {item.avg_rating} · Telefon: {item.phone || '-'}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Saat: {item.open_time || '--'} - {item.close_time || '--'}
+              </p>
             </Card>
           ))}
         </div>
@@ -63,7 +93,9 @@ export function SanayiClient() {
 
       {isModalOpen && (
         <Card>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">İşletme Ekle (onay bekler)</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+            İşletme Ekle (onay bekler)
+          </h2>
           <form
             className="mt-3 grid gap-3"
             onSubmit={(e) => {
@@ -76,18 +108,50 @@ export function SanayiClient() {
               });
             }}
           >
-            <FormField id="b-name" label="İşletme adı"><Input id="b-name" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} /></FormField>
+            <FormField id="b-name" label="İşletme adı">
+              <Input
+                value={form.name}
+                onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+              />
+            </FormField>
             <FormField id="b-category" label="Kategori">
-              <select id="b-category" className="rounded border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" value={form.category} onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}>
-                {categories.map((item) => <option key={item} value={item}>{item}</option>)}
+              <select
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                value={form.category}
+                onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
+              >
+                {categories.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
               </select>
             </FormField>
-            <FormField id="b-address" label="Adres"><Input id="b-address" value={form.address} onChange={(e) => setForm((prev) => ({ ...prev, address: e.target.value }))} /></FormField>
-            <FormField id="b-city" label="Şehir"><Input id="b-city" value={form.city} onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))} /></FormField>
-            <FormField id="b-phone" label="Telefon"><Input id="b-phone" value={form.phone} onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))} /></FormField>
-            <div className="flex gap-2">
-              <Button type="submit" disabled={submit.isPending}>Gönder</Button>
-              <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Vazgeç</Button>
+            <FormField id="b-address" label="Adres">
+              <Input
+                value={form.address}
+                onChange={(e) => setForm((prev) => ({ ...prev, address: e.target.value }))}
+              />
+            </FormField>
+            <FormField id="b-city" label="Şehir">
+              <Input
+                value={form.city}
+                onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
+              />
+            </FormField>
+            <FormField id="b-phone" label="Telefon">
+              <Input
+                value={form.phone}
+                onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
+              />
+            </FormField>
+            <div className="flex flex-wrap gap-2">
+              <Button type="submit" disabled={submit.isPending}>
+                Gönder
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>
+                Vazgeç
+              </Button>
             </div>
           </form>
         </Card>

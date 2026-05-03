@@ -30,24 +30,49 @@ export function SearchClient() {
   const router = useRouter();
   const [q, setQ] = useState(searchParams.get('q') || '');
   const [submitted, setSubmitted] = useState(searchParams.get('q') || '');
-  const [type, setType] = useState<'threads' | 'users'>((searchParams.get('type') as 'threads' | 'users') || 'threads');
+  const [type, setType] = useState<'threads' | 'users'>(
+    (searchParams.get('type') as 'threads' | 'users') || 'threads',
+  );
   const [page, setPage] = useState(Math.max(parseInt(searchParams.get('page') || '1', 10), 1));
 
   const enabled = useMemo(() => submitted.trim().length > 0, [submitted]);
 
   const searchQuery = useQuery({
     queryKey: ['search', submitted, type, page],
-    queryFn: () => apiFetch<SearchResponse>(`/search?q=${encodeURIComponent(submitted)}&type=${type}&page=${page}`),
+    queryFn: () =>
+      apiFetch<SearchResponse>(
+        `/search?q=${encodeURIComponent(submitted)}&type=${type}&page=${page}`,
+      ),
     enabled,
   });
+
+  const submitSearch = () => {
+    const query = q.trim();
+    if (!query) return;
+    setSubmitted(query);
+    setPage(1);
+    router.replace(`/search?q=${encodeURIComponent(query)}&type=${type}&page=1`);
+  };
 
   return (
     <div className="grid gap-4">
       <Card>
         <h1 className="mb-3 text-2xl font-bold">Arama</h1>
-        <div className="mb-2 flex gap-2">
-          <Button size="sm" variant={type === 'threads' ? 'primary' : 'ghost'} onClick={() => setType('threads')}>Konular</Button>
-          <Button size="sm" variant={type === 'users' ? 'primary' : 'ghost'} onClick={() => setType('users')}>Kullanıcılar</Button>
+        <div className="mb-2 flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            variant={type === 'threads' ? 'primary' : 'ghost'}
+            onClick={() => setType('threads')}
+          >
+            Konular
+          </Button>
+          <Button
+            size="sm"
+            variant={type === 'users' ? 'primary' : 'ghost'}
+            onClick={() => setType('users')}
+          >
+            Kullanıcılar
+          </Button>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <Input
@@ -55,18 +80,12 @@ export function SearchClient() {
             onChange={(e) => setQ(e.target.value)}
             placeholder="Arama terimi..."
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && q.trim().length > 0) {
-                setSubmitted(q);
-                setPage(1);
-                router.replace(`/search?q=${encodeURIComponent(q)}&type=${type}&page=1`);
+              if (e.key === 'Enter') {
+                submitSearch();
               }
             }}
           />
-          <Button onClick={() => {
-            setSubmitted(q);
-            setPage(1);
-            router.replace(`/search?q=${encodeURIComponent(q)}&type=${type}&page=1`);
-          }} disabled={searchQuery.isPending || q.trim().length === 0}>
+          <Button onClick={submitSearch} disabled={searchQuery.isPending || q.trim().length === 0}>
             {searchQuery.isPending ? 'Aranıyor...' : 'Ara'}
           </Button>
         </div>
@@ -89,31 +108,58 @@ export function SearchClient() {
               <Card key={item.id}>
                 {type === 'threads' ? (
                   <>
-                    <p className="font-semibold text-slate-900 dark:text-slate-100">{item.title || item.body}</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{item.category_name || 'Kategori yok'} · 💬 {item.reply_count ?? 0}</p>
-                    {item.username && <p className="text-sm text-slate-600 dark:text-slate-300">Yazar: {item.username}</p>}
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">
+                      {item.title || item.body}
+                    </p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      {item.category_name || 'Kategori yok'} · {item.reply_count ?? 0} yanıt
+                    </p>
+                    {item.username && (
+                      <p className="text-sm text-slate-600 dark:text-slate-300">
+                        Yazar: {item.username}
+                      </p>
+                    )}
                   </>
                 ) : (
-                    <>
-                      <p className="font-semibold text-slate-900 dark:text-slate-100">{item.username || item.title || `#${item.id}`}</p>
-                      <p className="text-sm text-slate-600 dark:text-slate-300">{item.bio || item.body || 'Bio bulunmuyor.'}</p>
-                    </>
+                  <>
+                    <p className="font-semibold text-slate-900 dark:text-slate-100">
+                      {item.username || item.title || `#${item.id}`}
+                    </p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                      {item.bio || item.body || 'Bio bulunmuyor.'}
+                    </p>
+                  </>
                 )}
               </Card>
             ))}
           </div>
-          <div className="mt-3 flex items-center justify-between">
-            <Button variant="ghost" disabled={page <= 1} onClick={() => {
-              const next = Math.max(page - 1, 1);
-              setPage(next);
-              router.replace(`/search?q=${encodeURIComponent(submitted)}&type=${type}&page=${next}`);
-            }}>Önceki</Button>
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <Button
+              variant="ghost"
+              disabled={page <= 1}
+              onClick={() => {
+                const next = Math.max(page - 1, 1);
+                setPage(next);
+                router.replace(
+                  `/search?q=${encodeURIComponent(submitted)}&type=${type}&page=${next}`,
+                );
+              }}
+            >
+              Önceki
+            </Button>
             <span className="text-sm text-slate-400">Sayfa {page}</span>
-            <Button variant="ghost" onClick={() => {
-              const next = page + 1;
-              setPage(next);
-              router.replace(`/search?q=${encodeURIComponent(submitted)}&type=${type}&page=${next}`);
-            }}>Sonraki</Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                const next = page + 1;
+                setPage(next);
+                router.replace(
+                  `/search?q=${encodeURIComponent(submitted)}&type=${type}&page=${next}`,
+                );
+              }}
+            >
+              Sonraki
+            </Button>
           </div>
         </DataState>
       ) : null}

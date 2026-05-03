@@ -1,10 +1,10 @@
-import { ReactElement, ReactNode } from 'react';
+import { cloneElement, ReactElement, ReactNode } from 'react';
 import { cn } from '../../lib/cn';
 
 const formMessageVariants = {
-  helper: 'text-slate-400',
-  error: 'text-red-400',
-  success: 'text-emerald-400',
+  helper: 'text-slate-500 dark:text-slate-400',
+  error: 'text-red-600 dark:text-red-400',
+  success: 'text-emerald-600 dark:text-emerald-400',
 } as const;
 
 type FormMessageVariant = keyof typeof formMessageVariants;
@@ -34,8 +34,22 @@ type FormFieldProps = {
   className?: string;
 };
 
-export function FormField({ id, label, helperText, errorText, successText, children, className }: FormFieldProps) {
-  const messageId = errorText ? `${id}-error` : helperText ? `${id}-hint` : successText ? `${id}-success` : undefined;
+export function FormField({
+  id,
+  label,
+  helperText,
+  errorText,
+  successText,
+  children,
+  className,
+}: FormFieldProps) {
+  const messageId = errorText
+    ? `${id}-error`
+    : helperText
+      ? `${id}-hint`
+      : successText
+        ? `${id}-success`
+        : undefined;
 
   return (
     <div className={cn('grid gap-1.5', className)}>
@@ -43,15 +57,11 @@ export function FormField({ id, label, helperText, errorText, successText, child
         {label}
       </label>
       <div>
-        {/* React 19'da cloneElement yerine props'ları direkt geçiyoruz */}
-        {children && (
-          <children.type
-            {...children.props}
-            id={id}
-            aria-describedby={messageId}
-            aria-invalid={errorText ? true : undefined}
-          />
-        )}
+        {cloneElement(children, {
+          id,
+          'aria-describedby': messageId,
+          'aria-invalid': errorText ? true : undefined,
+        })}
       </div>
       {helperText && !errorText && <FormMessage id={`${id}-hint`}>{helperText}</FormMessage>}
       {errorText && (

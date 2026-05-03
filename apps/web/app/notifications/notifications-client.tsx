@@ -12,9 +12,9 @@ import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { useRequireAuth } from '../../hooks/use-require-auth';
 import { apiFetch } from '../../lib/api';
+import { formatRelativeTime } from '../../lib/format-time';
 import { NotificationsResponse, notificationsQueryKey } from '../../lib/notifications';
 import { useAppStore } from '../../store/app-store';
-import { formatRelativeTime } from '../../lib/format-time';
 
 type NotificationTab = 'all' | 'follow' | 'reply' | 'like' | 'model';
 
@@ -88,7 +88,7 @@ export function NotificationsClient() {
   return (
     <div className="grid gap-4">
       <Card>
-        <h1 className="text-2xl font-bold">Bildirim Merkezi v2</h1>
+        <h1 className="text-2xl font-bold">Bildirim Merkezi</h1>
         <p className="mt-2 text-slate-600 dark:text-slate-300">Okunmamış: {unread}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {(['all', 'follow', 'reply', 'like', 'model'] as NotificationTab[]).map((tab) => (
@@ -112,7 +112,10 @@ export function NotificationsClient() {
       </Card>
 
       {markAllReadMutation.isError && (
-        <InlineAlert variant="error" message={resolveFeedbackErrorMessage(markAllReadMutation.error)} />
+        <InlineAlert
+          variant="error"
+          message={resolveFeedbackErrorMessage(markAllReadMutation.error)}
+        />
       )}
 
       <DataState
@@ -131,24 +134,35 @@ export function NotificationsClient() {
             <Card key={item.id}>
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <div className="mb-1 flex items-center gap-2">
-                    <Badge variant="outline" size="sm">{item.type}</Badge>
-                    {!item.is_read && <Badge variant="success" size="sm">Yeni</Badge>}
+                  <div className="mb-1 flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" size="sm">
+                      {item.type}
+                    </Badge>
+                    {!item.is_read && (
+                      <Badge variant="success" size="sm">
+                        Yeni
+                      </Badge>
+                    )}
                   </div>
                   <p className="text-slate-900 dark:text-slate-100">{item.message}</p>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{formatRelativeTime(item.created_at)}</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    {formatRelativeTime(item.created_at)}
+                  </p>
                 </div>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {item.link && (
-                  <Link href={item.link} className="inline-block text-sm text-blue-300 hover:underline">
+                  <Link
+                    href={item.link}
+                    className="inline-block text-sm text-blue-600 hover:underline dark:text-blue-300"
+                  >
                     Bildirime git
                   </Link>
                 )}
                 {item.link && (
                   <button
                     type="button"
-                    className="text-sm text-slate-300 underline"
+                    className="text-sm text-slate-600 underline dark:text-slate-300"
                     onClick={() => setMutedLinks((prev) => [...new Set([...prev, item.link!])])}
                   >
                     Bu konudan bildirim kapat

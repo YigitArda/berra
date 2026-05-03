@@ -13,8 +13,8 @@
     "dev:web": "npm --prefix apps/web run dev",
     "build:api": "npm --prefix apps/api run build",
     "build:web": "npm --prefix apps/web run build",
-    "render:build": "pnpm install --frozen-lockfile && pnpm --filter @berra/api prisma:generate && pnpm --filter @berra/api build",
-    "render:start": "pnpm --filter @berra/api start",
+    "render:build": "pnpm install --frozen-lockfile && pnpm --filter @araba/api prisma:generate && pnpm --filter @araba/api build",
+    "render:start": "pnpm --filter @araba/api start",
     "worker:api": "npm --prefix apps/api run worker",
     "prepare": "husky install",
     "build": "turbo run build",
@@ -58,7 +58,6 @@
   "packageManager": "npm@10.2.4",
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
-      "eslint --fix",
       "prettier --write"
     ],
     "*.{json,md,yml,yaml}": [

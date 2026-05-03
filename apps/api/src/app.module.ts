@@ -4,7 +4,6 @@ import { AuthModule } from './auth/auth.module';
 import { BookmarksModule } from './bookmarks/bookmarks.module';
 import { BusinessesModule } from './businesses/businesses.module';
 import { ContentModule } from './content/content.module';
-import { CutoverProxyModule } from './cutover/cutover-proxy.module';
 import { DatabaseModule } from './database/database.module';
 import { DiscoveryModule } from './discovery/discovery.module';
 import { FeedModule } from './feed/feed.module';
@@ -42,7 +41,6 @@ import { UsersModule } from './users/users.module';
     ReportsModule,
     NotificationsModule,
     JobsModule,
-    CutoverProxyModule,
   ],
 })
 export class AppModule {}

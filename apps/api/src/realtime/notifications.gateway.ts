@@ -16,9 +16,24 @@ import * as jwt from 'jsonwebtoken';
 import { Server, Socket } from 'socket.io';
 import { REALTIME_EVENT } from '../shared';
 
+function getSocketCorsOrigins() {
+  const configured = (process.env.CORS_ORIGINS ?? process.env.APP_URL ?? 'http://localhost:3000')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  if (process.env.NODE_ENV !== 'production') {
+    for (let port = 3000; port <= 3010; port += 1) {
+      configured.push(`http://localhost:${port}`);
+    }
+  }
+
+  return Array.from(new Set(configured));
+}
+
 @WebSocketGateway({
   cors: {
-    origin: process.env.APP_URL ?? 'http://localhost:3000',
+    origin: getSocketCorsOrigins(),
     credentials: true,
   },
 })
@@ -63,7 +78,10 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection 
   }
 
   @SubscribeMessage('entity.join')
-  joinEntityRoom(@ConnectedSocket() client: Socket, @MessageBody() body: { entity: string; id: string | number }) {
+  joinEntityRoom(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: { entity: string; id: string | number },
+  ) {
     if (!client.data.user) return { ok: false, error: 'unauthorized' };
     const room = `${body.entity}:${body.id}`;
     client.join(room);
@@ -74,7 +92,11 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection 
     this.server.to(`user:${payload.userId}`).emit(REALTIME_EVENT.notificationCreated, payload);
   }
 
-  emitContentUpdated(payload: { contentId: number; entityRoom?: string; action: 'created' | 'updated' }) {
+  emitContentUpdated(payload: {
+    contentId: number;
+    entityRoom?: string;
+    action: 'created' | 'updated';
+  }) {
     if (payload.entityRoom) {
       this.server.to(payload.entityRoom).emit(REALTIME_EVENT.contentUpdated, payload);
       return;
@@ -89,8 +111,14 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection 
   private forwardRedisEvent(message: string) {
     try {
       const envelope = JSON.parse(message) as
-        | { event: typeof REALTIME_EVENT.notificationCreated; payload: { userId: number; notificationId: number; message: string } }
-        | { event: typeof REALTIME_EVENT.contentUpdated; payload: { contentId: number; action: 'created' | 'updated'; entityRoom?: string } };
+        | {
+            event: typeof REALTIME_EVENT.notificationCreated;
+            payload: { userId: number; notificationId: number; message: string };
+          }
+        | {
+            event: typeof REALTIME_EVENT.contentUpdated;
+            payload: { contentId: number; action: 'created' | 'updated'; entityRoom?: string };
+          };
 
       if (envelope.event === REALTIME_EVENT.notificationCreated) {
         this.emitNotificationCreated(envelope.payload);
@@ -106,9 +134,8 @@ export class NotificationsGateway implements OnGatewayInit, OnGatewayConnection 
   }
 
   private authenticateClient(client: Socket) {
-    const bearer = typeof client.handshake.auth?.token === 'string'
-      ? client.handshake.auth.token
-      : null;
+    const bearer =
+      typeof client.handshake.auth?.token === 'string' ? client.handshake.auth.token : null;
 
     const cookieToken = this.extractCookieToken(client.request as unknown as FastifyRequest);
     const token = cookieToken || bearer;

@@ -4,9 +4,9 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: berra
-      POSTGRES_USER: berra
-      POSTGRES_PASSWORD: berra
+      POSTGRES_DB: araba
+      POSTGRES_USER: araba
+      POSTGRES_PASSWORD: araba
     ports:
       - '5432:5432'
     volumes:
@@ -27,7 +27,7 @@ services:
       HOST: 0.0.0.0
       APP_URL: http://localhost:3000
       JWT_SECRET: please-change-this-secret-value
-      DATABASE_URL: postgresql://berra:berra@postgres:5432/berra
+      DATABASE_URL: postgresql://araba:araba@postgres:5432/araba
       REDIS_URL: redis://redis:6379
     depends_on:
       - postgres

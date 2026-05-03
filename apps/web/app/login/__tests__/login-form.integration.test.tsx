@@ -39,9 +39,9 @@ describe('LoginPage integration', () => {
 
     renderWithClient(<LoginPage />);
 
-    await user.type(screen.getByPlaceholderText('ornek@berra.app'), 'user@example.com');
-    await user.type(screen.getByPlaceholderText('••••••••'), 'password123');
-    await user.click(screen.getByRole('button', { name: 'Giriş yap' }));
+    await user.type(screen.getByPlaceholderText('ornek@araba.app'), 'user@example.com');
+    await user.type(screen.getByPlaceholderText('â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢'), 'password123');
+    await user.click(screen.getByRole('button', { name: 'GiriÅŸ yap' }));
 
     await waitFor(() => {
       expect(apiFetch).toHaveBeenCalledWith('/auth/login', {

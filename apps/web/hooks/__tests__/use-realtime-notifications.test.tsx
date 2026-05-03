@@ -4,7 +4,7 @@ import { act, render, waitFor } from '@testing-library/react';
 import { useRealtimeNotifications } from '../use-realtime-notifications';
 import { notificationsQueryKey } from '../../lib/notifications';
 import { useAppStore } from '../../store/app-store';
-import { getSocket, releaseSocket } from '../../lib/socket';
+import { getSocket, isRealtimeSocketEnabled, releaseSocket } from '../../lib/socket';
 
 const onMock = vi.fn();
 const offMock = vi.fn();
@@ -21,6 +21,7 @@ vi.mock('../../lib/socket', () => ({
     }),
     off: offMock,
   })),
+  isRealtimeSocketEnabled: vi.fn(() => true),
   releaseSocket: vi.fn(),
 }));
 
@@ -35,7 +36,8 @@ describe('useRealtimeNotifications', () => {
     notificationHandler = undefined;
     onMock.mockClear();
     offMock.mockClear();
-    useAppStore.setState({ unreadCount: 0, toastMessage: null });
+    useAppStore.setState({ localBadgeCount: 0, toastMessage: null });
+    vi.mocked(isRealtimeSocketEnabled).mockReturnValue(true);
   });
 
   afterEach(() => {
@@ -61,14 +63,15 @@ describe('useRealtimeNotifications', () => {
       notificationHandler?.({ message: 'Yeni bildirim', notificationId: 99 });
     });
 
-    const cached = client.getQueryData<{ notifications: Array<{ id: number; message: string }>; unread: number }>(
-      notificationsQueryKey,
-    );
+    const cached = client.getQueryData<{
+      notifications: Array<{ id: number; message: string }>;
+      unread: number;
+    }>(notificationsQueryKey);
 
     expect(cached?.unread).toBe(1);
     expect(cached?.notifications[0]).toMatchObject({ id: 99, message: 'Yeni bildirim' });
     expect(useAppStore.getState().toastMessage).toBe('Yeni bildirim');
-    expect(useAppStore.getState().unreadCount).toBe(1);
+    expect(useAppStore.getState().localBadgeCount).toBe(1);
 
     act(() => {
       vi.advanceTimersByTime(4000);

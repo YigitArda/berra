@@ -1,10 +1,10 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: berra-db-migrate
-  namespace: berra-staging
+  name: araba-db-migrate
+  namespace: araba-staging
 spec:
-  schedule: "0 * * * *"
+  schedule: '0 * * * *'
   jobTemplate:
     spec:
       template:
@@ -12,11 +12,11 @@ spec:
           restartPolicy: Never
           containers:
             - name: migrate
-              image: ghcr.io/your-org/berra-api:staging
-              command: ["npm", "run", "prisma:migrate"]
+              image: ghcr.io/your-org/araba-api:staging
+              command: ['npm', 'run', 'prisma:migrate']
               env:
                 - name: DATABASE_URL
                   valueFrom:
                     secretKeyRef:
-                      name: berra-secrets
+                      name: araba-secrets
                       key: DATABASE_URL

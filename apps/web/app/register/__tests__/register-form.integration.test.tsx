@@ -37,10 +37,10 @@ describe('RegisterPage integration', () => {
 
     renderWithClient(<RegisterPage />);
 
-    await user.type(screen.getByPlaceholderText('berra_user'), 'testuser');
-    await user.type(screen.getByPlaceholderText('ornek@berra.app'), 'test@example.com');
-    await user.type(screen.getByPlaceholderText('••••••••'), 'password123');
-    await user.click(screen.getByRole('button', { name: 'Kayıt ol' }));
+    await user.type(screen.getByPlaceholderText('araba_user'), 'testuser');
+    await user.type(screen.getByPlaceholderText('ornek@araba.app'), 'test@example.com');
+    await user.type(screen.getByPlaceholderText('â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢'), 'password123');
+    await user.click(screen.getByRole('button', { name: 'KayÄ±t ol' }));
 
     await waitFor(() => {
       expect(apiFetch).toHaveBeenCalledWith('/auth/register', {

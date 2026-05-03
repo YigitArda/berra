@@ -4,7 +4,7 @@ export type RecentThreadItem = {
   viewedAt: string;
 };
 
-const STORAGE_KEY = 'berra_recent_threads_v1';
+const STORAGE_KEY = 'araba_recent_threads_v1';
 const MAX_ITEMS = 8;
 
 function isBrowser() {
@@ -25,7 +25,11 @@ export function readRecentThreads(): RecentThreadItem[] {
       .filter((item): item is RecentThreadItem => {
         if (!item || typeof item !== 'object') return false;
         const candidate = item as Partial<RecentThreadItem>;
-        return typeof candidate.slug === 'string' && typeof candidate.title === 'string' && typeof candidate.viewedAt === 'string';
+        return (
+          typeof candidate.slug === 'string' &&
+          typeof candidate.title === 'string' &&
+          typeof candidate.viewedAt === 'string'
+        );
       })
       .slice(0, MAX_ITEMS);
   } catch {

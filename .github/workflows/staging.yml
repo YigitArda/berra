@@ -2,10 +2,10 @@ name: ci
 
 on:
   pull_request:
-    branches: ["work"]
+    branches: ['work']
   workflow_dispatch:
   push:
-    branches: ["work"]
+    branches: ['work']
 
 jobs:
   lint-typecheck-test:
@@ -38,7 +38,7 @@ jobs:
         run: pnpm test
 
       - name: Migration check (Prisma status)
-        run: pnpm --filter @berra/api prisma:migrate:check
+        run: pnpm --filter @araba/api prisma:migrate:check
 
   build-images-and-compose-check:
     runs-on: ubuntu-latest
@@ -65,10 +65,10 @@ jobs:
         run: pnpm build
 
       - name: Build API image
-        run: docker build -t berra-api:staging -f apps/api/Dockerfile apps/api
+        run: docker build -t araba-api:staging -f apps/api/Dockerfile apps/api
 
       - name: Build Web image
-        run: docker build -t berra-web:staging -f apps/web/Dockerfile apps/web
+        run: docker build -t araba-web:staging -f apps/web/Dockerfile apps/web
 
       - name: Compose config check
         run: docker compose -f docker-compose.staging.yml config

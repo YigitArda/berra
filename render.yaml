@@ -4,7 +4,7 @@
 
 services:
   - type: web
-    name: berra-api
+    name: araba-api
     runtime: node
     region: frankfurt # Change to your preferred region: oregon, ohio, frankfurt, singapore, etc.
     plan: free # Change to: starter, standard, etc. based on your needs
@@ -23,7 +23,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: "3000"
+        value: '3000'
       - key: DATABASE_URL
         sync: false # Set this manually in Render dashboard
       - key: JWT_SECRET
@@ -37,7 +37,7 @@ services:
 
 # Optional: Add a background worker service if needed
 #  - type: worker
-#    name: berra-worker
+#    name: araba-worker
 #    runtime: node
 #    region: frankfurt
 #    plan: free
@@ -61,7 +61,7 @@ services:
 
 # Optional: PostgreSQL database
 # databases:
-#   - name: berra-db
+#   - name: araba-db
 #     region: frankfurt
 #     plan: free
 #     postgresMajorVersion: 15

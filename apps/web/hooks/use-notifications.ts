@@ -3,7 +3,11 @@
 import { QueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { apiFetch } from '../lib/api';
 import { CACHE_PATCH_STRATEGY } from '../lib/query-patch-strategy';
-import { NotificationItem, NotificationsResponse, notificationsQueryKey } from '../lib/notifications';
+import {
+  NotificationItem,
+  NotificationsResponse,
+  notificationsQueryKey,
+} from '../lib/notifications';
 
 export type NotificationCreatedPayload = {
   message: string;
@@ -63,10 +67,11 @@ export function patchMarkAllRead(queryClient: QueryClient) {
   });
 }
 
-export function useNotifications() {
+export function useNotifications(enabled = true) {
   const notificationsQuery = useQuery({
     queryKey: notificationsQueryKey,
     queryFn: () => apiFetch<NotificationsResponse>('/notifications?page=1&limit=20'),
+    enabled,
   });
 
   return {

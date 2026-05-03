@@ -1,54 +1,54 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: berra-api
-  namespace: berra-staging
+  name: araba-api
+  namespace: araba-staging
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: berra-api
+      app: araba-api
   template:
     metadata:
       labels:
-        app: berra-api
+        app: araba-api
     spec:
       containers:
         - name: api
-          image: ghcr.io/your-org/berra-api:staging
+          image: ghcr.io/your-org/araba-api:staging
           ports:
             - containerPort: 4000
           env:
             - name: NODE_ENV
               value: production
             - name: PORT
-              value: "4000"
+              value: '4000'
             - name: HOST
-              value: "0.0.0.0"
+              value: '0.0.0.0'
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: berra-secrets
+                  name: araba-secrets
                   key: DATABASE_URL
             - name: REDIS_URL
               valueFrom:
                 secretKeyRef:
-                  name: berra-secrets
+                  name: araba-secrets
                   key: REDIS_URL
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: berra-secrets
+                  name: araba-secrets
                   key: JWT_SECRET
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: berra-api
-  namespace: berra-staging
+  name: araba-api
+  namespace: araba-staging
 spec:
   selector:
-    app: berra-api
+    app: araba-api
   ports:
     - port: 4000
       targetPort: 4000

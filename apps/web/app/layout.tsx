@@ -4,8 +4,12 @@ import { Providers } from '../components/layout/providers';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'arabalariseviyoruz.com - Türkiye\'nin Araba Topluluğu',
-  description: 'Türkiye\'nin araba topluluğu: forum, feed, model merkezi, sanayi rehberi ve araç karşılaştırma.',
+  title: "arabalariseviyoruz.com - Türkiye'nin Araba Topluluğu",
+  description:
+    "Türkiye'nin araba topluluğu: forum, feed, model merkezi, sanayi rehberi ve araç karşılaştırma.",
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 // Runtime API URL - build sonrası değiştirilebilir
@@ -27,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: `
               (function() {
                 try {
-                  var theme = localStorage.getItem('berra_theme');
+                  var theme = localStorage.getItem('araba_theme');
                   if (theme === 'light') {
                     document.documentElement.classList.remove('dark');
                     document.documentElement.classList.add('light');

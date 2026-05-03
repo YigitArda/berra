@@ -2,7 +2,7 @@ import { InputHTMLAttributes } from 'react';
 import { cn } from '../../lib/cn';
 
 export const inputVariants = {
-  default: 'border-slate-700 focus-visible:ring-primary',
+  default: 'border-slate-300 focus-visible:ring-primary dark:border-slate-700',
   invalid: 'border-red-500 focus-visible:ring-red-500',
   success: 'border-emerald-500 focus-visible:ring-emerald-500',
 } as const;
@@ -22,14 +22,20 @@ type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> & {
   size?: InputSize;
 };
 
-export function Input({ className, error = false, variant = 'default', size = 'md', ...props }: InputProps) {
+export function Input({
+  className,
+  error = false,
+  variant = 'default',
+  size = 'md',
+  ...props
+}: InputProps) {
   const resolvedVariant = error ? 'invalid' : variant;
 
   return (
     <input
       aria-invalid={resolvedVariant === 'invalid' || props['aria-invalid'] ? true : undefined}
       className={cn(
-        'w-full rounded-md border bg-white text-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:bg-slate-900 dark:text-slate-100 dark:focus-visible:ring-offset-slate-950',
+        'w-full rounded-lg border bg-white text-slate-900 transition-colors placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus-visible:ring-offset-slate-950',
         inputVariants[resolvedVariant],
         inputSizes[size],
         className,

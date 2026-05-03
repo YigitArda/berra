@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '../lib/api';
 
-type ForumThread = {
+export type ForumThread = {
   id: number;
   title: string;
   slug: string;
@@ -15,15 +15,48 @@ type ForumThread = {
   author: string;
 };
 
+export type ForumPost = {
+  id: number;
+  body: string;
+  like_count: number;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string | null;
+  username: string;
+  avatar_url: string | null;
+  role: 'user' | 'mod' | 'admin';
+};
+
+export type ForumThreadDetail = {
+  thread: ForumThread & {
+    tags: string[];
+    followers: number;
+  };
+  posts: ForumPost[];
+  page: number;
+  limit: number;
+};
+
 export function useForum(category: string, page: number) {
   // CUTOVER_PROXY: `/forum/*` requests go through Nest API and are proxied during migration.
-  const query = category === 'all'
-    ? `/forum/threads?page=${page}`
-    : `/forum/threads?category=${encodeURIComponent(category)}&page=${page}`;
+  const query =
+    category === 'all'
+      ? `/forum/threads?page=${page}`
+      : `/forum/threads?category=${encodeURIComponent(category)}&page=${page}`;
 
   return useQuery({
     queryKey: ['forum', category, page],
     queryFn: () => apiFetch<{ threads: ForumThread[] }>(query),
+    retry: false,
+  });
+}
+
+export function useForumThread(slug: string | null, page: number) {
+  return useQuery({
+    queryKey: ['forum-thread', slug, page],
+    queryFn: () => apiFetch<ForumThreadDetail>(`/forum/threads/${slug}?page=${page}`),
+    enabled: Boolean(slug),
+    retry: false,
   });
 }
 

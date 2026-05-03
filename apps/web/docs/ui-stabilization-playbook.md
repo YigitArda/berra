@@ -1,56 +1,56 @@
 # UI Stabilization Playbook
 
-## 1) Bug triage ve önceliklendirme
+## 1) Bug triage ve Ã¶nceliklendirme
 
-- **P0:** kullanıcı akışını kıran hatalar (login/logout, feed gönderme, navigation).
-- **P1:** yanlış davranış, workaround var.
-- **P2:** görsel/UX tutarsızlığı.
+- **P0:** kullanÄ±cÄ± akÄ±ÅŸÄ±nÄ± kÄ±ran hatalar (login/logout, feed gÃ¶nderme, navigation).
+- **P1:** yanlÄ±ÅŸ davranÄ±ÅŸ, workaround var.
+- **P2:** gÃ¶rsel/UX tutarsÄ±zlÄ±ÄŸÄ±.
 
-### Kritik akışlar (öncelikli)
+### Kritik akÄ±ÅŸlar (Ã¶ncelikli)
 
-1. Feed gönderimi ve liste yenileme
-2. Bildirim badge ve nav davranışı
-3. Oturuma göre header aksiyonları (Çıkış/Giriş)
+1. Feed gÃ¶nderimi ve liste yenileme
+2. Bildirim badge ve nav davranÄ±ÅŸÄ±
+3. Oturuma gÃ¶re header aksiyonlarÄ± (Ã‡Ä±kÄ±ÅŸ/GiriÅŸ)
 
-## 2) Reprodüksiyon checklist'i
+## 2) ReprodÃ¼ksiyon checklist'i
 
-Her bug kaydı şu alanları içermelidir:
+Her bug kaydÄ± ÅŸu alanlarÄ± iÃ§ermelidir:
 
-- Adım adım reproduction
-- Beklenen sonuç
-- Gerçekleşen sonuç
-- Environment (tarayıcı, viewport, auth durumu)
-- Ekran kaydı/screenshot
+- AdÄ±m adÄ±m reproduction
+- Beklenen sonuÃ§
+- GerÃ§ekleÅŸen sonuÃ§
+- Environment (tarayÄ±cÄ±, viewport, auth durumu)
+- Ekran kaydÄ±/screenshot
 
-## 3) Hızlı kazanım düzeltmeleri
+## 3) HÄ±zlÄ± kazanÄ±m dÃ¼zeltmeleri
 
-- Form doğrulama, disabled/loading/empty state mesajlarının tutarlı kullanımı
-- Header/nav aktif durum + odak görünürlüğü için tek pattern
+- Form doÄŸrulama, disabled/loading/empty state mesajlarÄ±nÄ±n tutarlÄ± kullanÄ±mÄ±
+- Header/nav aktif durum + odak gÃ¶rÃ¼nÃ¼rlÃ¼ÄŸÃ¼ iÃ§in tek pattern
 
-## 4) Regression test kuralı
+## 4) Regression test kuralÄ±
 
-- Her UI bug fix için **en az 1 regression testi** zorunludur.
+- Her UI bug fix iÃ§in **en az 1 regression testi** zorunludur.
 - Test tipleri:
-  - Integration test (kritik kullanıcı akışları)
+  - Integration test (kritik kullanÄ±cÄ± akÄ±ÅŸlarÄ±)
   - Unit test (UI state/utility)
 
 ## 5) PR gate
 
-Aşağıdaki komutlar PR aşamasında geçmelidir:
+AÅŸaÄŸÄ±daki komutlar PR aÅŸamasÄ±nda geÃ§melidir:
 
-- `pnpm --filter @berra/web lint`
-- `pnpm --filter @berra/web typecheck`
-- `pnpm --filter @berra/web test`
+- `pnpm --filter @araba/web lint`
+- `pnpm --filter @araba/web typecheck`
+- `pnpm --filter @araba/web test`
 
-## 6) Haftalık çalışma modeli
+## 6) HaftalÄ±k Ã§alÄ±ÅŸma modeli
 
 - Pazartesi: triage + sprint plan
-- Çarşamba: ara kalite kontrol (test/a11y)
+- Ã‡arÅŸamba: ara kalite kontrol (test/a11y)
 - Cuma: demo + retro + metrikler
 
 ## 7) Definition of Done (UI)
 
-- Repro doğrulandı
+- Repro doÄŸrulandÄ±
 - Regression test eklendi
-- Lint + typecheck + test geçti
-- A11y kritik maddeleri sağlandı
+- Lint + typecheck + test geÃ§ti
+- A11y kritik maddeleri saÄŸlandÄ±

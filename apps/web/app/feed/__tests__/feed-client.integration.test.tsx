@@ -40,8 +40,8 @@ describe('FeedClient integration', () => {
         posts: [
           {
             id: 10,
-            username: 'berra',
-            body: 'Mevcut içerik',
+            username: 'araba',
+            body: 'Mevcut iÃ§erik',
             like_count: 2,
             comment_count: 1,
             created_at: '2026-01-01T00:00:00.000Z',
@@ -53,8 +53,8 @@ describe('FeedClient integration', () => {
         posts: [
           {
             id: 11,
-            username: 'berra',
-            body: 'Yeni içerik',
+            username: 'araba',
+            body: 'Yeni iÃ§erik',
             like_count: 0,
             comment_count: 0,
             created_at: '2026-01-01T00:00:00.000Z',
@@ -64,18 +64,18 @@ describe('FeedClient integration', () => {
 
     renderWithClient(<FeedClient />);
 
-    expect(await screen.findByText('Mevcut içerik')).toBeInTheDocument();
+    expect(await screen.findByText('Mevcut iÃ§erik')).toBeInTheDocument();
 
-    await user.type(screen.getByPlaceholderText('Ne düşünüyorsun?'), 'Yeni içerik');
-    await user.click(screen.getByRole('button', { name: 'Paylaş' }));
+    await user.type(screen.getByPlaceholderText('Ne dÃ¼ÅŸÃ¼nÃ¼yorsun?'), 'Yeni iÃ§erik');
+    await user.click(screen.getByRole('button', { name: 'PaylaÅŸ' }));
 
     await waitFor(() => {
       expect(apiFetch).toHaveBeenCalledWith('/feed', {
         method: 'POST',
-        body: JSON.stringify({ body: 'Yeni içerik' }),
+        body: JSON.stringify({ body: 'Yeni iÃ§erik' }),
       });
     });
 
-    expect(await screen.findByText('Yeni içerik')).toBeInTheDocument();
+    expect(await screen.findByText('Yeni iÃ§erik')).toBeInTheDocument();
   });
 });

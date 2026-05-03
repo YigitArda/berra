@@ -10,6 +10,21 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { validateEnv } from './config/env';
 import { requestLogger } from './common/middleware/request-logger';
 
+function getAllowedOrigins() {
+  const configured = (process.env.CORS_ORIGINS ?? process.env.APP_URL ?? 'http://localhost:3000')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  if (process.env.NODE_ENV !== 'production') {
+    for (let port = 3000; port <= 3010; port += 1) {
+      configured.push(`http://localhost:${port}`);
+    }
+  }
+
+  return Array.from(new Set(configured));
+}
+
 async function bootstrap() {
   validateEnv();
 
@@ -44,7 +59,7 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: (process.env.CORS_ORIGINS ?? process.env.APP_URL ?? 'http://localhost:3000').split(',').map((v) => v.trim()),
+    origin: getAllowedOrigins(),
     credentials: true,
   });
 

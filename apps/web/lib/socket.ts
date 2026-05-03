@@ -10,6 +10,22 @@ let socketInstance: Socket | null = null;
 let consumerCount = 0;
 let latestReconnectAttempt = 0;
 
+export function isRealtimeSocketEnabled() {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  if (process.env.NEXT_PUBLIC_ENABLE_SOCKET === 'true') {
+    return true;
+  }
+
+  if (!IS_DEV) {
+    return true;
+  }
+
+  return window.location.origin === 'http://localhost:3000';
+}
+
 function logDebug(message: string, ...rest: unknown[]) {
   if (!IS_DEV) {
     return;
@@ -85,7 +101,7 @@ export function getSocket() {
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1_000,
       reconnectionDelayMax: 10_000,
-      randomizationFactor: 0.5
+      randomizationFactor: 0.5,
     });
     attachLifecycleListeners(socketInstance);
   }
@@ -97,7 +113,7 @@ export function getSocket() {
 
 export function subscribeSocketEvent<TPayload>(
   event: RealtimeEventName,
-  handler: (payload: TPayload) => void
+  handler: (payload: TPayload) => void,
 ) {
   const socket = getSocket();
   socket.off(event, handler as (...args: unknown[]) => void);

@@ -1,37 +1,37 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: berra-worker
-  namespace: berra-staging
+  name: araba-worker
+  namespace: araba-staging
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: berra-worker
+      app: araba-worker
   template:
     metadata:
       labels:
-        app: berra-worker
+        app: araba-worker
     spec:
       containers:
         - name: worker
-          image: ghcr.io/your-org/berra-api:staging
-          command: ["npm", "run", "worker"]
+          image: ghcr.io/your-org/araba-api:staging
+          command: ['npm', 'run', 'worker']
           env:
             - name: NODE_ENV
               value: production
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: berra-secrets
+                  name: araba-secrets
                   key: DATABASE_URL
             - name: REDIS_URL
               valueFrom:
                 secretKeyRef:
-                  name: berra-secrets
+                  name: araba-secrets
                   key: REDIS_URL
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: berra-secrets
+                  name: araba-secrets
                   key: JWT_SECRET

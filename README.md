@@ -1,25 +1,24 @@
 # arabalariseviyoruz.com
 
-Türkiye'nin araba topluluk platformu — Forum + Akış + Araçlar.
+TÃ¼rkiye'nin araba topluluk platformu â€” Forum + AkÄ±ÅŸ + AraÃ§lar.
 
-> **Not:** Aktif legacy uygulama depo kökünde yer alır. `package.json`, `scripts/migrate.js` ve `schema.sql` dosyaları bu kök dizin için kanonik kaynaktır; yanlışlıkla alt klasörlerde çalışmayın.
+> **Not:** Aktif legacy uygulama depo kÃ¶kÃ¼nde yer alÄ±r. `package.json`, `scripts/migrate.js` ve `schema.sql` dosyalarÄ± bu kÃ¶k dizin iÃ§in kanonik kaynaktÄ±r; yanlÄ±ÅŸlÄ±kla alt klasÃ¶rlerde Ã§alÄ±ÅŸmayÄ±n.
 
+## Aktif kullanÄ±cÄ± arayÃ¼zÃ¼
 
-## Aktif kullanıcı arayüzü
+- **Production hedefi:** Next.js (`apps/web`) tam geÃ§iÅŸ.
+- **Legacy arayÃ¼z:** `ACTIVE_UI=legacy` verilirse geri dÃ¶nÃ¼ÅŸ (rollback) amaÃ§lÄ± kullanÄ±labilir (varsayÄ±lan artÄ±k `next`).
 
-- **Production hedefi:** Next.js (`apps/web`) tam geçiş.
-- **Legacy arayüz:** `ACTIVE_UI=legacy` verilirse geri dönüş (rollback) amaçlı kullanılabilir (varsayılan artık `next`).
+### GeliÅŸtirme komutlarÄ± (arayÃ¼ze gÃ¶re)
 
-### Geliştirme komutları (arayüze göre)
-
-**Legacy arayüzü geliştirme (aktif):**
+**Legacy arayÃ¼zÃ¼ geliÅŸtirme (aktif):**
 
 ```bash
 npm run dev:legacy
 npm run start:legacy
 ```
 
-**Next arayüzü geliştirme (migration):**
+**Next arayÃ¼zÃ¼ geliÅŸtirme (migration):**
 
 ```bash
 npm run dev:web
@@ -28,61 +27,60 @@ npm run build:web
 
 ## Route matrisi (Next vs Legacy)
 
-| URL pattern | Legacy (`public/`) | Next (`apps/web`) | Durum |
-|---|---|---|---|
-| `/` | ✅ `index.html` / SPA ana ekran | ✅ `app/page.tsx` | İki arayüzde de var |
-| `/index.html` | ✅ statik giriş | ✅ `/`'e redirect | Next tarafında kalıcı yönlendirme var |
-| `/login` | ⚠️ modal/SPA akışı | ✅ `app/login/page.tsx` | Next karşılığı hazır |
-| `/register` | ⚠️ modal/SPA akışı | ✅ `app/register/page.tsx` | Next karşılığı hazır |
-| `/feed` | ⚠️ SPA içinde feed paneli | ✅ `app/feed/page.tsx` | Next karşılığı hazır |
-| `/search` | ⚠️ navbar içi arama | ✅ `app/search/page.tsx` | Next karşılığı hazır |
-| `/notifications` | ⚠️ SPA panel | ✅ `app/notifications/page.tsx` | Next karşılığı hazır |
-| `/dashboard` | ❌ ayrı route yok | ✅ `app/dashboard/page.tsx` | Sadece Next |
-| `/post/:id` | ✅ SPA post detail route | ✅ `/items/:id` (`app/items/[id]/page.tsx`) | Kalıcı yönlendirme planlandı |
-| `/thread/:slug` | ✅ SPA thread route | ✅ `app/thread/[slug]/page.tsx` | Next karşılığı hazır |
-| `/profile/:username` | ✅ SPA profile route | ✅ `app/profile/[username]/page.tsx` | Next karşılığı hazır |
-| `/messages` , `/messages/:username` | ✅ SPA messages route | ✅ `app/messages/*` | Next karşılığı hazır |
-| `/rehber.html` | ✅ statik sayfa | ✅ `/rehber` | Next karşılığı hazır (yeni URL) |
-| `/sanayi.html` | ✅ statik sayfa | ✅ `/sanayi` | Next karşılığı hazır (yeni URL) |
-| `/karsilastir.html` | ✅ statik sayfa | ✅ `/karsilastir` | Next karşılığı hazır (yeni URL) |
-| `/ozellikler.html` | ✅ statik sayfa | ✅ `/ozellikler` | Next karşılığı hazır (yeni URL) |
+| URL pattern                         | Legacy (`public/`)               | Next (`apps/web`)                            | Durum                                     |
+| ----------------------------------- | -------------------------------- | -------------------------------------------- | ----------------------------------------- |
+| `/`                                 | âœ… `index.html` / SPA ana ekran | âœ… `app/page.tsx`                           | Ä°ki arayÃ¼zde de var                     |
+| `/index.html`                       | âœ… statik giriÅŸ                | âœ… `/`'e redirect                           | Next tarafÄ±nda kalÄ±cÄ± yÃ¶nlendirme var |
+| `/login`                            | âš ï¸ modal/SPA akÄ±ÅŸÄ±         | âœ… `app/login/page.tsx`                     | Next karÅŸÄ±lÄ±ÄŸÄ± hazÄ±r                |
+| `/register`                         | âš ï¸ modal/SPA akÄ±ÅŸÄ±         | âœ… `app/register/page.tsx`                  | Next karÅŸÄ±lÄ±ÄŸÄ± hazÄ±r                |
+| `/feed`                             | âš ï¸ SPA iÃ§inde feed paneli    | âœ… `app/feed/page.tsx`                      | Next karÅŸÄ±lÄ±ÄŸÄ± hazÄ±r                |
+| `/search`                           | âš ï¸ navbar iÃ§i arama          | âœ… `app/search/page.tsx`                    | Next karÅŸÄ±lÄ±ÄŸÄ± hazÄ±r                |
+| `/notifications`                    | âš ï¸ SPA panel                  | âœ… `app/notifications/page.tsx`             | Next karÅŸÄ±lÄ±ÄŸÄ± hazÄ±r                |
+| `/dashboard`                        | âŒ ayrÄ± route yok               | âœ… `app/dashboard/page.tsx`                 | Sadece Next                               |
+| `/post/:id`                         | âœ… SPA post detail route        | âœ… `/items/:id` (`app/items/[id]/page.tsx`) | KalÄ±cÄ± yÃ¶nlendirme planlandÄ±          |
+| `/thread/:slug`                     | âœ… SPA thread route             | âœ… `app/thread/[slug]/page.tsx`             | Next karÅŸÄ±lÄ±ÄŸÄ± hazÄ±r                |
+| `/profile/:username`                | âœ… SPA profile route            | âœ… `app/profile/[username]/page.tsx`        | Next karÅŸÄ±lÄ±ÄŸÄ± hazÄ±r                |
+| `/messages` , `/messages/:username` | âœ… SPA messages route           | âœ… `app/messages/*`                         | Next karÅŸÄ±lÄ±ÄŸÄ± hazÄ±r                |
+| `/rehber.html`                      | âœ… statik sayfa                 | âœ… `/rehber`                                | Next karÅŸÄ±lÄ±ÄŸÄ± hazÄ±r (yeni URL)     |
+| `/sanayi.html`                      | âœ… statik sayfa                 | âœ… `/sanayi`                                | Next karÅŸÄ±lÄ±ÄŸÄ± hazÄ±r (yeni URL)     |
+| `/karsilastir.html`                 | âœ… statik sayfa                 | âœ… `/karsilastir`                           | Next karÅŸÄ±lÄ±ÄŸÄ± hazÄ±r (yeni URL)     |
+| `/ozellikler.html`                  | âœ… statik sayfa                 | âœ… `/ozellikler`                            | Next karÅŸÄ±lÄ±ÄŸÄ± hazÄ±r (yeni URL)     |
 
 ## API sahiplik durumu (Next cutover)
 
-Next frontend tarafında kullanılan endpointler Nest API üzerinde çalışır:
+Next frontend tarafÄ±nda kullanÄ±lan endpointler Nest API Ã¼zerinde Ã§alÄ±ÅŸÄ±r:
 
 - `auth`, `feed`, `profile`, `search`, `notifications`
 - `forum`, `discovery`, `businesses`, `bookmarks`, `reports`
 
-Detay endpoint envanteri ve taşınma kararları: `docs/next-cutover-api-matrix.md`.
+Detay endpoint envanteri ve taÅŸÄ±nma kararlarÄ±: `docs/next-cutover-api-matrix.md`.
 
-## Legacy -> Next kalıcı redirect planı
+## Legacy -> Next kalÄ±cÄ± redirect planÄ±
 
-- Legacy Express katmanında `ACTIVE_UI=next` ve `NEXT_APP_URL` tanımlıysa kullanıcı-facing route'lar Next'e `301` ile yönlendirilir
-  (örn: `/`, `/feed`, `/search`, `/notifications`, `/forum`, `/thread/:slug`, `/profile/:username`, `/models`, `/rehber.html`, `/sanayi.html`, `/karsilastir.html`, `/post/:id`).
-- Rollback için `ACTIVE_UI=legacy` kullanılabilir.
+- Legacy Express katmanÄ±nda `ACTIVE_UI=next` ve `NEXT_APP_URL` tanÄ±mlÄ±ysa kullanÄ±cÄ±-facing route'lar Next'e `301` ile yÃ¶nlendirilir
+  (Ã¶rn: `/`, `/feed`, `/search`, `/notifications`, `/forum`, `/thread/:slug`, `/profile/:username`, `/models`, `/rehber.html`, `/sanayi.html`, `/karsilastir.html`, `/post/:id`).
+- Rollback iÃ§in `ACTIVE_UI=legacy` kullanÄ±labilir.
 
-## Auth/session cookie kuralları (Legacy + Next için sabit)
+## Auth/session cookie kurallarÄ± (Legacy + Next iÃ§in sabit)
 
-Her iki backend'de de cookie politikası hizalandı:
+Her iki backend'de de cookie politikasÄ± hizalandÄ±:
 
-- Access cookie adı: `token`
-- Refresh cookie adı: `refresh_token`
+- Access cookie adÄ±: `token`
+- Refresh cookie adÄ±: `refresh_token`
 - `httpOnly: true`
 - `sameSite: lax`
 - `secure: NODE_ENV=production`
 - `path: /`
 - Access maxAge: **15 dakika**
-- Refresh maxAge: **14 gün**
+- Refresh maxAge: **14 gÃ¼n**
 
+## Yeni Mimari (Migration BaÅŸlangÄ±cÄ±)
 
-## Yeni Mimari (Migration Başlangıcı)
-
-Bu repo yeni mimari geçişi için aşağıdaki başlangıç yapısını içerir:
+Bu repo yeni mimari geÃ§iÅŸi iÃ§in aÅŸaÄŸÄ±daki baÅŸlangÄ±Ã§ yapÄ±sÄ±nÄ± iÃ§erir:
 
 - `apps/api`: NestJS + Fastify + TypeScript (yeni API iskeleti)
 - `apps/web`: Next.js + TypeScript (yeni frontend iskeleti)
-- `packages/shared`: paylaşılan tipler (DTO/type contract)
+- `packages/shared`: paylaÅŸÄ±lan tipler (DTO/type contract)
 
 ### Yeni komutlar
 
@@ -93,40 +91,38 @@ npm run build:api
 npm run build:web
 ```
 
+### Bu adÄ±mda taÅŸÄ±nanlar
 
-### Bu adımda taşınanlar
+- Yeni `apps/api` tarafÄ±nda gerÃ§ek veritabanÄ± baÄŸlantÄ±sÄ± (`pg`) eklendi.
+- `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` endpointleri Nest tarafÄ±nda Ã§alÄ±ÅŸÄ±r hale getirildi.
+- Next.js tarafÄ±nda `/login` sayfasÄ± ile yeni auth endpointlerini test edecek istemci formu eklendi.
+- Queue altyapÄ±sÄ± iÃ§in `apps/api` tarafÄ±na BullMQ + Redis tabanlÄ± `QueueService` eklendi.
+- `POST /api/notifications/system-test` endpointi ile bildirim job'Ä± kuyruÄŸa atÄ±labilir hale geldi.
+- AyrÄ± worker baÅŸlangÄ±cÄ± iÃ§in `npm run worker:api` script'i eklendi.
+- Feed modÃ¼lÃ¼ Nest tarafÄ±na taÅŸÄ±ndÄ±: `GET /api/feed`, `POST /api/feed`, `POST/DELETE /api/feed/:id/like`, `GET /api/feed/:id/comments`, `POST /api/feed/:id/comment`.
+- Next.js tarafÄ±na `/feed` test sayfasÄ± eklendi.
+- Auth yanÄ±tlarÄ± cookie-odaklÄ± hale getirildi; JWT artÄ±k response body'de dÃ¶nÃ¼lmÃ¼yor.
+- API'de global exception formatÄ± ve env doÄŸrulamasÄ± eklendi.
+- Auth tarafÄ±na `POST /api/auth/refresh` eklendi; rol bazlÄ± yetki iÃ§in `RolesGuard` altyapÄ±sÄ± kuruldu.
+- Profil modÃ¼lÃ¼ eklendi: `GET /api/profile/me`, `PUT /api/profile/me`, `GET /api/profile/:username`.
+- Arama modÃ¼lÃ¼ eklendi: `GET /api/search?q=...` (PostgreSQL FTS).
+- Realtime bildirim altyapÄ±sÄ± eklendi (`Socket.IO gateway`) ve bildirim yayÄ±nlama entegre edildi.
+- API iÃ§in temel e2e test iskeleti eklendi (`apps/api/test/health.e2e-spec.ts`).
 
-- Yeni `apps/api` tarafında gerçek veritabanı bağlantısı (`pg`) eklendi.
-- `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` endpointleri Nest tarafında çalışır hale getirildi.
-- Next.js tarafında `/login` sayfası ile yeni auth endpointlerini test edecek istemci formu eklendi.
-- Queue altyapısı için `apps/api` tarafına BullMQ + Redis tabanlı `QueueService` eklendi.
-- `POST /api/notifications/system-test` endpointi ile bildirim job'ı kuyruğa atılabilir hale geldi.
-- Ayrı worker başlangıcı için `npm run worker:api` script'i eklendi.
-- Feed modülü Nest tarafına taşındı: `GET /api/feed`, `POST /api/feed`, `POST/DELETE /api/feed/:id/like`, `GET /api/feed/:id/comments`, `POST /api/feed/:id/comment`.
-- Next.js tarafına `/feed` test sayfası eklendi.
-- Auth yanıtları cookie-odaklı hale getirildi; JWT artık response body'de dönülmüyor.
-- API'de global exception formatı ve env doğrulaması eklendi.
-- Auth tarafına `POST /api/auth/refresh` eklendi; rol bazlı yetki için `RolesGuard` altyapısı kuruldu.
-- Profil modülü eklendi: `GET /api/profile/me`, `PUT /api/profile/me`, `GET /api/profile/:username`.
-- Arama modülü eklendi: `GET /api/search?q=...` (PostgreSQL FTS).
-- Realtime bildirim altyapısı eklendi (`Socket.IO gateway`) ve bildirim yayınlama entegre edildi.
-- API için temel e2e test iskeleti eklendi (`apps/api/test/health.e2e-spec.ts`).
-
-Legacy Express uygulaması hâlâ çalışır:
+Legacy Express uygulamasÄ± hÃ¢lÃ¢ Ã§alÄ±ÅŸÄ±r:
 
 ```bash
 npm run dev:legacy
 npm run start:legacy
 ```
 
+## Monorepo YapÄ±sÄ± (pnpm + Turbo)
 
-## Monorepo Yapısı (pnpm + Turbo)
-
-Repo, `pnpm-workspace.yaml` + `turbo.json` ile monorepo düzenine taşındı:
+Repo, `pnpm-workspace.yaml` + `turbo.json` ile monorepo dÃ¼zenine taÅŸÄ±ndÄ±:
 
 - `apps/api` (NestJS + Fastify)
 - `apps/web` (Next.js App Router)
-- `packages/shared` (types + zod şemaları + utils)
+- `packages/shared` (types + zod ÅŸemalarÄ± + utils)
 
 ### Temel komutlar
 
@@ -147,7 +143,7 @@ pnpm test
 
 ## Local Docker Compose
 
-`docker-compose.local.yml` ile aşağıdaki servisler birlikte ayağa kalkar:
+`docker-compose.local.yml` ile aÅŸaÄŸÄ±daki servisler birlikte ayaÄŸa kalkar:
 
 - postgres
 - redis
@@ -160,97 +156,105 @@ docker compose -f docker-compose.local.yml up --build
 
 ## Legacy Kurulum
 
-### 1. Bağımlılıkları yükle
+### 1. BaÄŸÄ±mlÄ±lÄ±klarÄ± yÃ¼kle
+
 ```bash
 npm install
 ```
 
-### 2. Ortam değişkenlerini ayarla
+### 2. Ortam deÄŸiÅŸkenlerini ayarla
+
 ```bash
 cp .env.example .env
-# .env dosyasını düzenle
+# .env dosyasÄ±nÄ± dÃ¼zenle
 ```
 
-### 3. Veritabanını oluştur ve şemayı uygula
-`npm run migrate`, kökteki `scripts/migrate.js` dosyasını çalıştırır ve kökteki `schema.sql` şemasını uygular.
+### 3. VeritabanÄ±nÄ± oluÅŸtur ve ÅŸemayÄ± uygula
+
+`npm run migrate`, kÃ¶kteki `scripts/migrate.js` dosyasÄ±nÄ± Ã§alÄ±ÅŸtÄ±rÄ±r ve kÃ¶kteki `schema.sql` ÅŸemasÄ±nÄ± uygular.
 
 ```bash
 createdb arabalariseviyoruz
 npm run migrate
 ```
 
-İsterseniz aynı akışı manuel olarak da kök dizinden çalıştırabilirsiniz:
+Ä°sterseniz aynÄ± akÄ±ÅŸÄ± manuel olarak da kÃ¶k dizinden Ã§alÄ±ÅŸtÄ±rabilirsiniz:
 
 ```bash
 node scripts/migrate.js
 ```
 
-### 4. Legacy geliştirme sunucusunu başlat
+### 4. Legacy geliÅŸtirme sunucusunu baÅŸlat
+
 ```bash
 npm run dev:legacy
 ```
 
-## API Rotaları (Legacy)
+## API RotalarÄ± (Legacy)
 
 ### Auth
-| Metod | Rota             | Açıklama        |
-|-------|------------------|-----------------|
-| POST  | /api/auth/register | Kayıt ol      |
-| POST  | /api/auth/login    | Giriş yap     |
-| POST  | /api/auth/logout   | Çıkış yap     |
-| GET   | /api/auth/me       | Aktif kullanıcı |
+
+| Metod | Rota               | AÃ§Ä±klama        |
+| ----- | ------------------ | ----------------- |
+| POST  | /api/auth/register | KayÄ±t ol         |
+| POST  | /api/auth/login    | GiriÅŸ yap        |
+| POST  | /api/auth/logout   | Ã‡Ä±kÄ±ÅŸ yap     |
+| GET   | /api/auth/me       | Aktif kullanÄ±cÄ± |
 
 ### Forum
-| Metod  | Rota                           | Açıklama          |
-|--------|--------------------------------|-------------------|
-| GET    | /api/forum/categories          | Kategoriler       |
-| GET    | /api/forum/threads             | Tüm konular       |
-| GET    | /api/forum/threads?category=x  | Kategori konuları |
-| GET    | /api/forum/threads?tag=x       | Etikete göre konular |
-| GET    | /api/forum/threads/:slug       | Konu detayı       |
-| POST   | /api/forum/threads             | Konu aç           |
-| POST   | /api/forum/threads/:slug/posts | Yanıt yaz         |
-| POST   | /api/forum/posts/:id/like      | Beğen             |
-| DELETE | /api/forum/posts/:id/like      | Beğeniyi geri al  |
-| GET    | /api/forum/tags                | Popüler etiketler |
+
+| Metod  | Rota                           | AÃ§Ä±klama            |
+| ------ | ------------------------------ | --------------------- |
+| GET    | /api/forum/categories          | Kategoriler           |
+| GET    | /api/forum/threads             | TÃ¼m konular          |
+| GET    | /api/forum/threads?category=x  | Kategori konularÄ±    |
+| GET    | /api/forum/threads?tag=x       | Etikete gÃ¶re konular |
+| GET    | /api/forum/threads/:slug       | Konu detayÄ±          |
+| POST   | /api/forum/threads             | Konu aÃ§              |
+| POST   | /api/forum/threads/:slug/posts | YanÄ±t yaz            |
+| POST   | /api/forum/posts/:id/like      | BeÄŸen                |
+| DELETE | /api/forum/posts/:id/like      | BeÄŸeniyi geri al     |
+| GET    | /api/forum/tags                | PopÃ¼ler etiketler    |
 
 ### Discovery (Takip + Model Merkezi)
-| Metod  | Rota                                | Açıklama                     |
-|--------|-------------------------------------|------------------------------|
-| POST   | /api/discovery/users/:userId/follow | Kullanıcı takip et           |
-| DELETE | /api/discovery/users/:userId/follow | Kullanıcı takibini bırak     |
-| POST   | /api/discovery/threads/:threadId/follow | Thread takip et          |
-| DELETE | /api/discovery/threads/:threadId/follow | Thread takibini bırak    |
-| POST   | /api/discovery/models               | Marka/model kaydı aç         |
-| GET    | /api/discovery/models               | Model listesi                |
-| GET    | /api/discovery/models/:slug         | Model landing verisi         |
-| POST   | /api/discovery/models/:modelId/follow | Model takip et             |
-| DELETE | /api/discovery/models/:modelId/follow | Model takibini bırak      |
 
-### Akış (Feed)
-| Metod | Rota            | Açıklama     |
-|-------|-----------------|--------------|
-| GET   | /api/feed       | Akışı getir  |
-| POST  | /api/feed       | Post paylaş  |
-| POST  | /api/feed/:id/like | Beğen     |
+| Metod  | Rota                                    | AÃ§Ä±klama                  |
+| ------ | --------------------------------------- | --------------------------- |
+| POST   | /api/discovery/users/:userId/follow     | KullanÄ±cÄ± takip et        |
+| DELETE | /api/discovery/users/:userId/follow     | KullanÄ±cÄ± takibini bÄ±rak |
+| POST   | /api/discovery/threads/:threadId/follow | Thread takip et             |
+| DELETE | /api/discovery/threads/:threadId/follow | Thread takibini bÄ±rak      |
+| POST   | /api/discovery/models                   | Marka/model kaydÄ± aÃ§      |
+| GET    | /api/discovery/models                   | Model listesi               |
+| GET    | /api/discovery/models/:slug             | Model landing verisi        |
+| POST   | /api/discovery/models/:modelId/follow   | Model takip et              |
+| DELETE | /api/discovery/models/:modelId/follow   | Model takibini bÄ±rak       |
 
-### Araçlar
-| Metod | Rota          | Açıklama           |
-|-------|---------------|--------------------|
-| POST  | /api/score    | Alınır mı skoru    |
-| GET   | /api/score/stats | İstatistikler   |
+### AkÄ±ÅŸ (Feed)
 
+| Metod | Rota               | AÃ§Ä±klama     |
+| ----- | ------------------ | -------------- |
+| GET   | /api/feed          | AkÄ±ÅŸÄ± getir |
+| POST  | /api/feed          | Post paylaÅŸ   |
+| POST  | /api/feed/:id/like | BeÄŸen         |
 
-## Staging Altyapısı
+### AraÃ§lar
 
-Bu repoda staging için temel deploy altyapısı eklendi:
+| Metod | Rota             | AÃ§Ä±klama         |
+| ----- | ---------------- | ------------------ |
+| POST  | /api/score       | AlÄ±nÄ±r mÄ± skoru |
+| GET   | /api/score/stats | Ä°statistikler     |
+
+## Staging AltyapÄ±sÄ±
+
+Bu repoda staging iÃ§in temel deploy altyapÄ±sÄ± eklendi:
 
 - `docker-compose.staging.yml`: Postgres + Redis + API + Worker + Web servisleri
-- `apps/api/Dockerfile`, `apps/web/Dockerfile`: üretim imajı build dosyaları
+- `apps/api/Dockerfile`, `apps/web/Dockerfile`: Ã¼retim imajÄ± build dosyalarÄ±
 - `deploy/k8s/*`: namespace/deployment/service/ingress manifestleri
-- `.github/workflows/staging.yml`: staging build/doğrulama workflow
+- `.github/workflows/staging.yml`: staging build/doÄŸrulama workflow
 - `.github/workflows/cd-staging.yml`: staging deploy workflow (image push + migration + rollout)
-- `.env.staging.example`: staging ortam değişken örneği
+- `.env.staging.example`: staging ortam deÄŸiÅŸken Ã¶rneÄŸi
 
 ### Local staging smoke
 
@@ -269,19 +273,18 @@ kubectl apply -f deploy/k8s/db-migrate-job.yaml
 kubectl apply -f deploy/k8s/ingress.yaml
 ```
 
-### CI/CD özeti
+### CI/CD Ã¶zeti
 
-- CI: `/.github/workflows/staging.yml` (lint + typecheck + test + migration check + image/compose doğrulama)
+- CI: `/.github/workflows/staging.yml` (lint + typecheck + test + migration check + image/compose doÄŸrulama)
 - CD: `/.github/workflows/cd-staging.yml` (staging deploy + db migration + rollout)
-- Secret yönetimi: `deploy/SECRETS.md`
-- Rollback planı: `deploy/ROLLBACK.md`
-
+- Secret yÃ¶netimi: `deploy/SECRETS.md`
+- Rollback planÄ±: `deploy/ROLLBACK.md`
 
 ## Backend Foundation (2.x)
 
 ### 2.1 Core
 
-NestJS modülleri:
+NestJS modÃ¼lleri:
 
 - auth
 - users
@@ -300,14 +303,14 @@ Global:
 
 ### 2.2 Auth
 
-- JWT access + refresh (ayrı cookie)
+- JWT access + refresh (ayrÄ± cookie)
 - Password hashing (bcrypt)
 - RBAC (Roles decorator + RolesGuard)
 - Session/device token tablosu (`user_sessions`)
 
 ### 2.3 DB (PostgreSQL + Prisma)
 
-Prisma schema (`apps/api/prisma/schema.prisma`) model kapsamı:
+Prisma schema (`apps/api/prisma/schema.prisma`) model kapsamÄ±:
 
 - User
 - Profile
@@ -319,13 +322,12 @@ Prisma schema (`apps/api/prisma/schema.prisma`) model kapsamı:
 Pipeline:
 
 ```bash
-pnpm --filter @berra/api run prisma:generate
-pnpm --filter @berra/api run prisma:migrate
-pnpm --filter @berra/api run prisma:seed
+pnpm --filter @araba/api run prisma:generate
+pnpm --filter @araba/api run prisma:migrate
+pnpm --filter @araba/api run prisma:seed
 ```
-
 
 ### Nixpacks / PNPM Lockfile Notu
 
-`pnpm-lock.yaml` olmadığında CI/build tarafında `--frozen-lockfile` hatası alınmaması için
-repo kökünde `nixpacks.toml` ile install komutu `pnpm i --no-frozen-lockfile` olarak override edilmiştir.
+`pnpm-lock.yaml` olmadÄ±ÄŸÄ±nda CI/build tarafÄ±nda `--frozen-lockfile` hatasÄ± alÄ±nmamasÄ± iÃ§in
+repo kÃ¶kÃ¼nde `nixpacks.toml` ile install komutu `pnpm i --no-frozen-lockfile` olarak override edilmiÅŸtir.

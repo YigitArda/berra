@@ -23,9 +23,12 @@ export class HealthController {
     }
 
     try {
-      const redis = new IORedis(this.configService.get<string>('REDIS_URL', 'redis://127.0.0.1:6379'), {
-        maxRetriesPerRequest: 1,
-      });
+      const redis = new IORedis(
+        this.configService.get<string>('REDIS_URL', 'redis://127.0.0.1:6379'),
+        {
+          maxRetriesPerRequest: 1,
+        },
+      );
       await redis.ping();
       redisStatus = 'up';
       await redis.quit();
@@ -35,7 +38,7 @@ export class HealthController {
 
     return {
       status: dbStatus === 'up' ? 'ok' : 'degraded',
-      service: 'berra-api',
+      service: 'araba-api',
       uptime: process.uptime(),
       checks: {
         db: dbStatus,

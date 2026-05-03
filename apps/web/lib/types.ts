@@ -1,5 +1,3 @@
-// @berra/shared types - inline edildi (Netlify için)
-
 export type ApiHealth = {
   status: 'ok' | 'error';
   service: string;

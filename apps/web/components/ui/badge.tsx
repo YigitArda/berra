@@ -4,8 +4,9 @@ import { cn } from '../../lib/cn';
 export const badgeVariants = {
   danger: 'bg-red-500 text-white',
   success: 'bg-emerald-500 text-slate-950',
-  neutral: 'bg-slate-700 text-slate-100',
-  outline: 'border border-slate-600 bg-transparent text-slate-200',
+  neutral: 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-100',
+  outline:
+    'border border-slate-300 bg-transparent text-slate-700 dark:border-slate-600 dark:text-slate-200',
 } as const;
 
 export const badgeSizes = {
@@ -26,7 +27,14 @@ type BadgeProps = {
 
 export function Badge({ children, variant = 'danger', size = 'md', className }: BadgeProps) {
   return (
-    <span className={cn('inline-flex items-center rounded-full font-bold', badgeVariants[variant], badgeSizes[size], className)}>
+    <span
+      className={cn(
+        'inline-flex items-center rounded-full font-bold',
+        badgeVariants[variant],
+        badgeSizes[size],
+        className,
+      )}
+    >
       {children}
     </span>
   );

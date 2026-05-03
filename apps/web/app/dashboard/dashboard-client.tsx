@@ -24,8 +24,10 @@ export function DashboardClient() {
   return (
     <div className="grid gap-4">
       <Card>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Hoş geldin, {user?.username}</h1>
-        <div className="mt-2 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+          Hoş geldin, {user?.username}
+        </h1>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
           <Badge variant="outline">Rol: {user?.role ?? 'user'}</Badge>
           <Badge variant="neutral">Okunmamış bildirim: {unread || notifications.unreadCount}</Badge>
         </div>
@@ -36,7 +38,10 @@ export function DashboardClient() {
           <h2 className="text-lg font-semibold">Son gönderiler</h2>
           <div className="mt-3 grid gap-2">
             {(feed.data?.posts ?? []).slice(0, 5).map((post) => (
-              <div key={post.id} className="rounded border border-slate-700 p-2">
+              <div
+                key={post.id}
+                className="rounded border border-slate-200 p-2 dark:border-slate-700"
+              >
                 <p className="text-sm font-semibold">{post.username}</p>
                 <p className="text-sm text-slate-600 dark:text-slate-300">{post.body}</p>
               </div>
@@ -47,10 +52,30 @@ export function DashboardClient() {
         <Card>
           <h2 className="text-lg font-semibold">Hızlı erişim</h2>
           <div className="mt-3 grid gap-2">
-            <Link href="/forum" className="rounded border border-slate-700 p-3 text-sm hover:border-slate-500">Forum</Link>
-            <Link href="/feed" className="rounded border border-slate-700 p-3 text-sm hover:border-slate-500">Feed</Link>
-            <Link href={`/profile/${user?.username ?? ''}`} className="rounded border border-slate-700 p-3 text-sm hover:border-slate-500">Profil</Link>
-            <Link href="/bookmarks" className="rounded border border-slate-700 p-3 text-sm hover:border-slate-500">Kayıtlılarım</Link>
+            <Link
+              href="/forum"
+              className="rounded border border-slate-200 p-3 text-sm hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-500"
+            >
+              Forum
+            </Link>
+            <Link
+              href="/feed"
+              className="rounded border border-slate-200 p-3 text-sm hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-500"
+            >
+              Feed
+            </Link>
+            <Link
+              href={`/profile/${user?.username ?? ''}`}
+              className="rounded border border-slate-200 p-3 text-sm hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-500"
+            >
+              Profil
+            </Link>
+            <Link
+              href="/bookmarks"
+              className="rounded border border-slate-200 p-3 text-sm hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-500"
+            >
+              Kayıtlılarım
+            </Link>
           </div>
         </Card>
       </div>

@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: berra-web
-  namespace: berra-staging
+  name: araba-web
+  namespace: araba-staging
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: berra-web
+      app: araba-web
   template:
     metadata:
       labels:
-        app: berra-web
+        app: araba-web
     spec:
       containers:
         - name: web
-          image: ghcr.io/your-org/berra-web:staging
+          image: ghcr.io/your-org/araba-web:staging
           ports:
             - containerPort: 3000
           env:
@@ -27,11 +27,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: berra-web
-  namespace: berra-staging
+  name: araba-web
+  namespace: araba-staging
 spec:
   selector:
-    app: berra-web
+    app: araba-web
   ports:
     - port: 3000
       targetPort: 3000

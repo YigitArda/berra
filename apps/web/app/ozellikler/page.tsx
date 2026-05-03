@@ -1,7 +1,7 @@
 import { Card } from '../../components/ui/card';
 
 const features = [
-  'Forum + akış deneyimi',
+  'Forum ve akış deneyimi',
   'Model merkezi ve takip akışları',
   'Bildirimler ve gerçek zamanlı güncellemeler',
   'Profil, bookmark ve raporlama araçları',
@@ -13,7 +13,7 @@ export default function OzelliklerPage() {
       <Card>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Özellikler</h1>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-          Platformun temel özellikleri Next arayüzünde tek noktada listelenir.
+          Platformun temel özellikleri tek noktada listelenir.
         </p>
       </Card>
 

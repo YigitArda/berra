@@ -7,10 +7,16 @@ import { Skeleton } from '../../components/feedback/Skeleton';
 import { resolveFeedbackErrorMessage } from '../../components/feedback/messages';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
+import {
+  useCreateFeedComment,
+  useCreateFeedPost,
+  useFeed,
+  useFeedComments,
+  useLikeFeedPost,
+} from '../../hooks/use-feed';
 import { useRequireAuth } from '../../hooks/use-require-auth';
-import { useCreateFeedComment, useCreateFeedPost, useFeed, useFeedComments, useLikeFeedPost } from '../../hooks/use-feed';
 import { useReportContent } from '../../hooks/use-report';
-import { getSocket, releaseSocket, SOCKET_EVENTS } from '../../lib/socket';
+import { getSocket, isRealtimeSocketEnabled, releaseSocket, SOCKET_EVENTS } from '../../lib/socket';
 
 type FeedPostCardProps = {
   post: {
@@ -49,29 +55,47 @@ function FeedPostCard({ post }: FeedPostCardProps) {
 
   return (
     <Card>
-      <div className="font-bold">{post.username}</div>
-      <p className="mt-1">{post.body}</p>
+      <div className="font-bold text-slate-950 dark:text-white">{post.username}</div>
+      <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-slate-700 dark:text-slate-200">
+        {post.body}
+      </p>
 
       <div className="mt-3 flex flex-wrap gap-2">
-        <Button size="sm" variant={isLiked ? 'primary' : 'ghost'} onClick={toggleLike} disabled={likeMutation.isPending}>
-          ♥ {optimisticLikes}
+        <Button
+          size="sm"
+          variant={isLiked ? 'primary' : 'ghost'}
+          onClick={toggleLike}
+          disabled={likeMutation.isPending}
+        >
+          Beğen {optimisticLikes}
         </Button>
         <Button size="sm" variant="ghost" onClick={() => setIsCommentsOpen((prev) => !prev)}>
-          💬 {post.comment_count}
+          Yorum {post.comment_count}
         </Button>
-        <Button size="sm" variant="ghost" onClick={() => reportMutation.mutate({ targetType: 'feed_post', targetId: post.id, reason: 'diğer' })}>
-          ⋯ Şikayet Et
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() =>
+            reportMutation.mutate({ targetType: 'feed_post', targetId: post.id, reason: 'diğer' })
+          }
+        >
+          Şikayet Et
         </Button>
       </div>
 
       {isCommentsOpen && (
-        <div className="mt-3 rounded-md border border-slate-700 p-3">
+        <div className="mt-3 rounded-md border border-slate-200 p-3 dark:border-slate-700">
           {commentsQuery.isLoading && <Skeleton lines={2} />}
           <div className="grid gap-2">
             {(commentsQuery.data?.comments ?? []).map((comment) => (
-              <div key={comment.id} className="rounded border border-slate-700 p-2 text-sm">
-                <p className="font-semibold">{comment.username}</p>
-                <p>{comment.body}</p>
+              <div
+                key={comment.id}
+                className="rounded border border-slate-200 p-2 text-sm dark:border-slate-700"
+              >
+                <p className="font-semibold text-slate-950 dark:text-white">{comment.username}</p>
+                <p className="whitespace-pre-wrap text-slate-700 dark:text-slate-200">
+                  {comment.body}
+                </p>
               </div>
             ))}
           </div>
@@ -89,10 +113,14 @@ function FeedPostCard({ post }: FeedPostCardProps) {
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               rows={2}
-              className="rounded border border-slate-300 bg-white p-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              className="rounded-lg border border-slate-300 bg-white p-2 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
               placeholder="Yorum yaz..."
             />
-            <Button type="submit" size="sm" disabled={!commentText.trim() || createCommentMutation.isPending}>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={!commentText.trim() || createCommentMutation.isPending}
+            >
               {createCommentMutation.isPending ? 'Gönderiliyor...' : 'Yorum gönder'}
             </Button>
           </form>
@@ -119,6 +147,10 @@ export function FeedClient() {
   }, [activeTab]);
 
   useEffect(() => {
+    if (!isAuthenticated || !isRealtimeSocketEnabled()) {
+      return;
+    }
+
     const socket = getSocket();
     const onContentUpdated = (payload: { action: string }) => {
       if (payload.action === 'created') {
@@ -130,7 +162,7 @@ export function FeedClient() {
       socket.off(SOCKET_EVENTS.contentUpdated, onContentUpdated);
       releaseSocket();
     };
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const incoming = postsQuery.data?.posts ?? [];
@@ -149,13 +181,21 @@ export function FeedClient() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Liste / Feed</h1>
-        <div className="flex gap-2">
-          <Button size="sm" variant={activeTab === 'following' ? 'primary' : 'ghost'} onClick={() => setActiveTab('following')}>
-            Takip ettiklerinden
+        <div className="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            variant={activeTab === 'following' ? 'primary' : 'ghost'}
+            onClick={() => setActiveTab('following')}
+          >
+            Takip ettiklerin
           </Button>
-          <Button size="sm" variant={activeTab === 'discover' ? 'primary' : 'ghost'} onClick={() => setActiveTab('discover')}>
+          <Button
+            size="sm"
+            variant={activeTab === 'discover' ? 'primary' : 'ghost'}
+            onClick={() => setActiveTab('discover')}
+          >
             Keşfet
           </Button>
         </div>
@@ -176,11 +216,11 @@ export function FeedClient() {
           id="feed-body"
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder="Ne düşünüyorsun? (metin / bakım notu / foto / anket)"
+          placeholder="Ne düşünüyorsun? Bakım notu, soru veya kısa deneyim paylaş."
           maxLength={500}
           rows={3}
           disabled={createMutation.isPending}
-          className="rounded-md border border-slate-300 bg-white p-3 text-slate-900 placeholder:text-slate-400 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
+          className="rounded-lg border border-slate-300 bg-white p-3 text-slate-900 placeholder:text-slate-400 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
         />
         <p className="text-right text-xs text-slate-400">{body.length}/500</p>
         <Button type="submit" disabled={createMutation.isPending || body.trim().length === 0}>
@@ -189,12 +229,16 @@ export function FeedClient() {
       </form>
 
       {createMutation.isError && (
-        <InlineAlert className="mb-3" variant="error" message={resolveFeedbackErrorMessage(createMutation.error)} />
+        <InlineAlert
+          className="mb-3"
+          variant="error"
+          message={resolveFeedbackErrorMessage(createMutation.error)}
+        />
       )}
 
       {hasNewPosts && (
-        <div className="mb-3 flex items-center justify-between rounded-md border border-blue-800 bg-blue-950/40 px-4 py-2">
-          <span className="text-sm text-blue-200">Yeni gönderiler mevcut</span>
+        <div className="mb-3 flex items-center justify-between rounded-md border border-blue-200 bg-blue-50 px-4 py-2 dark:border-blue-900/60 dark:bg-blue-950/40">
+          <span className="text-sm text-blue-900 dark:text-blue-200">Yeni gönderiler mevcut</span>
           <Button
             size="sm"
             variant="ghost"
@@ -221,7 +265,7 @@ export function FeedClient() {
         isRetrying={postsQuery.isRefetching}
       >
         <div className="grid gap-3">
-          {(loadedPosts.length ? loadedPosts : postsQuery.data?.posts ?? []).map((post) => (
+          {(loadedPosts.length ? loadedPosts : (postsQuery.data?.posts ?? [])).map((post) => (
             <FeedPostCard key={post.id} post={post} />
           ))}
         </div>
