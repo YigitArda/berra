@@ -1,17 +1,14 @@
 [phases.setup]
-nixPkgs = ["nodejs_20", "pnpm"]
+nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = ["pnpm install --no-frozen-lockfile"]
+cmds = ["npm install --prefix apps/api"]
 
 [phases.build]
 cmds = [
-  "cd apps/api && pnpm prisma generate",
-  "cd apps/api && pnpm build"
+  "npm --prefix apps/api run prisma:generate",
+  "npm --prefix apps/api run build"
 ]
 
-[phases.setup.env]
-NIXPACKS_PATH = "/app/node_modules/.bin:$NIXPACKS_PATH"
-
 [start]
-cmd = "cd apps/api && pnpm start"
+cmd = "npm --prefix apps/api run start"
